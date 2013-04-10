@@ -98,8 +98,6 @@ azAZ [a-zA-Z]
 "ReadInteger" { return T_ReadInteger; }
 "ReadLine" { return T_ReadLine; }
 
- /* operands */
-[+-/*%<>=!;,.(){}\[\]]  { return yytext[0]; } 
 "<=" { return T_LessEqual; }
 ">="  { return T_GreaterEqual; }
 "=="  { return T_Equal; }
@@ -113,19 +111,23 @@ azAZ [a-zA-Z]
           return T_BoolConstant; }
 "false" { yylval.boolConstant = 0; 
           return T_BoolConstant; }
-[0-9]+  { yylval.integerConstant = atoi(yytext);
+-?[0-9]+  { yylval.integerConstant = atoi(yytext);
           return T_IntConstant; }
 "0"[xX][0-9A-Ha-h]+  { yylval.integerConstant = strtoul(yytext, NULL, 0);
           return T_IntConstant; }
-[0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
+-?[0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
- /* TODO hanfle scientific doubles */
-[0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
+ /* TODO handle scientific doubles */
+-?[0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
 (\").*(\")  { yylval.stringConstant = yytext;
           return T_StringConstant; }
 [a-zA-Z][a-zA-Z0-9_]*  { strncpy(yylval.identifier,yytext,MaxIdentLen);
           return T_Identifier; }
+
+ /* operands */
+[+-/*%<>=!;,.(){}\[\]]  { return yytext[0]; } 
+
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
  * of the User Subroutines section. All text from here to the end of the
