@@ -21,3 +21,5 @@ dcc
 #generated lex c files
 lex.yy.c
 
+#test output files
+*.test
