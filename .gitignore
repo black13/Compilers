@@ -12,6 +12,12 @@
 *.la
 *.a
 
-
 #vim swp files
 *.swp
+
+#binary output for P1
+dcc
+
+#generated lex c files
+lex.yy.c
+
