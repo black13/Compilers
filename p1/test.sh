@@ -20,5 +20,12 @@ fi
 
 ./dcc < samples/$1.frag > samples/$1.test
 
-vimdiff samples/$1.out samples/$1.test
+DIFF=$(diff samples/$1.out samples/$1.test)
+
+if [ "$DIFF" != "" ] 
+then
+  vimdiff samples/$1.out samples/$1.test
+else
+  echo "Test Passed!"
+fi
 
