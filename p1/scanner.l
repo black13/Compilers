@@ -128,6 +128,10 @@ azAZ [a-zA-Z]
  /* operands */
 [+-/*%<>=!;,.(){}\[\]]  { return yytext[0]; } 
 
+
+ /* errros */
+
+
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
  * of the User Subroutines section. All text from here to the end of the
