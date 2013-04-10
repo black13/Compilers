@@ -111,14 +111,14 @@ azAZ [a-zA-Z]
           return T_BoolConstant; }
 "false" { yylval.boolConstant = 0; 
           return T_BoolConstant; }
--?[0-9]+  { yylval.integerConstant = atoi(yytext);
+[0-9]+  { yylval.integerConstant = atoi(yytext);
           return T_IntConstant; }
 "0"[xX][0-9A-Ha-h]+  { yylval.integerConstant = strtoul(yytext, NULL, 0);
           return T_IntConstant; }
--?[0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
+[0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
  /* TODO handle scientific doubles */
--?[0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
+[0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
 (\").*(\")  { yylval.stringConstant = yytext;
           return T_StringConstant; }
