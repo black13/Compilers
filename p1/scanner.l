@@ -99,28 +99,14 @@ azAZ [a-zA-Z]
 "ReadLine" { return T_ReadLine; }
 
  /* operands */
-"+"
-"-"
-"*"
-"/"
-"%"
-"<"
-"<="
-">"
-">="
-"="
-"=="
-"!="
-"&&"
-"||"
-"!"
-";"
-","
-"."
-"[]"
-"[ ]"
-"( )"
-"{ }"
+[+-/*%<>=!;,.(){}\[\]]  { return yytext[0]; } 
+"<=" { return T_LessEqual; }
+">="  { return T_GreaterEqual; }
+"=="  { return T_Equal; }
+"!="  { return T_NotEqual; }
+"&&"  { return T_And; }
+"||"  { return T_Or; }
+"[]" { return T_Dims; }
 
  /* Decode values*/
 "true"  { yylval.boolConstant = 1; 
@@ -138,7 +124,7 @@ azAZ [a-zA-Z]
           return T_DoubleConstant; }
 (\").*(\")  { yylval.stringConstant = yytext;
           return T_StringConstant; }
-[a-zA-Z][a-zA-Z0-9]*  { strncpy(yylval.identifier,yytext,MaxIdentLen);
+[a-zA-Z][a-zA-Z0-9_]*  { strncpy(yylval.identifier,yytext,MaxIdentLen);
           return T_Identifier; }
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
