@@ -46,7 +46,8 @@ struct yyltype yylloc; // manually dclared for pp1, later Yacc provides
 static void DoBeforeEachAction(); 
 #define YY_USER_ACTION DoBeforeEachAction();
 
-int start = 0;
+int num_lines = 0;
+int num_chars = 0;
 
 %}
 
@@ -56,20 +57,26 @@ int start = 0;
   * as a simple substitution mechanism that allows for more readable
   * entries in the Rules section later. 
   */
+INTS [0-9]
+az [a-z]
+AZ [A-Z]
+azAZ [a-zA-Z]
 
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
   * %% markers which delimit the Rules section. 
   */ 
 
-[ \t\n] { start++; }
-"//".*  { start++; }
-"/*"[.\n]*"*/"  { start++; }
+ /* Whitespace should be ignored TODO */
+"\n"  { num_lines++; num_chars = 1; yylloc.last_line++; }
 
-[+-/*%<>=!;,.(){}]  { return yytext[start]; }
+ /* Skip over comments TODO */
+"//"(.*)$  { }
+"/*"[\n.^(/*)]*"/*" { } /* TODO handle counting newlines in comments */
 
-"int" { return T_Int; }
+ /* reserved keywords */
 "void"  { return T_Void; }
+"int" { return T_Int; }
 "double"  { return T_Double; }
 "bool"  { return T_Bool; }
 "string"  { return T_String; }
@@ -79,8 +86,43 @@ int start = 0;
 "this"  { return T_This; }
 "extends" { return T_Extends; }
 "implements"  { return T_Implements; }
+"for" { return T_For; }
+"while" { return T_While; }
+"if" { return T_If; }
+"else" { return T_Else; }
+"return" { return T_Return; }
+"break" { return T_Break; }
+"new" { return T_New; }
+"NewArray" { return T_NewArray; }
+"Print" { return T_Print; }
+"ReadInteger" { return T_ReadInteger; }
+"ReadLine" { return T_ReadLine; }
 
+ /* operands */
+"+"
+"-"
+"*"
+"/"
+"%"
+"<"
+"<="
+">"
+">="
+"="
+"=="
+"!="
+"&&"
+"||"
+"!"
+";"
+","
+"."
+"[]"
+"[ ]"
+"( )"
+"{ }"
 
+ /* Decode values*/
 "true"  { yylval.boolConstant = 1; 
           return T_BoolConstant; }
 "false" { yylval.boolConstant = 0; 
@@ -89,14 +131,15 @@ int start = 0;
           return T_IntConstant; }
 "0"[xX][0-9A-Ha-h]+  { yylval.integerConstant = strtoul(yytext, NULL, 0);
           return T_IntConstant; }
-[0-9]+"."[0-9]+ { yylval.doubleConstant = atof(yytext);
+[0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
-[0-9]+"."?[0-9]*"E"[+-][0-9]+ { return T_DoubleConstant; }
-
-["].*["]  { yylval.stringConstant = yytext;
+ /* TODO hanfle scientific doubles */
+[0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
+          return T_DoubleConstant; }
+(\").*(\")  { yylval.stringConstant = yytext;
           return T_StringConstant; }
-
-
+[a-zA-Z][a-zA-Z0-9]*  { strncpy(yylval.identifier,yytext,MaxIdentLen);
+          return T_Identifier; }
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
  * of the User Subroutines section. All text from here to the end of the
@@ -121,6 +164,8 @@ void InitScanner()
 {
     PrintDebug("lex", "Initializing scanner");
     yy_flex_debug = false;
+    num_lines = 1;
+    num_chars = 1;
 }
 
 
@@ -131,4 +176,9 @@ void InitScanner()
  */
 static void DoBeforeEachAction()
 {
+  yylloc.first_column = num_chars;
+  yylloc.last_column = num_chars + yyleng - 1;
+  yylloc.first_line = num_lines;
+  yylloc.last_line = num_lines;
+  num_chars += yyleng;
 }
