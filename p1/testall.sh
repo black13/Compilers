@@ -3,7 +3,7 @@ make clean
 make
 
 rm -f samples/*.mine
-cat /dev/null > out
+#cat /dev/null > out
 
 for file in `ls samples/*.frag samples/*.decaf`
 	do
@@ -25,10 +25,11 @@ for file in `ls samples/*.frag samples/*.decaf`
 
 		if [ -n "$differences" ]; then
 			echo
-			echo "Difference found in testcase $testcasename ($my_output vs $their_output): "
-			echo "$differences" | tee out
-			echo
-			echo "See the out file"
+			#echo "Difference found in testcase $testcasename ($my_output vs $their_output): "
+			#echo "$differences" | tee out
+			#echo
+			#echo "See the out file"
+      vimdiff $my_output $their_output
 			exit 1
 		fi
 	done
