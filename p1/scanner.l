@@ -49,6 +49,7 @@ static void foundIdent();
 
 int num_lines = 0;
 int num_chars = 0;
+int in_comment = 0;
 
 %}
 
@@ -75,15 +76,15 @@ azAZ [a-zA-Z]
 
  /* Skip over comments TODO */
 "//"(.*)$  { }
-<INITIAL>{
-"/*"              BEGIN(IN_COMMENT);
-}
+"/*"          BEGIN(IN_COMMENT);
+
 <IN_COMMENT>{
     "*/"      BEGIN(INITIAL);
     [^*\n]+   // eat comment in chunks
     "*"       // eat the lone star
     \n        num_lines++;
-  }
+}
+<IN_COMMENT><<EOF>> ReportError::UntermComment(); yyterminate();
 
 
  /* reserved keywords */
@@ -133,7 +134,7 @@ azAZ [a-zA-Z]
 [0-9]+  { yylval.integerConstant = atoi(yytext);
           return T_IntConstant; }
 ["][^"\n]*["]  { yylval.stringConstant = yytext;
-          return T_StringConstant; } /* TODO: may need to add the exclusion of \" in the regex */
+          return T_StringConstant; }
 [a-zA-Z][a-zA-Z0-9_]*  { foundIdent();
           return T_Identifier; }
 
