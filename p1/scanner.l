@@ -132,7 +132,7 @@ azAZ [a-zA-Z]
           return T_DoubleConstant; }
 [0-9]+  { yylval.integerConstant = atoi(yytext);
           return T_IntConstant; }
-(\").*(\")  { yylval.stringConstant = yytext;
+["][^"\n]*["]  { yylval.stringConstant = yytext;
           return T_StringConstant; } /* TODO: may need to add the exclusion of \" in the regex */
 [a-zA-Z][a-zA-Z0-9_]*  { foundIdent();
           return T_Identifier; }
@@ -142,7 +142,7 @@ azAZ [a-zA-Z]
 
 
  /* errros */
-(\")(^\")*$  { ReportError::UntermString(&yylloc,yytext); }
+["][^"\n]*  { ReportError::UntermString(&yylloc,yytext); }
 . { ReportError::UnrecogChar(&yylloc,yytext[0]); }
 
 %%
