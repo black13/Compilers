@@ -45,6 +45,7 @@ struct yyltype yylloc; // manually dclared for pp1, later Yacc provides
  */
 static void DoBeforeEachAction(); 
 #define YY_USER_ACTION DoBeforeEachAction();
+static void foundIdent();
 
 int num_lines = 0;
 int num_chars = 0;
@@ -62,6 +63,7 @@ az [a-z]
 AZ [A-Z]
 azAZ [a-zA-Z]
 
+%x IN_COMMENT
 %%             /* BEGIN RULES SECTION */
  /* All patterns and actions should be placed between the start and stop
   * %% markers which delimit the Rules section. 
@@ -69,10 +71,20 @@ azAZ [a-zA-Z]
 
  /* Whitespace should be ignored TODO */
 "\n"  { num_lines++; num_chars = 1; yylloc.last_line++; }
+" " {  }
 
  /* Skip over comments TODO */
 "//"(.*)$  { }
-"/*"[\n.^(/*)]*"/*" { } /* TODO handle counting newlines in comments */
+<INITIAL>{
+"/*"              BEGIN(IN_COMMENT);
+}
+<IN_COMMENT>{
+    "*/"      BEGIN(INITIAL);
+    [^*\n]+   // eat comment in chunks
+    "*"       // eat the lone star
+    \n        num_lines++;
+  }
+
 
  /* reserved keywords */
 "void"  { return T_Void; }
@@ -121,8 +133,8 @@ azAZ [a-zA-Z]
 [0-9]+  { yylval.integerConstant = atoi(yytext);
           return T_IntConstant; }
 (\").*(\")  { yylval.stringConstant = yytext;
-          return T_StringConstant; }
-[a-zA-Z][a-zA-Z0-9_]*  { strncpy(yylval.identifier,yytext,MaxIdentLen);
+          return T_StringConstant; } /* TODO: may need to add the exclusion of \" in the regex */
+[a-zA-Z][a-zA-Z0-9_]*  { foundIdent();
           return T_Identifier; }
 
  /* operands */
@@ -130,7 +142,8 @@ azAZ [a-zA-Z]
 
 
  /* errros */
-
+(\")(^\")*$  { ReportError::UntermString(&yylloc,yytext); }
+. { ReportError::UnrecogChar(&yylloc,yytext[0]); }
 
 %%
 /* The closing %% above marks the end of the Rules section and the beginning
@@ -173,4 +186,15 @@ static void DoBeforeEachAction()
   yylloc.first_line = num_lines;
   yylloc.last_line = num_lines;
   num_chars += yyleng;
+}
+
+
+/* Deal with assigning identifiers */
+static void foundIdent()
+{
+  strncpy(yylval.identifier,yytext,MaxIdentLen);
+  if (yyleng > MaxIdentLen)
+  {
+    ReportError::LongIdentifier(&yylloc,yytext);
+  }
 }

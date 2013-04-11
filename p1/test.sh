@@ -18,7 +18,7 @@ then
 	exit 1
 fi
 
-./dcc < samples/$1.frag > samples/$1.test
+./dcc < samples/$1.frag &> samples/$1.test
 
 DIFF=$(diff samples/$1.out samples/$1.test)
 
