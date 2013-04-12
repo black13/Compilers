@@ -49,7 +49,7 @@ static void foundIdent();
 
 int num_lines = 0;
 int num_chars = 0;
-int in_comment = 0;
+//int in_comment = 0;
 
 %}
 
@@ -59,10 +59,12 @@ int in_comment = 0;
   * as a simple substitution mechanism that allows for more readable
   * entries in the Rules section later. 
   */
-INTS [0-9]
-az [a-z]
-AZ [A-Z]
-azAZ [a-zA-Z]
+
+ /* INTS [0-9]
+    az [a-z]
+    AZ [A-Z]
+    azAZ [a-zA-Z]
+  */
 
 %x IN_COMMENT
 %%             /* BEGIN RULES SECTION */
@@ -77,14 +79,13 @@ azAZ [a-zA-Z]
  /* Skip over comments */
 "//"(.*)$  { }
 "/*"          BEGIN(IN_COMMENT);
-
 <IN_COMMENT>{
     "*/"      BEGIN(INITIAL);
     [^*\n]+   // eat comment in chunks
     "*"       // eat the lone star
     \n        num_lines++;
+    <<EOF>>   ReportError::UntermComment(); yyterminate();
 }
-<IN_COMMENT><<EOF>> ReportError::UntermComment(); yyterminate();
 
 
  /* reserved keywords */
