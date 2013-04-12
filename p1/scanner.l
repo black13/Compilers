@@ -70,11 +70,11 @@ azAZ [a-zA-Z]
   * %% markers which delimit the Rules section. 
   */ 
 
- /* Whitespace should be ignored TODO */
+ /* Whitespace should be ignored */
 "\n"  { num_lines++; num_chars = 1; yylloc.last_line++; }
 " " {  }
 
- /* Skip over comments TODO */
+ /* Skip over comments */
 "//"(.*)$  { }
 "/*"          BEGIN(IN_COMMENT);
 
@@ -126,7 +126,6 @@ azAZ [a-zA-Z]
           return T_BoolConstant; }
 "0"[xX][0-9A-fa-f]+  { yylval.integerConstant = strtoul(yytext, NULL, 0);
           return T_IntConstant; }
- /* TODO handle scientific doubles */
 [0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
 [0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
