@@ -46,6 +46,10 @@ void yyerror(const char *msg); // standard error-handling routine
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
     List<Decl*> *declList;
+    Type *type;
+    Identifier *ident;
+    VarDecl *varDecl;
+    VarDecl *var;
 }
 
 
@@ -81,6 +85,10 @@ void yyerror(const char *msg); // standard error-handling routine
  */
 %type <declList>  DeclList 
 %type <decl>      Decl
+%type <type>      Type
+%type <ident>     Identifier
+%type <varDecl>   VariableDecl
+%type <var>       Variable
 
 %%
 /* Rules
@@ -89,25 +97,86 @@ void yyerror(const char *msg); // standard error-handling routine
  * %% markers which delimit the Rules section.
 	 
  */
-Program   :    DeclList            { 
-                                      @1; 
-                                      /* pp2: The @1 is needed to convince 
-                                       * yacc to set up yylloc. You can remove 
-                                       * it once you have other uses of @n*/
-                                      Program *program = new Program($1);
-                                      // if no errors, advance to next phase
-                                      if (ReportError::NumErrors() == 0) 
-                                          program->Print(0);
-                                    }
-          ;
+Program       :   DeclList              { 
+                                          /* pp2: The @1 is needed to convince 
+                                           * yacc to set up yylloc. You can remove 
+                                           * it once you have other uses of @n*/
+                                          Program *program = new Program($1);
+                                          // if no errors, advance to next phase
+                                          if (ReportError::NumErrors() == 0) 
+                                              program->Print(0);
+                                        }
+              ;
 
-DeclList  :    DeclList Decl        { ($$=$1)->Append($2); }
-          |    Decl                 { ($$ = new List<Decl*>)->Append($1); }
-          ;
+DeclList      :   DeclList Decl         { ($$=$1)->Append($2); }
+              |   Decl                  { ($$ = new List<Decl*>)->Append($1); }
+              ;
 
-Decl      :    T_Void               { /* pp2: replace with correct rules  */ } 
-          ;
-          
+Decl          :   VariableDecl          { $$ = $1; }
+              ;
+
+VariableDecl  :   Variable ';'          { $$ = $1; }
+              ;
+
+/*
+FunctionDecl  :   Type T_Identifier '(' Formals ')' StmtBlock     { 
+                                          FnDecl *function = new FnDecl($2,$1,$4);
+                                          function->SetFuntionBody($6);
+                                          $$ = function;
+                                        }
+              |   T_Void T_Identifier '(' Formals ')' StmtBlock   {
+                                          FnDecl *function = new FnDecl($2,$1,$4);
+                                          function->SetFuntionBody($6);
+                                          $$ = function;
+                                        }
+              ;
+*/
+
+Variable      :   Type Identifier       { 
+                                          VarDecl *variable = new VarDecl($2,$1); 
+                                          $$ = variable;
+                                        }
+              ;
+              
+Type          :   T_Int                 { 
+                                          Type *x = new Type("int"); 
+                                          $$ = x;
+                                        }
+              |   T_Double              {
+                                          Type *x = new Type("double"); 
+                                          $$ = x;
+                                        }
+              |   T_Bool                {
+                                          Type *x = new Type("bool"); 
+                                          $$ = x;
+                                        }
+              |   T_String              {
+                                          Type *x = new Type("string"); 
+                                          $$ = x;
+                                        }
+              |   Identifier            {
+                                          NamedType *x = new NamedType($1);
+                                          $$ = x;
+                                        }
+/* TODO: Array not working */
+// Works for input 'int[ ] a;' but not 'int[] a;'
+              |   Type '[' ']'          {
+                                          ArrayType *x = new ArrayType(@1,$1);
+                                          $$ = x;
+                                        }
+              ;
+
+Identifier    :   T_Identifier          { 
+                                          Identifier *id = new Identifier(@1,$1);
+                                          $$ = id;
+                                        }
+
+Constant      :   T_IntConstant         { }
+              |   T_DoubleConstant      { }
+              |   T_StringConstant      { }
+              |   T_BoolConstant        { }
+              |   T_Null                { }
+              ;
 
 
 %%
