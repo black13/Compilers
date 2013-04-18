@@ -127,7 +127,7 @@ int num_chars = 0;
           return T_BoolConstant; }
 "0"[xX][0-9A-fa-f]+  { yylval.integerConstant = strtoul(yytext, NULL, 0);
           return T_IntConstant; }
-[0-9]+"."[0-9]*"E"[+-][0-9]+ { yylval.doubleConstant = atof(yytext);
+[0-9]+"."[0-9]*[Ee][+-][0-9]+ { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
 [0-9]+"."[0-9]* { yylval.doubleConstant = atof(yytext);
           return T_DoubleConstant; }
