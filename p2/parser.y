@@ -46,8 +46,6 @@ void yyerror(const char *msg); // standard error-handling routine
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
     List<Decl*> *declList;
-    Prototype *proto;
-    List<Prototype*> *protoList;
     Type *type;
     Identifier *ident;
     InterfaceDecl *intDecl;
@@ -87,10 +85,8 @@ void yyerror(const char *msg); // standard error-handling routine
  * of the union named "declList" which is of type List<Decl*>.
  * pp2: You'll need to add many of these of your own.
  */
-%type <declList>  DeclList 
-%type <decl>      Decl
-%type <proto>     Prototype
-%type <protoList> ProtoList
+%type <declList>  DeclList ProtoList
+%type <decl>      Decl Prototype
 %type <intDecl>   InterfaceDecl
 %type <varDecl>   VarDecl Variable
 %type <varList>   VarList Formals
@@ -128,6 +124,9 @@ VarDecl       :   Variable ';'          { $$ = $1; }
 
 InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { 
                                           $$ = new InterfaceDecl($2,$4);
+                                        }
+              |   T_Interface Identifier '{' '}' {
+                                          $$ = new InterfaceDecl($2,new List<Decl*>);
                                         }
               ;
 
