@@ -103,7 +103,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <ident>     Identifier
 %type <lvalue>    LValue
 %type <exprList>  ExprList Actuals
-%type <expr>      Constant Expr OptionalExpr
+%type <expr>      Constant Expr OptionalExpr Call
 
 %%
 /* Rules
@@ -223,12 +223,14 @@ Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,"=");
               |   T_This                { $$=new This(@1); }
               ; //TODO rest of expr
 
-LValue        :   T_Identifier          { $$=new FieldAccess(NULL,new Identifier(@1,$1)); }
-              |   Expr '.' T_Identifier { $$=new FieldAccess($1,new Identifier(@3,$3)); }
+LValue        :   Identifier            { $$=new FieldAccess(NULL,$1); }
+              |   Expr '.' Identifier   { $$=new FieldAccess($1,$3); }
               |   Expr '[' Expr ']'     { $$=new ArrayAccess(@1,$1,$3); }
               ;
 
-//Call          :   T_Identifier '(' 
+Call          :   Identifier '(' Actuals ')'          { $$=new Call(@1, NULL, $1, $3); }
+              |   Expr '.' Identifier '(' Actuals ')' { $$=new Call(@1, $1, $3, $5); }  //call location may be wrong
+              ;
 
 Actuals       :   ExprList              { $$=$1; }
               |   /* empty string */    { $$=new List<Expr*>; }
