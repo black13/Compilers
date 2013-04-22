@@ -46,10 +46,13 @@ void yyerror(const char *msg); // standard error-handling routine
     char identifier[MaxIdentLen+1]; // +1 for terminating null
     Decl *decl;
     List<Decl*> *declList;
+    Prototype *proto;
+    List<Prototype*> *protoList;
     Type *type;
     Identifier *ident;
+    InterfaceDecl *intDecl;
     VarDecl *varDecl;
-    VarDecl *var;
+    List<VarDecl*> *varList;
 }
 
 
@@ -86,10 +89,13 @@ void yyerror(const char *msg); // standard error-handling routine
  */
 %type <declList>  DeclList 
 %type <decl>      Decl
+%type <proto>     Prototype
+%type <protoList> ProtoList
+%type <intDecl>   InterfaceDecl
+%type <varDecl>   VarDecl Variable
+%type <varList>   VarList Formals
 %type <type>      Type
 %type <ident>     Identifier
-%type <varDecl>   VariableDecl
-%type <var>       Variable
 
 %%
 /* Rules
@@ -110,66 +116,70 @@ Program       :   DeclList              {
               ;
 
 DeclList      :   DeclList Decl         { ($$=$1)->Append($2); }
-              |   Decl                  { ($$ = new List<Decl*>)->Append($1); }
+              |   Decl                  { ($$=new List<Decl*>)->Append($1); }
               ;
 
-Decl          :   VariableDecl          { $$ = $1; }
+Decl          :   VarDecl               { $$ = $1; }
+              |   InterfaceDecl         { $$ = $1; }
               ;
 
-VariableDecl  :   Variable ';'          { $$ = $1; }
+VarDecl       :   Variable ';'          { $$ = $1; }
               ;
 
-/*
-FunctionDecl  :   Type T_Identifier '(' Formals ')' StmtBlock     { 
-                                          FnDecl *function = new FnDecl($2,$1,$4);
-                                          function->SetFuntionBody($6);
-                                          $$ = function;
-                                        }
-              |   T_Void T_Identifier '(' Formals ')' StmtBlock   {
-                                          FnDecl *function = new FnDecl($2,$1,$4);
-                                          function->SetFuntionBody($6);
-                                          $$ = function;
+InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { 
+                                          $$ = new InterfaceDecl($2,$4);
                                         }
               ;
-*/
+
+ProtoList     :   ProtoList Prototype   { ($$=$1)->Append($2); }
+              |   Prototype             { 
+                                          ($$=new List<Decl*>)->Append($1);
+                                        }
+              ;
+
+Prototype     :   Type Identifier '(' Formals ')' ';'   {
+                                                        }
+              |   T_Void Identifier '(' Formals ')' ';' {
+                                                        }
+              ;
+
+Formals       :   VarList               { $$=$1; }
+              |   /* empty */           { }
+              ;
+
+VarList       :   VarList ',' Variable  { ($$=$1)->Append($3); }
+              |   Variable              { ($$=new List<VarDecl*>)->Append($1); }
+              ;
 
 Variable      :   Type Identifier       { 
-                                          VarDecl *variable = new VarDecl($2,$1); 
-                                          $$ = variable;
+                                          $$ = new VarDecl($2,$1); 
                                         }
               ;
               
 Type          :   T_Int                 { 
-                                          Type *x = new Type("int"); 
-                                          $$ = x;
+                                          $$ = new Type("int"); 
                                         }
               |   T_Double              {
-                                          Type *x = new Type("double"); 
-                                          $$ = x;
+                                          $$ = new Type("double"); 
                                         }
               |   T_Bool                {
-                                          Type *x = new Type("bool"); 
-                                          $$ = x;
+                                          $$ = new Type("bool"); 
                                         }
               |   T_String              {
-                                          Type *x = new Type("string"); 
-                                          $$ = x;
+                                          $$ = new Type("string"); 
                                         }
               |   Identifier            {
-                                          NamedType *x = new NamedType($1);
-                                          $$ = x;
+                                          $$ = new NamedType($1);
                                         }
 /* TODO: Array not working */
 // Works for input 'int[ ] a;' but not 'int[] a;'
               |   Type '[' ']'          {
-                                          ArrayType *x = new ArrayType(@1,$1);
-                                          $$ = x;
+                                          $$ = new ArrayType(@1,$1);
                                         }
               ;
 
 Identifier    :   T_Identifier          { 
-                                          Identifier *id = new Identifier(@1,$1);
-                                          $$ = id;
+                                          $$ = new Identifier(@1,$1);
                                         }
 
 Constant      :   T_IntConstant         { }
