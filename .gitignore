@@ -33,4 +33,5 @@ y.tab.h
 *.core
 core
 *~
-y.output dcc 
+y.output
+dcc 
