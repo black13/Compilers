@@ -51,6 +51,7 @@ void yyerror(const char *msg); // standard error-handling routine
     InterfaceDecl *intDecl;
     VarDecl *varDecl;
     List<VarDecl*> *varList;
+    List<Expr*> *exprList;
 }
 
 
@@ -92,6 +93,8 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <varList>   VarList Formals
 %type <type>      Type
 %type <ident>     Identifier
+%type <exprList>  ExprList   //TODO add Actuals
+%type <expr>      Constant
 
 %%
 /* Rules
@@ -122,24 +125,16 @@ Decl          :   VarDecl               { $$ = $1; }
 VarDecl       :   Variable ';'          { $$ = $1; }
               ;
 
-InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { 
-                                          $$ = new InterfaceDecl($2,$4);
-                                        }
-              |   T_Interface Identifier '{' '}' {
-                                          $$ = new InterfaceDecl($2,new List<Decl*>);
-                                        }
+InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
+              |   T_Interface Identifier '{' '}' { $$ = new InterfaceDecl($2,new List<Decl*>); }
               ;
 
 ProtoList     :   ProtoList Prototype   { ($$=$1)->Append($2); }
-              |   Prototype             { 
-                                          ($$=new List<Decl*>)->Append($1);
-                                        }
+              |   Prototype             { ($$=new List<Decl*>)->Append($1); }
               ;
 
-Prototype     :   Type Identifier '(' Formals ')' ';'   {
-                                                        }
-              |   T_Void Identifier '(' Formals ')' ';' {
-                                                        }
+Prototype     :   Type Identifier '(' Formals ')' ';'   {  }
+              |   T_Void Identifier '(' Formals ')' ';' {  }
               ;
 
 Formals       :   VarList               { $$=$1; }
@@ -150,42 +145,36 @@ VarList       :   VarList ',' Variable  { ($$=$1)->Append($3); }
               |   Variable              { ($$=new List<VarDecl*>)->Append($1); }
               ;
 
-Variable      :   Type Identifier       { 
-                                          $$ = new VarDecl($2,$1); 
-                                        }
+
+Variable      :   Type Identifier       { $$ = new VarDecl($2,$1); }
               ;
               
-Type          :   T_Int                 { 
-                                          $$ = new Type("int"); 
-                                        }
-              |   T_Double              {
-                                          $$ = new Type("double"); 
-                                        }
-              |   T_Bool                {
-                                          $$ = new Type("bool"); 
-                                        }
-              |   T_String              {
-                                          $$ = new Type("string"); 
-                                        }
-              |   Identifier            {
-                                          $$ = new NamedType($1);
-                                        }
+Type          :   T_Int                 { $$ = new Type("int"); }
+              |   T_Double              { $$ = new Type("double"); }
+              |   T_Bool                { $$ = new Type("bool"); }
+              |   T_String              { $$ = new Type("string"); }
+              |   Identifier            { $$ = new NamedType($1); }
 /* TODO: Array not working */
 // Works for input 'int[ ] a;' but not 'int[] a;'
-              |   Type '[' ']'          {
-                                          $$ = new ArrayType(@1,$1);
-                                        }
+              |   Type '[' ']'          { $$ = new ArrayType(@1,$1); }
               ;
 
-Identifier    :   T_Identifier          { 
-                                          $$ = new Identifier(@1,$1);
-                                        }
+Identifier    :   T_Identifier          { $$ = new Identifier(@1,$1); }
 
-Constant      :   T_IntConstant         { }
-              |   T_DoubleConstant      { }
-              |   T_StringConstant      { }
-              |   T_BoolConstant        { }
-              |   T_Null                { }
+PrintStmt     :   T_Print ExprList      { $$=$1 }
+              ;
+
+ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
+              |   Expr                  { ($$=new List<Expr*>)->Append($1); }
+
+Expr          :  Constant               { $$=$1i; }
+              ; //TODO rest of expr
+
+Constant      :   T_IntConstant         { $$=new IntConstant(@1,$1);    }
+              |   T_DoubleConstant      { $$=new DoubleConstant(@1,$1); }
+              |   T_BoolConstant        { $$=new BoolConstant(@1,$1);   }
+              |   T_StringConstant      { $$=new StringConstant(@1,$1); }
+              |   T_Null                { $$=new NullConstant(@1,$1);   }
               ;
 
 
