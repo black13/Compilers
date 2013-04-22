@@ -56,6 +56,7 @@ void yyerror(const char *msg); // standard error-handling routine
     List<Stmt*> *stmtList;
     Expr *expr;
     List<Expr*> *exprList;
+    LValue *lvalue;
 }
 
 
@@ -100,6 +101,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <stmtList>  StmtList
 %type <type>      Type
 %type <ident>     Identifier
+%type <lvalue>    LValue
 %type <exprList>  ExprList   //TODO add Actuals
 %type <expr>      Constant Expr OptionalExpr
 
@@ -214,14 +216,20 @@ ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
               |   Expr                  { ($$=new List<Expr*>)->Append($1); }
               ;
 
-Expr          :  Constant               { $$=$1; }
+Expr          :   Constant              { $$=$1; }
+              |   LValue                { $$=$1; }
               ; //TODO rest of expr
+
+LValue        :   T_Identifier          { $$=new FieldAccess(NULL,new Identifier(@1,$1)); }
+              |   Expr '.' T_Identifier { $$=new FieldAccess($1,new Identifier(@3,$3)); }
+              |   Expr '[' Expr ']'     { $$=new ArrayAccess(@1,$1,$3); }
+              ;
 
 Constant      :   T_IntConstant         { $$=new IntConstant(@1,$1);    }
               |   T_DoubleConstant      { $$=new DoubleConstant(@1,$1); }
               |   T_BoolConstant        { $$=new BoolConstant(@1,$1);   }
               |   T_StringConstant      { $$=new StringConstant(@1,$1); }
-              ;
+              ;   //TODO NULL
 
 
 %%
