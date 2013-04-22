@@ -52,6 +52,9 @@ void yyerror(const char *msg); // standard error-handling routine
     VarDecl *varDecl;
     List<VarDecl*> *varList;
     List<Expr*> *exprList;
+    FnDecl *fnDecl;
+    Stmt *stmt;
+    List<Stmt*> *stmtList;
 }
 
 
@@ -90,7 +93,10 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <decl>      Decl Prototype
 %type <intDecl>   InterfaceDecl
 %type <varDecl>   VarDecl Variable
-%type <varList>   VarList Formals
+%type <fnDecl>    FunctionDecl
+%type <varList>   VarList Formals VarDeclList
+%type <stmt>      Stmt StmtBlock BreakStmt
+%type <stmtList>  StmtList
 %type <type>      Type
 %type <ident>     Identifier
 %type <exprList>  ExprList   //TODO add Actuals
@@ -120,9 +126,42 @@ DeclList      :   DeclList Decl         { ($$=$1)->Append($2); }
 
 Decl          :   VarDecl               { $$ = $1; }
               |   InterfaceDecl         { $$ = $1; }
+              |   FunctionDecl          { $$ = $1; }
               ;
 
 VarDecl       :   Variable ';'          { $$ = $1; }
+              ;
+
+InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
+              |   T_Interface Identifier '{' '}' { $$ = new InterfaceDecl($2,new List<Decl*>); }
+FunctionDecl  :   Type Identifier '(' Formals ')' StmtBlock {
+                                          $$ = new FnDecl($2,$1,$4);
+                                          ($$)->SetFunctionBody($6);
+                                        }
+              |   T_Void Identifier '(' Formals ')' StmtBlock {
+                                          Type *id = new Type("void");
+                                          $$ = new FnDecl($2,id,$4);
+                                          ($$)->SetFunctionBody($6);
+                                        }
+              ;
+
+StmtBlock     :   '{' VarDeclList StmtList '}' {
+                                          $$ = new StmtBlock($2,$3);
+                                        }
+              ;
+
+VarDeclList   :   VarDeclList VarDecl   { ($$=$1)->Append($2); }
+              |   VarDecl               { ($$=new List<VarDecl*>)->Append($1); }
+              ;
+
+StmtList      :   StmtList Stmt         { ($$=$1)->Append($2); }
+              |   Stmt                  { ($$=new List<Stmt*>)->Append($1); }
+              ;
+
+Stmt          :   BreakStmt             { $$=$1; }
+              ;
+
+BreakStmt     :   T_Break ';'           { $$=new BreakStmt(@1); }
               ;
 
 InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
