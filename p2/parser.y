@@ -146,11 +146,11 @@ StmtBlock     :   '{' VarDeclList StmtList '}' {
               ;
 
 VarDeclList   :   VarDeclList VarDecl   { ($$=$1)->Append($2); }
-              |   VarDecl               { ($$=new List<VarDecl*>)->Append($1); }
+              |                         { ($$=new List<VarDecl*>); }
               ;
 
 StmtList      :   StmtList Stmt         { ($$=$1)->Append($2); }
-              |   Stmt                  { ($$=new List<Stmt*>)->Append($1); }
+              |                         { ($$=new List<Stmt*>); }
               ;
 
 Stmt          :   BreakStmt             { $$=$1; }
@@ -159,18 +159,11 @@ Stmt          :   BreakStmt             { $$=$1; }
 BreakStmt     :   T_Break ';'           { $$=new BreakStmt(@1); }
               ;
 
-InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { 
-                                          $$ = new InterfaceDecl($2,$4);
-                                        }
-              |   T_Interface Identifier '{' '}' {
-                                          $$ = new InterfaceDecl($2,new List<Decl*>);
-                                        }
+InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
               ;
 
 ProtoList     :   ProtoList Prototype   { ($$=$1)->Append($2); }
-              |   Prototype             { 
-                                          ($$=new List<Decl*>)->Append($1);
-                                        }
+              |                         { ($$=new List<Decl*>); }
               ;
 
 Prototype     :   Type Identifier '(' Formals ')' ';'   {
@@ -180,7 +173,7 @@ Prototype     :   Type Identifier '(' Formals ')' ';'   {
               ;
 
 Formals       :   VarList               { $$=$1; }
-              |   /* empty */           { }
+              |   /* empty */           { ($$=new List<VarDecl*>); }
               ;
 
 VarList       :   VarList ',' Variable  { ($$=$1)->Append($3); }
