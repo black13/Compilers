@@ -96,12 +96,12 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <varDecl>   VarDecl Variable
 %type <fnDecl>    FunctionDecl
 %type <varList>   VarList Formals VarDeclList
-%type <stmt>      Stmt StmtBlock BreakStmt PrintStmt
+%type <stmt>      Stmt StmtBlock BreakStmt PrintStmt ReturnStmt
 %type <stmtList>  StmtList
 %type <type>      Type
 %type <ident>     Identifier
 %type <exprList>  ExprList   //TODO add Actuals
-%type <expr>      Constant Expr
+%type <expr>      Constant Expr OptionalExpr
 
 %%
 /* Rules
@@ -134,7 +134,8 @@ VarDecl       :   Variable ';'          { $$ = $1; }
               ;
 
 InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
-              |   T_Interface Identifier '{' '}' { $$ = new InterfaceDecl($2,new List<Decl*>); }
+              ;
+
 FunctionDecl  :   Type Identifier '(' Formals ')' StmtBlock {
                                           $$ = new FnDecl($2,$1,$4);
                                           ($$)->SetFunctionBody($6);
@@ -161,12 +162,10 @@ StmtList      :   StmtList Stmt         { ($$=$1)->Append($2); }
 
 Stmt          :   BreakStmt             { $$=$1; }
               |   PrintStmt             { $$=$1; }
+              |   ReturnStmt            { $$=$1; }
               ;
 
 BreakStmt     :   T_Break ';'           { $$=new BreakStmt(@1); }
-              ;
-
-InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
               ;
 
 ProtoList     :   ProtoList Prototype   { ($$=$1)->Append($2); }
@@ -202,6 +201,13 @@ Type          :   T_Int                 { $$ = new Type("int"); }
 Identifier    :   T_Identifier          { $$ = new Identifier(@1,$1); }
 
 PrintStmt     :   T_Print '(' ExprList ')' ';' { $$=new PrintStmt($3); }
+              ;
+
+ReturnStmt    :   T_Return OptionalExpr ';' { $$=new ReturnStmt(@2,$2); }
+              ;
+
+OptionalExpr  :   Expr                  { $$=$1; }
+              |                         { $$=new EmptyExpr(); }
               ;
 
 ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
