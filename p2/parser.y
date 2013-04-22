@@ -102,7 +102,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <type>      Type
 %type <ident>     Identifier
 %type <lvalue>    LValue
-%type <exprList>  ExprList   //TODO add Actuals
+%type <exprList>  ExprList Actuals
 %type <expr>      Constant Expr OptionalExpr
 
 %%
@@ -216,14 +216,24 @@ ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
               |   Expr                  { ($$=new List<Expr*>)->Append($1); }
               ;
 
-Expr          :   Constant              { $$=$1; }
+Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,"=");
+                                          $$=new AssignExpr($1,op,$3); }
+              |   Constant              { $$=$1; }
               |   LValue                { $$=$1; }
+              |   T_This                { $$=new This(@1); }
               ; //TODO rest of expr
 
 LValue        :   T_Identifier          { $$=new FieldAccess(NULL,new Identifier(@1,$1)); }
               |   Expr '.' T_Identifier { $$=new FieldAccess($1,new Identifier(@3,$3)); }
               |   Expr '[' Expr ']'     { $$=new ArrayAccess(@1,$1,$3); }
               ;
+
+//Call          :   T_Identifier '(' 
+
+Actuals       :   ExprList              { $$=$1; }
+              |   /* empty string */    { $$=new List<Expr*>; }
+              ;
+
 
 Constant      :   T_IntConstant         { $$=new IntConstant(@1,$1);    }
               |   T_DoubleConstant      { $$=new DoubleConstant(@1,$1); }
