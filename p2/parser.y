@@ -103,7 +103,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <ident>     Identifier
 %type <lvalue>    LValue
 %type <exprList>  ExprList Actuals
-%type <expr>      Constant Expr OptionalExpr Call
+%type <expr>      Constant OptionalExpr Call Expr
 
 %%
 /* Rules
@@ -216,11 +216,25 @@ ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
               |   Expr                  { ($$=new List<Expr*>)->Append($1); }
               ;
 
-Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,"=");
+Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,$2);
                                           $$=new AssignExpr($1,op,$3); }
               |   Constant              { $$=$1; }
               |   LValue                { $$=$1; }
               |   T_This                { $$=new This(@1); }
+              |   '(' Call ')'          { $$=$1; }
+              |   '(' Expr ')'          { $$=$2; }
+              |   Expr '+' Expr         { Operator *op = new Operator(@2,$2);
+                                          $$=new ArithmeticExpr($1,op,$3); }
+              |   Expr '-' Expr         { Operator *op = new Operator(@2,$2);
+                                          $$=new ArithmeticExpr($1,op,$3); }
+              |   Expr '*' Expr         { Operator *op = new Operator(@2,$2);
+                                          $$=new ArithmeticExpr($1,op,$3); }
+              |   Expr '/' Expr         { Operator *op = new Operator(@2,$2);
+                                          $$=new ArithmeticExpr($1,op,$3); }
+              |   Expr '%' Expr         { Operator *op = new Operator(@2,$2);
+                                          $$=new ArithmeticExpr($1,op,$3); }
+              |   '-' Expr              { Operator *op = new Operator(@1,$1);
+                                          $$=new ArithmeticExpr(op,$2); }
               ; //TODO rest of expr
 
 LValue        :   Identifier            { $$=new FieldAccess(NULL,$1); }
