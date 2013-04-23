@@ -195,9 +195,7 @@ Type          :   T_Int                 { $$ = new Type("int"); }
               |   T_Bool                { $$ = new Type("bool"); }
               |   T_String              { $$ = new Type("string"); }
               |   Identifier            { $$ = new NamedType($1); }
-/* TODO: Array not working */
-// Works for input 'int[ ] a;' but not 'int[] a;'
-              |   Type '[' ']'          { $$ = new ArrayType(@1,$1); }
+              |   Type T_Dims           { $$ = new ArrayType(@1,$1); }
               ;
 
 Identifier    :   T_Identifier          { $$ = new Identifier(@1,$1); }
