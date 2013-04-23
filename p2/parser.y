@@ -57,6 +57,7 @@ void yyerror(const char *msg); // standard error-handling routine
     Expr *expr;
     List<Expr*> *exprList;
     LValue *lvalue;
+    const char *op;
 }
 
 
@@ -104,6 +105,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <lvalue>    LValue
 %type <exprList>  ExprList Actuals
 %type <expr>      Constant OptionalExpr Call Expr
+%type <op>        '=' '+' '-' '*' '/' '%'
 
 %%
 /* Rules
@@ -219,7 +221,7 @@ Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,$2);
               |   Constant              { $$=$1; }
               |   LValue                { $$=$1; }
               |   T_This                { $$=new This(@1); }
-              |   '(' Call ')'          { $$=$1; }
+              |   '(' Call ')'          { $$=$2; }
               |   '(' Expr ')'          { $$=$2; }
               |   Expr '+' Expr         { Operator *op = new Operator(@2,$2);
                                           $$=new ArithmeticExpr($1,op,$3); }
