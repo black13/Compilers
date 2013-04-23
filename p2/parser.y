@@ -57,7 +57,6 @@ void yyerror(const char *msg); // standard error-handling routine
     Expr *expr;
     List<Expr*> *exprList;
     LValue *lvalue;
-    const char *op;
 }
 
 
@@ -105,7 +104,6 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <lvalue>    LValue
 %type <exprList>  ExprList Actuals
 %type <expr>      Constant OptionalExpr Call Expr
-%type <op>        '=' '+' '-' '*' '/' '%'
 
 %%
 /* Rules
@@ -164,9 +162,11 @@ StmtList      :   StmtList Stmt         { ($$=$1)->Append($2); }
               |                         { ($$=new List<Stmt*>); }
               ;
 
-Stmt          :   BreakStmt             { $$=$1; }
+Stmt          :   OptionalExpr ';'      { $$=$1; }
+              |   BreakStmt             { $$=$1; }
               |   PrintStmt             { $$=$1; }
               |   ReturnStmt            { $$=$1; }
+              |   StmtBlock             { $$=$1; }
               ;
 
 BreakStmt     :   T_Break ';'           { $$=new BreakStmt(@1); }
@@ -216,25 +216,28 @@ ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
               |   Expr                  { ($$=new List<Expr*>)->Append($1); }
               ;
 
-Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,$2);
+Expr          :   LValue '=' Expr       { Operator *op = new Operator(@2,"=");
                                           $$=new AssignExpr($1,op,$3); }
               |   Constant              { $$=$1; }
               |   LValue                { $$=$1; }
               |   T_This                { $$=new This(@1); }
               |   '(' Call ')'          { $$=$2; }
               |   '(' Expr ')'          { $$=$2; }
-              |   Expr '+' Expr         { Operator *op = new Operator(@2,$2);
+              |   Expr '+' Expr         { Operator *op = new Operator(@2,"+");
                                           $$=new ArithmeticExpr($1,op,$3); }
-              |   Expr '-' Expr         { Operator *op = new Operator(@2,$2);
+              |   Expr '-' Expr         { Operator *op = new Operator(@2,"-");
                                           $$=new ArithmeticExpr($1,op,$3); }
-              |   Expr '*' Expr         { Operator *op = new Operator(@2,$2);
+              |   Expr '*' Expr         { Operator *op = new Operator(@2,"*");
                                           $$=new ArithmeticExpr($1,op,$3); }
-              |   Expr '/' Expr         { Operator *op = new Operator(@2,$2);
+              |   Expr '/' Expr         { Operator *op = new Operator(@2,"/");
                                           $$=new ArithmeticExpr($1,op,$3); }
-              |   Expr '%' Expr         { Operator *op = new Operator(@2,$2);
+              |   Expr '%' Expr         { Operator *op = new Operator(@2,"%");
                                           $$=new ArithmeticExpr($1,op,$3); }
-              |   '-' Expr              { Operator *op = new Operator(@1,$1);
+              |   '-' Expr              { Operator *op = new Operator(@1,"-");
                                           $$=new ArithmeticExpr(op,$2); }
+              |   T_ReadInteger '(' ')' { $$=new ReadIntegerExpr(@1); }
+              |   T_ReadLine '(' ')'    { $$=new ReadLineExpr(@1); }
+              |   T_NewArray '(' Expr ',' Type ')'  { $$=new NewArrayExpr(@1,$3,$5); }
               ; //TODO rest of expr
 
 LValue        :   Identifier            { $$=new FieldAccess(NULL,$1); }
