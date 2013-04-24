@@ -1,2 +1,0 @@
-interface a { }
-interface b { int a(); }
