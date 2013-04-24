@@ -118,7 +118,7 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <impList>   ImpList OptionalImp
 
 %type <stmt>      Stmt StmtBlock BreakStmt PrintStmt ReturnStmt IfStmt ForStmt WhileStmt SwitchStmt
-%type <stmtList>  StmtList StmtListE
+%type <stmtList>  StmtList 
 
 %type <expr>      Constant OptionalExpr Call Expr LValue
 %type <exprList>  ExprList Actuals
@@ -166,45 +166,41 @@ ClassDecl     :   T_Class Identifier OptionalImp '{' FieldList '}'  { $$=new Cla
               ;
 
 OptionalImp   :   ImpList               { $$=$1; }
-              |                         { $$=new List<NamedType*>; }
+              |   /* empty */           { $$=new List<NamedType*>; }
               ;
 
 FieldList     :   FieldList Field       { ($$=$1)->Append($2); }
-              |   Field                 { ($$=new List<Decl*>)->Append($1); }
-              |                         { ($$=new List<Decl*>); }
+              |   /* empty */           { ($$=new List<Decl*>); }
               ;
 
 Field         :   VarDecl               { $$=$1; } 
               |   FunctionDecl          { $$=$1; }
               ;
 
-InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$ = new InterfaceDecl($2,$4); }
+InterfaceDecl :   T_Interface Identifier '{' ProtoList '}' { $$=new InterfaceDecl($2,$4); }
               ;
 
 FunctionDecl  :   Type Identifier '(' Formals ')' StmtBlock { ($$=new FnDecl($2,$1,$4))->SetFunctionBody($6); }
               |   T_Void Identifier '(' Formals ')' StmtBlock { ($$=new FnDecl($2,new Type("void"),$4))->SetFunctionBody($6); }
               ;
 
-StmtBlock     :   '{' VarDeclList StmtListE '}' { $$ = new StmtBlock($2,$3); }
-              //|   '{' VarDeclList '}' { $$ = new StmtBlock($2,new List<Stmt*>); }
+StmtBlock     :   '{' VarDeclList StmtList '}' { $$=new StmtBlock($2,$3); }
               ;
 
-StmtListE     :   StmtList              { $$=$1; }
-              |                         { $$=new List<Stmt*>; }
-              ;
-
+// I'm unclear why, but parser breaks if we don't have the second part of this rule, unlike other rules.
 StmtList      :   StmtList Stmt         { ($$=$1)->Append($2); }
               |   Stmt                  { ($$=new List<Stmt*>)->Append($1); }
+              |   /* empty */           { $$=new List<Stmt*>; }
               ;
 
 VarDeclList   :   VarDeclList VarDecl   { ($$=$1)->Append($2); }
-              |                         { ($$=new List<VarDecl*>); }
+              |   /* empty */           { ($$=new List<VarDecl*>); }
               ;
 
-VarDecl       :   Variable ';'          { $$ = $1; }
+VarDecl       :   Variable ';'          { $$=$1; }
               ;
 
-Variable      :   Type Identifier       { $$ = new VarDecl($2,$1); }
+Variable      :   Type Identifier       { $$=new VarDecl($2,$1); }
               ;
               
 Stmt          :   OptionalExpr ';'      { $$=$1; }
@@ -219,7 +215,7 @@ Stmt          :   OptionalExpr ';'      { $$=$1; }
               ;
 
 ProtoList     :   ProtoList Prototype   { ($$=$1)->Append($2); }
-              |                         { ($$=new List<Decl*>); }
+              |   /* empty */           { ($$=new List<Decl*>); }
               ;
 Prototype     :   Type Identifier '(' Formals ')' ';'   { $$=new FnDecl($2,$1,$4); }
               |   T_Void Identifier '(' Formals ')' ';' { $$=new FnDecl($2,new Type("void"),$4); }
@@ -259,15 +255,14 @@ CaseList      :   CaseList Case         { ($$=$1)->Append($2); }
               |   Case                  { ($$=new List<Case*>)->Append($1); }
               ;
 
-Case          :   T_Case T_IntConstant ':' StmtListE  { $$=new Case(new IntConstant(@2,$2),$4); }
-              |   T_Case T_IntConstant ':' { $$=new Case(new IntConstant(@2,$2),new List<Stmt*>); }
+Case          :   T_Case T_IntConstant ':' StmtList  { $$=new Case(new IntConstant(@2,$2),$4); }
               ;
 
-Default       :   T_Default ':' StmtListE  { $$=new Default($3); }
+Default       :   T_Default ':' StmtList  { $$=new Default($3); }
               ;
 
 OptionalExpr  :   Expr                  { $$=$1; }
-              |                         { $$=new EmptyExpr(); }
+              |   /* empty */           { $$=new EmptyExpr(); }
               ;
 
 ExprList      :   ExprList ',' Expr     { ($$=$1)->Append($3); }
@@ -318,7 +313,7 @@ ImpList       :   T_Implements ImpList  { $$=$2; }
               ;
 
 Actuals       :   ExprList              { $$=$1; }
-              |   /* empty string */    { $$=new List<Expr*>; }
+              |   /* empty */           { $$=new List<Expr*>; }
               ;
 
 Type          :   T_Int                 { $$=new Type("int"); }
@@ -332,7 +327,7 @@ Type          :   T_Int                 { $$=new Type("int"); }
 NType         :   Identifier            { $$=new NamedType($1); }
               ;
 
-Identifier    :   T_Identifier          { $$ = new Identifier(@1,$1); }
+Identifier    :   T_Identifier          { $$=new Identifier(@1,$1); }
               ;
 
 Constant      :   T_IntConstant         { $$=new IntConstant(@1,$1);    }
