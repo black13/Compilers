@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 #
 # File: test-all.py
 # Authors: Leonid Shamis (leonid.shamis@gmail.com)
@@ -30,4 +30,7 @@ for _, _, files in os.walk(TEST_DIRECTORY):
     result = Popen('./dcc < ' + testName, shell = True, stderr = STDOUT, stdout = PIPE)
     result = Popen('diff -w - ' + refName, shell = True, stdin = result.stdout, stdout = PIPE)
     print 'Executing test "%s"' % testName
-    print ''.join(result.stdout.readlines())
+    str = ''.join(result.stdout.readlines())
+    if len(str) > 2:
+      print str
+      exit()
