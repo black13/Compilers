@@ -1,6 +1,0 @@
-int main() {
-int h;
-int x;
-x = h;
-return;
-}

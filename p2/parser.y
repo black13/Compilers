@@ -66,6 +66,10 @@ void yyerror(const char *msg); // standard error-handling routine
     
     Expr *expr;
     List<Expr*> *exprList;
+
+    Case *caseLabel;
+    List<Case*> *caseList;
+    Default *defaultLabel;
 }
 
 
@@ -113,11 +117,15 @@ void yyerror(const char *msg); // standard error-handling routine
 %type <ntype>     NType
 %type <impList>   ImpList OptionalImp
 
-%type <stmt>      Stmt StmtBlock BreakStmt PrintStmt ReturnStmt IfStmt ForStmt WhileStmt
+%type <stmt>      Stmt StmtBlock BreakStmt PrintStmt ReturnStmt IfStmt ForStmt WhileStmt SwitchStmt
 %type <stmtList>  StmtList
 
 %type <expr>      Constant OptionalExpr Call Expr LValue
 %type <exprList>  ExprList Actuals
+
+%type <caseLabel> Case
+%type <caseList>  CaseList
+%type <defaultLabel> Default
 
 %nonassoc '='
 %nonassoc NOELSE
@@ -206,6 +214,7 @@ Stmt          :   OptionalExpr ';'      { $$=$1; }
               |   BreakStmt             { $$=$1; }
               |   PrintStmt             { $$=$1; }
               |   ReturnStmt            { $$=$1; }
+	      |   SwitchStmt		{ $$=$1; }
               |   StmtBlock             { $$=$1; }
               ;
 
@@ -244,6 +253,20 @@ BreakStmt     :   T_Break ';'                   { $$=new BreakStmt(@1); }
 ReturnStmt    :   T_Return OptionalExpr ';'     { $$=new ReturnStmt(@2,$2); }
               ;
 
+SwitchStmt    :	  T_Switch '(' Expr ')' '{' CaseList Default '}'  { $$=new SwitchStmt($3,$6,$7); }
+	      ;
+
+CaseList      :   CaseList Case		{ ($$=$1)->Append($2); }
+	      |   Case			{ ($$=new List<Case*>)->Append($1); }
+	      ;
+
+Case	      :   T_Case T_IntConstant ':' StmtList  { $$=new Case(new IntConstant(@2,$2),$4); }
+	      |   T_Case T_IntConstant ':' { $$=new Case(new IntConstant(@2,$2),new List<Stmt*>); }
+	      ;
+
+Default	      :	  T_Default ':' StmtList  { $$=new Default($3); }
+	      ;
+
 OptionalExpr  :   Expr                  { $$=$1; }
               |                         { $$=new EmptyExpr(); }
               ;
@@ -269,6 +292,8 @@ Expr          :   LValue '=' Expr       { $$=new AssignExpr($1,new Operator(@2,"
               |   Expr T_Equal Expr     { $$=new EqualityExpr($1,new Operator(@2,"=="),$3); }
               |   Expr T_NotEqual Expr  { $$=new EqualityExpr($1,new Operator(@2,"!="),$3); }
               |   '!' Expr              { $$=new LogicalExpr(new Operator(@1, "!"), $2); }
+	      |   LValue T_Increment 	{ $$=new PostfixExpr($1, new Operator(@1, "++")); }
+	      |   LValue T_Decrement 	{ $$=new PostfixExpr($1, new Operator(@1, "--")); }
               |   T_ReadInteger '(' ')' { $$=new ReadIntegerExpr(@1); }
               |   T_ReadLine '(' ')'    { $$=new ReadLineExpr(@1); }
               |   T_New Identifier      { $$=new NewExpr(@2,new NamedType($2)); }
