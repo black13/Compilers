@@ -31,6 +31,6 @@ for _, _, files in os.walk(TEST_DIRECTORY):
     result = Popen('diff -w - ' + refName, shell = True, stdin = result.stdout, stdout = PIPE)
     print 'Executing test "%s"' % testName
     str = ''.join(result.stdout.readlines())
-    if len(str) > 2:
+    if len(str):
       print str
       exit()
