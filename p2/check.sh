@@ -24,7 +24,7 @@ for file in $LIST; do
 		exit 1
 	fi
 
-	tmp=${TMP:-"/tmp"}/check.tmp
+	tmp=${TMP:-"./samples/"}/check.tmp
 	./dcc < $base.$ext 1>$tmp 2>&1
 
 	printf "Checking %-27s: " $file
@@ -35,3 +35,4 @@ for file in $LIST; do
 		echo "PASS"
 	fi
 done
+rm ./samples/check.tmp
