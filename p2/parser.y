@@ -286,8 +286,8 @@ Expr          :   LValue '=' Expr       { $$=new AssignExpr($1,new Operator(@2,"
               |   Expr T_Equal Expr     { $$=new EqualityExpr($1,new Operator(@2,"=="),$3); }
               |   Expr T_NotEqual Expr  { $$=new EqualityExpr($1,new Operator(@2,"!="),$3); }
               |   '!' Expr              { $$=new LogicalExpr(new Operator(@1, "!"), $2); }
-              |   LValue T_Increment    { $$=new PostfixExpr($1, new Operator(@1, "++")); }
-              |   LValue T_Decrement    { $$=new PostfixExpr($1, new Operator(@1, "--")); }
+              |   LValue T_Increment    { $$=new PostfixExpr($1, new Operator(@2, "++")); }
+              |   LValue T_Decrement    { $$=new PostfixExpr($1, new Operator(@2, "--")); }
               |   T_ReadInteger '(' ')' { $$=new ReadIntegerExpr(@1); }
               |   T_ReadLine '(' ')'    { $$=new ReadLineExpr(@1); }
               |   T_New Identifier      { $$=new NewExpr(@2,new NamedType($2)); }
