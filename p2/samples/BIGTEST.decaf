@@ -1,0 +1,73 @@
+interface Colorable {
+   Color GetColor();
+   void SetColor(Color c, int y, Square z);
+}
+
+class Color {
+   void SetRGB(int red, int green, int blue) {
+     this.red = red;
+     this.green = green;
+     this.blue = blue;
+
+     // Exprs:
+     Print(test = test, 45, 45.6, true, false, null);
+     Print(st["help"&&"no!"] = test, st.test = "yourFace!"); 
+     Print((test = test), 5+ true, 5-6, 5*45.5, -39/67,54%2);
+     Print(true < false, true <= true, 56 > false, 56 >= "help!");
+     Print("help"=="", "help"!="", "help"&&"no!", "help"||"no!",!("yes!"));
+     Print( ReadInteger(), ReadLine(), new x, NewArray((8*3), double));
+	
+
+  }
+  int red;
+  int green;
+  int blue;
+}
+
+class Shape implements Colorable, Drawable, definable {
+
+  Color GetColor() { return myColor; }
+  Color GetColor() { 
+  	int i;
+  	for(; i < 5; ){}
+  	for(; i < 5; i++ ){}
+  	for(i = 0; i < 5; ){}
+  	for(i = 0; i < 5; i++ ){
+		int x;
+		x = 0;
+		while( x < 50 ){
+			if (x > 10 ){
+				x = x + 5;
+				if ( (x%2) == 0){
+					x = x - 2;
+					Print ( this.height, " ", isSpotted, "\n" );
+					break;
+				}
+			}
+			else{ x++; }
+		}
+		return;
+	}
+  	return myColor; 
+  }
+  void SetColor(Color c) { myColor = c;}
+
+  Color myColor;
+}
+
+class Binky extends Slinky {}
+class Binky implements Happy {}
+class Binky implements Happy, Feet {}
+class Binky extends Slinky implements Happy, Feet, Poop, Pee {}
+class Rectangle extends Shape {}
+
+void main() {
+  Colorable s;
+  Color green;
+
+  green = new Color;
+  green.SetRGB(0, 0, 255);
+  s = new Rectangle;
+  s.SetColor(green);
+  s.SetColor("help"=="", "help"!="", "help"&&"no!", "help"||"no!",!("yes!"));
+}

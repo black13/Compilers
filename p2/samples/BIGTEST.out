@@ -1,0 +1,429 @@
+
+   Program: 
+  1   InterfaceDecl: 
+  1      Identifier: Colorable
+  2      FnDecl: 
+  2         (return type) NamedType: 
+  2            Identifier: Color
+  2         Identifier: GetColor
+  3      FnDecl: 
+            (return type) Type: void
+  3         Identifier: SetColor
+  3         (formals) VarDecl: 
+  3            NamedType: 
+  3               Identifier: Color
+  3            Identifier: c
+  3         (formals) VarDecl: 
+               Type: int
+  3            Identifier: y
+  3         (formals) VarDecl: 
+  3            NamedType: 
+  3               Identifier: Square
+  3            Identifier: z
+  6   ClassDecl: 
+  6      Identifier: Color
+  7      FnDecl: 
+            (return type) Type: void
+  7         Identifier: SetRGB
+  7         (formals) VarDecl: 
+               Type: int
+  7            Identifier: red
+  7         (formals) VarDecl: 
+               Type: int
+  7            Identifier: green
+  7         (formals) VarDecl: 
+               Type: int
+  7            Identifier: blue
+            (body) StmtBlock: 
+  8            AssignExpr: 
+  8               FieldAccess: 
+  8                  This: 
+  8                  Identifier: red
+  8               Operator: =
+  8               FieldAccess: 
+  8                  Identifier: red
+  9            AssignExpr: 
+  9               FieldAccess: 
+  9                  This: 
+  9                  Identifier: green
+  9               Operator: =
+  9               FieldAccess: 
+  9                  Identifier: green
+ 10            AssignExpr: 
+ 10               FieldAccess: 
+ 10                  This: 
+ 10                  Identifier: blue
+ 10               Operator: =
+ 10               FieldAccess: 
+ 10                  Identifier: blue
+               PrintStmt: 
+ 13               (args) AssignExpr: 
+ 13                  FieldAccess: 
+ 13                     Identifier: test
+ 13                  Operator: =
+ 13                  FieldAccess: 
+ 13                     Identifier: test
+ 13               (args) IntConstant: 45
+ 13               (args) DoubleConstant: 45.6
+ 13               (args) BoolConstant: true
+ 13               (args) BoolConstant: false
+ 13               (args) NullConstant: 
+               PrintStmt: 
+ 14               (args) AssignExpr: 
+ 14                  ArrayAccess: 
+ 14                     FieldAccess: 
+ 14                        Identifier: st
+ 14                     (subscript) LogicalExpr: 
+ 14                        StringConstant: "help"
+ 14                        Operator: &&
+ 14                        StringConstant: "no!"
+ 14                  Operator: =
+ 14                  FieldAccess: 
+ 14                     Identifier: test
+ 14               (args) AssignExpr: 
+ 14                  FieldAccess: 
+ 14                     FieldAccess: 
+ 14                        Identifier: st
+ 14                     Identifier: test
+ 14                  Operator: =
+ 14                  StringConstant: "yourFace!"
+               PrintStmt: 
+ 15               (args) AssignExpr: 
+ 15                  FieldAccess: 
+ 15                     Identifier: test
+ 15                  Operator: =
+ 15                  FieldAccess: 
+ 15                     Identifier: test
+ 15               (args) ArithmeticExpr: 
+ 15                  IntConstant: 5
+ 15                  Operator: +
+ 15                  BoolConstant: true
+ 15               (args) ArithmeticExpr: 
+ 15                  IntConstant: 5
+ 15                  Operator: -
+ 15                  IntConstant: 6
+ 15               (args) ArithmeticExpr: 
+ 15                  IntConstant: 5
+ 15                  Operator: *
+ 15                  DoubleConstant: 45.5
+ 15               (args) ArithmeticExpr: 
+ 15                  ArithmeticExpr: 
+ 15                     Operator: -
+ 15                     IntConstant: 39
+ 15                  Operator: /
+ 15                  IntConstant: 67
+ 15               (args) ArithmeticExpr: 
+ 15                  IntConstant: 54
+ 15                  Operator: %
+ 15                  IntConstant: 2
+               PrintStmt: 
+ 16               (args) RelationalExpr: 
+ 16                  BoolConstant: true
+ 16                  Operator: <
+ 16                  BoolConstant: false
+ 16               (args) RelationalExpr: 
+ 16                  BoolConstant: true
+ 16                  Operator: <=
+ 16                  BoolConstant: true
+ 16               (args) RelationalExpr: 
+ 16                  IntConstant: 56
+ 16                  Operator: >
+ 16                  BoolConstant: false
+ 16               (args) RelationalExpr: 
+ 16                  IntConstant: 56
+ 16                  Operator: >=
+ 16                  StringConstant: "help!"
+               PrintStmt: 
+ 17               (args) EqualityExpr: 
+ 17                  StringConstant: "help"
+ 17                  Operator: ==
+ 17                  StringConstant: ""
+ 17               (args) EqualityExpr: 
+ 17                  StringConstant: "help"
+ 17                  Operator: !=
+ 17                  StringConstant: ""
+ 17               (args) LogicalExpr: 
+ 17                  StringConstant: "help"
+ 17                  Operator: &&
+ 17                  StringConstant: "no!"
+ 17               (args) LogicalExpr: 
+ 17                  StringConstant: "help"
+ 17                  Operator: ||
+ 17                  StringConstant: "no!"
+ 17               (args) LogicalExpr: 
+ 17                  Operator: !
+ 17                  StringConstant: "yes!"
+               PrintStmt: 
+ 18               (args) ReadIntegerExpr: 
+ 18               (args) ReadLineExpr: 
+ 18               (args) NewExpr: 
+ 18                  NamedType: 
+ 18                     Identifier: x
+ 18               (args) NewArrayExpr: 
+ 18                  ArithmeticExpr: 
+ 18                     IntConstant: 8
+ 18                     Operator: *
+ 18                     IntConstant: 3
+                     Type: double
+ 22      VarDecl: 
+            Type: int
+ 22         Identifier: red
+ 23      VarDecl: 
+            Type: int
+ 23         Identifier: green
+ 24      VarDecl: 
+            Type: int
+ 24         Identifier: blue
+ 27   ClassDecl: 
+ 27      Identifier: Shape
+ 27      (implements) NamedType: 
+ 27         Identifier: Colorable
+ 27      (implements) NamedType: 
+ 27         Identifier: Drawable
+ 27      (implements) NamedType: 
+ 27         Identifier: definable
+ 29      FnDecl: 
+ 29         (return type) NamedType: 
+ 29            Identifier: Color
+ 29         Identifier: GetColor
+            (body) StmtBlock: 
+ 29            ReturnStmt: 
+ 29               FieldAccess: 
+ 29                  Identifier: myColor
+ 30      FnDecl: 
+ 30         (return type) NamedType: 
+ 30            Identifier: Color
+ 30         Identifier: GetColor
+            (body) StmtBlock: 
+ 31            VarDecl: 
+                  Type: int
+ 31               Identifier: i
+               ForStmt: 
+                  (init) Empty: 
+ 32               (test) RelationalExpr: 
+ 32                  FieldAccess: 
+ 32                     Identifier: i
+ 32                  Operator: <
+ 32                  IntConstant: 5
+                  (step) Empty: 
+                  (body) StmtBlock: 
+               ForStmt: 
+                  (init) Empty: 
+ 33               (test) RelationalExpr: 
+ 33                  FieldAccess: 
+ 33                     Identifier: i
+ 33                  Operator: <
+ 33                  IntConstant: 5
+ 33               (step) PostfixExpr: 
+ 33                  FieldAccess: 
+ 33                     Identifier: i
+ 33                  Operator: ++
+                  (body) StmtBlock: 
+               ForStmt: 
+ 34               (init) AssignExpr: 
+ 34                  FieldAccess: 
+ 34                     Identifier: i
+ 34                  Operator: =
+ 34                  IntConstant: 0
+ 34               (test) RelationalExpr: 
+ 34                  FieldAccess: 
+ 34                     Identifier: i
+ 34                  Operator: <
+ 34                  IntConstant: 5
+                  (step) Empty: 
+                  (body) StmtBlock: 
+               ForStmt: 
+ 35               (init) AssignExpr: 
+ 35                  FieldAccess: 
+ 35                     Identifier: i
+ 35                  Operator: =
+ 35                  IntConstant: 0
+ 35               (test) RelationalExpr: 
+ 35                  FieldAccess: 
+ 35                     Identifier: i
+ 35                  Operator: <
+ 35                  IntConstant: 5
+ 35               (step) PostfixExpr: 
+ 35                  FieldAccess: 
+ 35                     Identifier: i
+ 35                  Operator: ++
+                  (body) StmtBlock: 
+ 36                  VarDecl: 
+                        Type: int
+ 36                     Identifier: x
+ 37                  AssignExpr: 
+ 37                     FieldAccess: 
+ 37                        Identifier: x
+ 37                     Operator: =
+ 37                     IntConstant: 0
+                     WhileStmt: 
+ 38                     (test) RelationalExpr: 
+ 38                        FieldAccess: 
+ 38                           Identifier: x
+ 38                        Operator: <
+ 38                        IntConstant: 50
+                        (body) StmtBlock: 
+                           IfStmt: 
+ 39                           (test) RelationalExpr: 
+ 39                              FieldAccess: 
+ 39                                 Identifier: x
+ 39                              Operator: >
+ 39                              IntConstant: 10
+                              (then) StmtBlock: 
+ 40                              AssignExpr: 
+ 40                                 FieldAccess: 
+ 40                                    Identifier: x
+ 40                                 Operator: =
+ 40                                 ArithmeticExpr: 
+ 40                                    FieldAccess: 
+ 40                                       Identifier: x
+ 40                                    Operator: +
+ 40                                    IntConstant: 5
+                                 IfStmt: 
+ 41                                 (test) EqualityExpr: 
+ 41                                    ArithmeticExpr: 
+ 41                                       FieldAccess: 
+ 41                                          Identifier: x
+ 41                                       Operator: %
+ 41                                       IntConstant: 2
+ 41                                    Operator: ==
+ 41                                    IntConstant: 0
+                                    (then) StmtBlock: 
+ 42                                    AssignExpr: 
+ 42                                       FieldAccess: 
+ 42                                          Identifier: x
+ 42                                       Operator: =
+ 42                                       ArithmeticExpr: 
+ 42                                          FieldAccess: 
+ 42                                             Identifier: x
+ 42                                          Operator: -
+ 42                                          IntConstant: 2
+                                       PrintStmt: 
+ 43                                       (args) FieldAccess: 
+ 43                                          This: 
+ 43                                          Identifier: height
+ 43                                       (args) StringConstant: " "
+ 43                                       (args) FieldAccess: 
+ 43                                          Identifier: isSpotted
+ 43                                       (args) StringConstant: "\n"
+ 44                                    BreakStmt: 
+                              (else) StmtBlock: 
+ 47                              PostfixExpr: 
+ 47                                 FieldAccess: 
+ 47                                    Identifier: x
+ 47                                 Operator: ++
+ 49                  ReturnStmt: 
+                        Empty: 
+ 51            ReturnStmt: 
+ 51               FieldAccess: 
+ 51                  Identifier: myColor
+ 53      FnDecl: 
+            (return type) Type: void
+ 53         Identifier: SetColor
+ 53         (formals) VarDecl: 
+ 53            NamedType: 
+ 53               Identifier: Color
+ 53            Identifier: c
+            (body) StmtBlock: 
+ 53            AssignExpr: 
+ 53               FieldAccess: 
+ 53                  Identifier: myColor
+ 53               Operator: =
+ 53               FieldAccess: 
+ 53                  Identifier: c
+ 55      VarDecl: 
+ 55         NamedType: 
+ 55            Identifier: Color
+ 55         Identifier: myColor
+ 58   ClassDecl: 
+ 58      Identifier: Binky
+ 58      (extends) NamedType: 
+ 58         Identifier: Slinky
+ 59   ClassDecl: 
+ 59      Identifier: Binky
+ 59      (implements) NamedType: 
+ 59         Identifier: Happy
+ 60   ClassDecl: 
+ 60      Identifier: Binky
+ 60      (implements) NamedType: 
+ 60         Identifier: Happy
+ 60      (implements) NamedType: 
+ 60         Identifier: Feet
+ 61   ClassDecl: 
+ 61      Identifier: Binky
+ 61      (extends) NamedType: 
+ 61         Identifier: Slinky
+ 61      (implements) NamedType: 
+ 61         Identifier: Happy
+ 61      (implements) NamedType: 
+ 61         Identifier: Feet
+ 61      (implements) NamedType: 
+ 61         Identifier: Poop
+ 61      (implements) NamedType: 
+ 61         Identifier: Pee
+ 62   ClassDecl: 
+ 62      Identifier: Rectangle
+ 62      (extends) NamedType: 
+ 62         Identifier: Shape
+ 64   FnDecl: 
+         (return type) Type: void
+ 64      Identifier: main
+         (body) StmtBlock: 
+ 65         VarDecl: 
+ 65            NamedType: 
+ 65               Identifier: Colorable
+ 65            Identifier: s
+ 66         VarDecl: 
+ 66            NamedType: 
+ 66               Identifier: Color
+ 66            Identifier: green
+ 68         AssignExpr: 
+ 68            FieldAccess: 
+ 68               Identifier: green
+ 68            Operator: =
+ 68            NewExpr: 
+ 68               NamedType: 
+ 68                  Identifier: Color
+ 69         Call: 
+ 69            FieldAccess: 
+ 69               Identifier: green
+ 69            Identifier: SetRGB
+ 69            (actuals) IntConstant: 0
+ 69            (actuals) IntConstant: 0
+ 69            (actuals) IntConstant: 255
+ 70         AssignExpr: 
+ 70            FieldAccess: 
+ 70               Identifier: s
+ 70            Operator: =
+ 70            NewExpr: 
+ 70               NamedType: 
+ 70                  Identifier: Rectangle
+ 71         Call: 
+ 71            FieldAccess: 
+ 71               Identifier: s
+ 71            Identifier: SetColor
+ 71            (actuals) FieldAccess: 
+ 71               Identifier: green
+ 72         Call: 
+ 72            FieldAccess: 
+ 72               Identifier: s
+ 72            Identifier: SetColor
+ 72            (actuals) EqualityExpr: 
+ 72               StringConstant: "help"
+ 72               Operator: ==
+ 72               StringConstant: ""
+ 72            (actuals) EqualityExpr: 
+ 72               StringConstant: "help"
+ 72               Operator: !=
+ 72               StringConstant: ""
+ 72            (actuals) LogicalExpr: 
+ 72               StringConstant: "help"
+ 72               Operator: &&
+ 72               StringConstant: "no!"
+ 72            (actuals) LogicalExpr: 
+ 72               StringConstant: "help"
+ 72               Operator: ||
+ 72               StringConstant: "no!"
+ 72            (actuals) LogicalExpr: 
+ 72               Operator: !
+ 72               StringConstant: "yes!"
