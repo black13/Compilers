@@ -5,7 +5,7 @@ Jon Larson j1larson@ucsd.edu
 Design Decisions
 
   We are now extending the flex lexor to use the bison parser.
-  This will allow us to build a valid syntax tree and detect valid
+  This will allow us to build a valid parse tree and detect valid
   or invalid grammars.
 
 Error Handling
