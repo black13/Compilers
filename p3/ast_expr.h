@@ -136,6 +136,10 @@ class AssignExpr : public CompoundExpr
 
 class LValue : public Expr 
 {
+  // Line 
+  protected:
+    int lineLoc;
+
   public:
     LValue(yyltype loc) : Expr(loc) {}
 };
