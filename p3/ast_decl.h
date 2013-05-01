@@ -14,7 +14,8 @@
 #define _H_ast_decl
 
 #include "ast.h"
-#include "stack.h"
+#include "list.h"
+#include "symboltable.h"
 
 class Type;
 class NamedType;
@@ -22,7 +23,7 @@ class Identifier;
 class Stmt;
 
 //used as symbol table
-Stack *symbolTable = new Stack();
+SymbolTable *x = new SymbolTable();
 
 class Decl : public Node 
 {
