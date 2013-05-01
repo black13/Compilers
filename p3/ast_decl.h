@@ -13,8 +13,7 @@
 #ifndef _H_ast_decl
 #define _H_ast_decl
 
-#include <stack>
-#include "hashtable.h"
+#include "stack.h"
 #include "ast.h"
 #include "list.h"
 
@@ -24,7 +23,7 @@ class Identifier;
 class Stmt;
 
 //used as symbol table
-stack<Hashtable> symbolTable;
+Stack symbolTable;
 
 
 class Decl : public Node 
