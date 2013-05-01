@@ -13,10 +13,7 @@
 #ifndef _H_ast_decl
 #define _H_ast_decl
 
-#include <stack>
-#include "hashtable.h"
 #include "ast.h"
-#include "list.h"
 #include "stack.h"
 
 class Type;
@@ -25,8 +22,7 @@ class Identifier;
 class Stmt;
 
 //used as symbol table
-Stack<Hashtable*> *symbolTable = new Stack<Hashtable*>();
-
+Stack *symbolTable = new Stack();
 
 class Decl : public Node 
 {
