@@ -12,6 +12,8 @@
 *.la
 *.a
 
+*.gch
+
 #vim swp files
 *.swp
 
