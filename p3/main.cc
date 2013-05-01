@@ -9,6 +9,9 @@
 #include "utility.h"
 #include "errors.h"
 #include "parser.h"
+#include "symboltable.h"
+
+SymbolTable *symbols = new SymbolTable();
 
 
 /* Function: main()

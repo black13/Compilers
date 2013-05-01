@@ -15,15 +15,11 @@
 
 #include "ast.h"
 #include "list.h"
-#include "symboltable.h"
 
 class Type;
 class NamedType;
 class Identifier;
 class Stmt;
-
-//used as symbol table
-SymbolTable *x = new SymbolTable();
 
 class Decl : public Node 
 {
