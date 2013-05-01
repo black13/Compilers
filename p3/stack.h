@@ -35,14 +35,14 @@ using namespace std;
 
 class Node;
 
-template<class Element> class Stack {
+class Stack {
 
  private:
-    stack<HashTable> elems;
+    stack<Hashtable*> *elems;
 
  public:
     // Create a new empty list
-    Stack() {}
+    Stack() { }
 
     // Returns count of elements currently in list
     int NumElements() const
@@ -82,11 +82,11 @@ template<class Element> class Stack {
       elems.top().Enter(id, loc, false);
     }
           
-       // These are some specific methods useful for lists of ast nodes
-       // They will only work on lists of elements that respond to the
-       // messages, but since C++ only instantiates the template if you use
-       // you can still have Lists of ints, chars*, as long as you 
-       // don't try to SetParentAll on that list.
+    // These are some specific methods useful for lists of ast nodes
+    // They will only work on lists of elements that respond to the
+    // messages, but since C++ only instantiates the template if you use
+    // you can still have Lists of ints, chars*, as long as you 
+    // don't try to SetParentAll on that list.
     void SetParentAll(Node *p)
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->SetParent(p); }

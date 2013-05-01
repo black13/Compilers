@@ -17,6 +17,7 @@
 #include "hashtable.h"
 #include "ast.h"
 #include "list.h"
+#include "stack.h"
 
 class Type;
 class NamedType;
@@ -24,7 +25,7 @@ class Identifier;
 class Stmt;
 
 //used as symbol table
-stack<Hashtable> symbolTable;
+Stack<Hashtable*> *symbolTable = new Stack<Hashtable*>();
 
 
 class Decl : public Node 
