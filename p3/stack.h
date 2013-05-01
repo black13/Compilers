@@ -28,7 +28,7 @@
 #ifndef _H_list
 #define _H_list
 
-#include <stack>
+#include <list>
 #include "utility.h"  // for Assert()
 #include "hashtable.h"
 using namespace std;
@@ -38,7 +38,7 @@ class Node;
 template<class Element> class Stack {
 
  private:
-    stack<HashTable> elems;
+    list<HashTable> elems;
 
  public:
     // Create a new empty list
@@ -53,33 +53,32 @@ template<class Element> class Stack {
     // Adds element to list end
     void Append()
     { 
-      elems.push(new HashTable<int>()); 
+      elems.push_back(new HashTable<int>()); 
     }
 
     // Removes head
     void Remove()
     { 
-      elems.pop(); 
+      elems.pop_back();
     }
 
     // Checks if id exists in current scope 
     bool InHead(char* id)
     { 
-      if (elems.top().Lookup(id) != NULL) return true; 
+      if (elems.back().Lookup(id) != NULL) return true; 
       return false;
     }
 
     // Find the loc in the nearest scope
     int Search(char* id)
     {
-
       return 0;
     }
 
     // Add a new declared variable to current scope
     void Push(char* id, int loc)
     {
-      elems.top().Enter(id, loc, false);
+      elems.back().Enter(id, loc, false);
     }
           
        // These are some specific methods useful for lists of ast nodes
