@@ -70,9 +70,18 @@ template<class Element> class Stack {
     }
 
     // Find the loc in the nearest scope
+    // if not found returns NULL
     int Search(char* id)
     {
-      return 0;
+      for (std::list<HashTable>::reverse_iterator rit=elems.rbegin(); rit!=elems.rend(); ++rit)
+      {
+        int location = rit->Lookup(id);
+        if (location != NULL)
+        {
+          return location;
+        }
+      }
+      return NULL;
     }
 
     // Add a new declared variable to current scope
