@@ -11,9 +11,6 @@
 #include "parser.h"
 #include "symboltable.h"
 
-SymbolTable *symbols = new SymbolTable();
-
-
 /* Function: main()
  * ----------------
  * Entry point to the entire program.  We parse the command line and turn

@@ -7,6 +7,7 @@
 #include "ast_decl.h"
 #include "ast_expr.h"
 
+extern SymbolTable *symbols;
 
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
@@ -21,6 +22,11 @@ void Program::Check() {
      *      checking itself, which makes for a great use of inheritance
      *      and polymorphism in the node classes.
      */
+    symbols->Push();
+    int n = decls->NumElements();
+    for (int i = 0; i < n; i++) {
+        decls->Nth(i)->Check();
+    }
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {

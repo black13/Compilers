@@ -33,7 +33,10 @@
 #include <stdlib.h>   // for NULL
 #include "location.h"
 #include <iostream>
+#include "symboltable.h"
 using namespace std;
+
+extern SymbolTable symbol;
 
 class Node  {
   protected:
@@ -54,9 +57,10 @@ class Node  {
 class Identifier : public Node 
 {
   protected:
-    char *name;
+    //char *name;
     
   public:
+    char *name;
     Identifier(yyltype loc, const char *name);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };

@@ -8,12 +8,13 @@
 
 #include <list>
 #include "utility.h"  // for Assert()
+#include "location.h"
 #include "hashtable.h"
 
 class SymbolTable {
 
  private:
-   std::list<Hashtable<int>*> elems;
+   std::list<Hashtable<yyltype*>*> elems;
 
  public:
     // Create a new empty list
@@ -29,7 +30,7 @@ class SymbolTable {
     // Call this whenever we go int 
     void Push()
     { 
-      elems.push_back(new Hashtable<int>()); 
+      elems.push_back(new Hashtable<yyltype*>()); 
     }
 
     // Removes head
@@ -46,11 +47,11 @@ class SymbolTable {
 
     // Find the loc in the nearest scope
     // if not found returns NULL
-    int Search(char* id)
+    yyltype* Search(char* id)
     {
-      for (std::list<Hashtable<int>*>::reverse_iterator rit=elems.rbegin(); rit!=elems.rend(); ++rit)
+      for (std::list<Hashtable<yyltype*>*>::reverse_iterator rit=elems.rbegin(); rit!=elems.rend(); ++rit)
       {
-        int location = (*rit)->Lookup(id);
+        yyltype *location = (*rit)->Lookup(id);
         if (location != NULL)
         {
           return location;
@@ -60,7 +61,7 @@ class SymbolTable {
     }
 
     // Add a new declared variable to current scope
-    void Add(char* id, int loc)
+    void Add(char* id, yyltype* loc)
     {
       //TODO add redecleration checking
       elems.back()->Enter(id, loc, false);

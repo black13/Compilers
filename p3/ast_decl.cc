@@ -5,6 +5,7 @@
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
+#include "errors.h"
         
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
@@ -17,7 +18,16 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     Assert(n != NULL && t != NULL);
     (type=t)->SetParent(this);
 }
-  
+
+void VarDecl::Check() {
+    if (id) {
+        if (!symbols->InHead(id->name)) symbols->Add(id->name, location);
+        else {
+            printf("Error.\n");
+        }
+    }
+}
+
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
