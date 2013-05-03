@@ -10,11 +10,12 @@
 #include "utility.h"  // for Assert()
 #include "location.h"
 #include "hashtable.h"
+#include "ast_decl.h"
 
 class SymbolTable {
 
  private:
-   std::list<Hashtable<yyltype*>*> elems;
+   std::list<Hashtable<Decl*>*> elems;
 
  public:
     // Create a new empty list
@@ -30,7 +31,7 @@ class SymbolTable {
     // Call this whenever we go int 
     void Push()
     { 
-      elems.push_back(new Hashtable<yyltype*>()); 
+      elems.push_back(new Hashtable<Decl*>()); 
     }
 
     // Removes head
@@ -40,31 +41,31 @@ class SymbolTable {
     }
 
     // Checks if id exists in current scope 
-    bool InHead(char* id)
+    Decl* SearchHead(char* id)
     { 
-      return (elems.back()->Lookup(id) != NULL);
+      return (elems.back()->Lookup(id));
     }
 
     // Find the loc in the nearest scope
     // if not found returns NULL
-    yyltype* Search(char* id)
+    Decl* Search(char* id)
     {
-      for (std::list<Hashtable<yyltype*>*>::reverse_iterator rit=elems.rbegin(); rit!=elems.rend(); ++rit)
+      for (std::list<Hashtable<Decl*>*>::reverse_iterator rit=elems.rbegin(); rit!=elems.rend(); ++rit)
       {
-        yyltype *location = (*rit)->Lookup(id);
-        if (location != NULL)
+        Decl *decl = (*rit)->Lookup(id);
+        if (decl != NULL)
         {
-          return location;
+          return decl;
         }
       }
       return NULL;
     }
 
     // Add a new declared variable to current scope
-    void Add(char* id, yyltype* loc)
+    void Add(char* id, Decl* decl)
     {
       //TODO add redecleration checking
-      elems.back()->Enter(id, loc, false);
+      elems.back()->Enter(id, decl, false);
     }
 };
 

@@ -33,10 +33,7 @@
 #include <stdlib.h>   // for NULL
 #include "location.h"
 #include <iostream>
-#include "symboltable.h"
 using namespace std;
-
-extern SymbolTable symbol;
 
 class Node  {
   protected:

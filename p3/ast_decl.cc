@@ -6,6 +6,9 @@
 #include "ast_type.h"
 #include "ast_stmt.h"
 #include "errors.h"
+#include "symboltable.h"
+
+extern SymbolTable *symbols;
         
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
@@ -13,19 +16,18 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     (id=n)->SetParent(this); 
 }
 
+void Decl::Check() {
+    if (id) {
+        Decl *decl = symbols->SearchHead(id->name);
+        if (decl == NULL) symbols->Add(id->name, this);
+        else ReportError::DeclConflict(this, decl);
+    }
+}
+
 
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     Assert(n != NULL && t != NULL);
     (type=t)->SetParent(this);
-}
-
-void VarDecl::Check() {
-    if (id) {
-        if (!symbols->InHead(id->name)) symbols->Add(id->name, location);
-        else {
-            printf("Error.\n");
-        }
-    }
 }
 
 
@@ -55,6 +57,5 @@ FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
 void FnDecl::SetFunctionBody(Stmt *b) { 
     (body=b)->SetParent(this);
 }
-
 
 

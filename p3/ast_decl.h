@@ -16,8 +16,6 @@
 #include "ast.h"
 #include "list.h"
 
-extern SymbolTable *symbols;
-
 class Type;
 class NamedType;
 class Identifier;
@@ -30,7 +28,7 @@ class Decl : public Node
   
   public:
     Decl(Identifier *name);
-    virtual void Check() { printf("Test");};
+    virtual void Check();
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -41,7 +39,6 @@ class VarDecl : public Decl
     
   public:
     VarDecl(Identifier *name, Type *type);
-    void Check();
 };
 
 class ClassDecl : public Decl 
