@@ -7,6 +7,10 @@
 #include "ast_decl.h"
 #include <string.h> // strdup
 #include <stdio.h>  // printf
+#include "symboltable.h"
+#include "errors.h"
+
+extern SymbolTable *symbols;
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);
@@ -21,3 +25,10 @@ Node::Node() {
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 } 
+
+void Identifier::CheckSymbol(Node* parent) {
+    Decl *decl = symbols->SearchHead(name);
+    if (decl == NULL) symbols->Add(name, (Decl*)parent);
+    else ReportError::DeclConflict((Decl*)parent, decl);
+}
+

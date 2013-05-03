@@ -29,6 +29,7 @@ class Decl : public Node
   public:
     Decl(Identifier *name);
     virtual void Check();
+    virtual void CheckChildren() {};
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -51,6 +52,7 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
+    void CheckChildren();
 };
 
 class InterfaceDecl : public Decl 
@@ -60,6 +62,7 @@ class InterfaceDecl : public Decl
     
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
+    void CheckChildren();
 };
 
 class FnDecl : public Decl 
@@ -72,6 +75,7 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
+    void CheckChildren();
 };
 
 #endif

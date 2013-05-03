@@ -17,11 +17,10 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
 }
 
 void Decl::Check() {
-    if (id) {
-        Decl *decl = symbols->SearchHead(id->name);
-        if (decl == NULL) symbols->Add(id->name, this);
-        else ReportError::DeclConflict(this, decl);
-    }
+    if (id) id->CheckSymbol(this);
+    symbols->Push();
+    CheckChildren();
+    symbols->Pop();
 }
 
 
@@ -40,10 +39,18 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
+void ClassDecl::CheckChildren() {
+    if (members) members->CheckAll();
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
     (members=m)->SetParentAll(this);
+}
+
+void InterfaceDecl::CheckChildren() {
+    if (members) members->CheckAll();
 }
 
 	
@@ -58,4 +65,7 @@ void FnDecl::SetFunctionBody(Stmt *b) {
     (body=b)->SetParent(this);
 }
 
+void FnDecl::CheckChildren() {
+    if (formals) formals->CheckAll();
+}
 

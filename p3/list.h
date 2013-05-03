@@ -78,6 +78,9 @@ template<class Element> class List {
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->SetParent(p); }
 
+    void CheckAll()
+        { for (int i = 0; i < NumElements(); i++)
+             Nth(i)->Check(); }
 };
 
 #endif

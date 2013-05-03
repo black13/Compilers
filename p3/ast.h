@@ -54,11 +54,11 @@ class Node  {
 class Identifier : public Node 
 {
   protected:
-    //char *name;
+    char *name;
     
   public:
-    char *name;
     Identifier(yyltype loc, const char *name);
+    void CheckSymbol(Node* decl);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 
