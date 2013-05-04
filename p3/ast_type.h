@@ -49,6 +49,7 @@ class NamedType : public Type
     void PrintToStream(ostream& out) { out << id; }
     void Check(reasonT reason);
     void Check();
+    Decl* GetDecl();
 };
 
 class ArrayType : public Type 

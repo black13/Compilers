@@ -42,6 +42,10 @@ void NamedType::Check() {
     if (id) id->CheckType(LookingForInterface);
 }
 
+Decl* NamedType::GetDecl() {
+    return id->GetDecl();
+}
+
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);

@@ -31,6 +31,7 @@ class Decl : public Node
     void AddSymbol() { if (id) id->AddSymbol(this); };
     virtual void Check() {};
     virtual void CheckChildren() {};
+    virtual void AddChildren() {};
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -56,6 +57,7 @@ class ClassDecl : public Decl
               List<NamedType*> *implements, List<Decl*> *members);
     void Check();
     void CheckChildren();
+    void AddChildren();
 };
 
 class InterfaceDecl : public Decl 

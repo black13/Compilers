@@ -67,6 +67,7 @@ class Identifier : public Node
     void AddSymbol(Decl* parent);
     void CheckType(reasonT whyNeeded);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
+    Decl* GetDecl();
 };
 
 

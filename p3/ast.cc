@@ -37,3 +37,6 @@ void Identifier::CheckType(reasonT whyNeeded) {
     if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);
 }
 
+Decl* Identifier::GetDecl() {
+    return symbols->Search(name);
+}
