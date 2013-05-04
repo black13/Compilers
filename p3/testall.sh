@@ -5,7 +5,7 @@ make
 rm -f samples/*.mine
 #cat /dev/null > out
 
-for file in `ls samples/*.decaf`
+for file in `ls samples-checkpoint/*.decaf`
 	do
                 filename=$(basename "$file")
 		extension="${filename##*.}"

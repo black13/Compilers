@@ -26,9 +26,14 @@ Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 } 
 
-void Identifier::CheckSymbol(Node* parent) {
+void Identifier::AddSymbol(Decl* parent) {
     Decl *decl = symbols->SearchHead(name);
-    if (decl == NULL) symbols->Add(name, (Decl*)parent);
-    else ReportError::DeclConflict((Decl*)parent, decl);
+    if (decl == NULL) symbols->Add(name, parent);
+    else ReportError::DeclConflict(parent, decl);
+}
+
+void Identifier::CheckType(reasonT whyNeeded) {
+    Decl *decl = symbols->Search(name);
+    if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);
 }
 

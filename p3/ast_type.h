@@ -14,6 +14,7 @@
 
 #include "ast.h"
 #include "list.h"
+#include "errors.h"
 #include <iostream>
 using namespace std;
 
@@ -33,6 +34,8 @@ class Type : public Node
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     virtual bool IsEquivalentTo(Type *other) { return this == other; }
+    virtual void Check() {};
+    virtual void Check(reasonT reason) {};
 };
 
 class NamedType : public Type 
@@ -44,6 +47,8 @@ class NamedType : public Type
     NamedType(Identifier *i);
     
     void PrintToStream(ostream& out) { out << id; }
+    void Check(reasonT reason);
+    void Check();
 };
 
 class ArrayType : public Type 
@@ -55,6 +60,7 @@ class ArrayType : public Type
     ArrayType(yyltype loc, Type *elemType);
     
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
+    void Check(reasonT reason);
 };
 
  

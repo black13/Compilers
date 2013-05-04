@@ -32,8 +32,11 @@
 
 #include <stdlib.h>   // for NULL
 #include "location.h"
+#include "errors.h"
 #include <iostream>
 using namespace std;
+
+class Decl;
 
 class Node  {
   protected:
@@ -48,6 +51,9 @@ class Node  {
     yyltype *GetLocation()   { return location; }
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
+    void Check() {};
+    void Check(reasonT) {};
+
 };
    
 
@@ -58,7 +64,8 @@ class Identifier : public Node
     
   public:
     Identifier(yyltype loc, const char *name);
-    void CheckSymbol(Node* decl);
+    void AddSymbol(Decl* parent);
+    void CheckType(reasonT whyNeeded);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 

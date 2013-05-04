@@ -30,6 +30,7 @@
 
 #include <deque>
 #include "utility.h"  // for Assert()
+#include "errors.h"
 using namespace std;
 
 class Node;
@@ -78,9 +79,17 @@ template<class Element> class List {
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->SetParent(p); }
 
+    void AddSymbolAll()
+        { for (int i = 0; i < NumElements(); i++)
+             Nth(i)->AddSymbol(); }
+
     void CheckAll()
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->Check(); }
+
+    void CheckChildrenAll()
+        { for (int i = 0; i < NumElements(); i++)
+             Nth(i)->CheckChildren(); }
 };
 
 #endif

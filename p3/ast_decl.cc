@@ -16,17 +16,13 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     (id=n)->SetParent(this); 
 }
 
-void Decl::Check() {
-    if (id) id->CheckSymbol(this);
-    symbols->Push();
-    CheckChildren();
-    symbols->Pop();
-}
-
-
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     Assert(n != NULL && t != NULL);
     (type=t)->SetParent(this);
+}
+
+void VarDecl::Check() {
+    if (type) type->Check(LookingForType);
 }
 
 
@@ -39,8 +35,18 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
+void ClassDecl::Check() {
+    if (extends) extends->Check(LookingForClass);
+    if (implements) implements->CheckAll();
+}
+
 void ClassDecl::CheckChildren() {
-    if (members) members->CheckAll();
+    symbols->Push();
+    if (members) {
+        members->AddSymbolAll();
+        members->CheckAll();
+    }
+    symbols->Pop();
 }
 
 
@@ -50,7 +56,12 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::CheckChildren() {
-    if (members) members->CheckAll();
+    symbols->Push();
+    if (members) {
+        members->AddSymbolAll();
+        members->CheckAll();
+    }
+    symbols->Pop();
 }
 
 	
@@ -65,7 +76,16 @@ void FnDecl::SetFunctionBody(Stmt *b) {
     (body=b)->SetParent(this);
 }
 
+void FnDecl::Check() {
+    symbols->Push();
+    if (formals) {
+        formals->AddSymbolAll();
+        formals->CheckAll();
+    }
+}
+
 void FnDecl::CheckChildren() {
-    if (formals) formals->CheckAll();
+    if (body) body->Check();
+    symbols->Pop();
 }
 

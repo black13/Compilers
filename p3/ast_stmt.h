@@ -23,18 +23,20 @@ class Expr;
 class Program : public Node
 {
   protected:
-     List<Decl*> *decls;
+    List<Decl*> *decls;
      
   public:
-     Program(List<Decl*> *declList);
-     void Check();
+    Program(List<Decl*> *declList);
+    void Check();
 };
 
 class Stmt : public Node
 {
   public:
-     Stmt() : Node() {}
-     Stmt(yyltype loc) : Node(loc) {}
+    Stmt() : Node() {}
+    Stmt(yyltype loc) : Node(loc) {}
+    virtual void Check() {};
+    virtual void CheckChildren() {};
 };
 
 class StmtBlock : public Stmt 
@@ -45,6 +47,7 @@ class StmtBlock : public Stmt
     
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
+    void Check();
 };
 
   
@@ -56,6 +59,7 @@ class ConditionalStmt : public Stmt
   
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
+    void Check();
 };
 
 class LoopStmt : public ConditionalStmt 
@@ -87,6 +91,7 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
+    void Check();
 };
 
 class BreakStmt : public Stmt 

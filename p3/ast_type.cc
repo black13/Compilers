@@ -28,18 +28,28 @@ Type::Type(const char *n) {
     typeName = strdup(n);
 }
 
-
-
 	
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     Assert(i != NULL);
     (id=i)->SetParent(this);
 } 
 
+void NamedType::Check(reasonT reason) {
+    if (id) id->CheckType(reason);
+}
+
+void NamedType::Check() {
+    if (id) id->CheckType(LookingForInterface);
+}
+
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);
     (elemType=et)->SetParent(this);
+}
+
+void ArrayType::Check(reasonT reason) {
+    if (elemType) elemType->Check(reason);
 }
 
 

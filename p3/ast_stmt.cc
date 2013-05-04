@@ -24,10 +24,12 @@ void Program::Check() {
      *      and polymorphism in the node classes.
      */
     symbols->Push();
-    int n = decls->NumElements();
-    for (int i = 0; i < n; i++) {
-        decls->Nth(i)->Check();
+    if (decls) {
+        decls->AddSymbolAll();
+        decls->CheckAll();
+        decls->CheckChildrenAll();
     }
+    symbols->Pop();
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -36,10 +38,26 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     (stmts=s)->SetParentAll(this);
 }
 
+void StmtBlock::Check() {
+    symbols->Push();
+    if (decls) {
+        decls->AddSymbolAll();
+        decls->CheckAll();
+    }
+    if (stmts) {
+        stmts->CheckAll();
+    }
+    symbols->Pop();
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this); 
     (body=b)->SetParent(this);
+}
+
+void ConditionalStmt::Check() {
+    if (body) body->Check();
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
@@ -52,6 +70,11 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
+}
+
+void IfStmt::Check() {
+    if (body) body->Check();
+    if (elseBody) elseBody->Check();
 }
 
 
