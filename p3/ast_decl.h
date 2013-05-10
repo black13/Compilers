@@ -15,11 +15,17 @@
 
 #include "ast.h"
 #include "list.h"
+#include "hashtable.h"
 
 class Type;
 class NamedType;
 class Identifier;
 class Stmt;
+
+
+Hashtable<ClassDecl*>  ClassList;
+Hashtable<InterfaceDecl*>  InterfaceList;
+
 
 class Decl : public Node 
 {
