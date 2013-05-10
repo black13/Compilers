@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Usage:
+# ./test runs all tests in SAMPLES_DIR
+# ./test TESTNAME (without the extension) runs just that test and displays the diff of the output
+
+# This is the path to the samples you want to test
+SAMPLES_DIR=samples-checkpoint
+
+# This is the path to shunit2
+SHUNIT="./shunit2"
+
+p() {
+	echo ${SAMPLES_DIR}/${1}
+}
+
+test_decaf() {
+	FILES=$(ls ${SAMPLES_DIR}/*.decaf)
+	for f in $FILES
+	do
+		#some fancy bashism to remove the last file extension
+		base="${f%.*}"
+		if [ -e "${base}.out" ]
+		then
+			testName=$(basename "$base")
+			echo Testing $testName ...
+			./dcc < ${base}.decaf &> ${base}.mine
+			diff ${base}.out ${base}.mine &> /dev/null
+			assertTrue "$testName failed" $?
+		fi
+	done
+}
+
+tearDown() {
+	rm -f ${SAMPLES_DIR}/*.mine
+}
+
+if [ ! -z $1 ]
+then
+	./dcc < $(p $1).decaf &> $(p $1).mine
+	vim -R -d $(p $1).out $(p $1).mine
+	rm $(p $1).mine
+else
+	. ${SHUNIT}
+fi
