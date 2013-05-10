@@ -32,6 +32,14 @@ void Identifier::AddSymbol(Decl* parent) {
     else ReportError::DeclConflict(parent, decl);
 }
 
+void Identifier::AddClass(Decl* parent) {
+    classes->Add(name, parent);
+}
+
+void Identifier::AddInterface(Decl* parent) {
+    interfaces->Add(name, parent);
+}
+
 void Identifier::CheckType(reasonT whyNeeded) {
     Decl *decl = symbols->Search(name);
     if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);

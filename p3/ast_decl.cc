@@ -44,20 +44,12 @@ void ClassDecl::CheckChildren() {
     symbols->Push();
     if (extends) {
         Decl *ex = extends->GetDecl();
-        //ex->AddChildren();
     }
     if (members) {
         members->AddSymbolAll();
         members->CheckAll();
     }
     symbols->Pop();
-}
-
-void ClassDecl::AddChildren() {
-    if (members) {
-        members->AddSymbolAll();
-        //members->CheckAll();
-    }
 }
 
 
