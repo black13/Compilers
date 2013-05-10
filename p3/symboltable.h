@@ -37,6 +37,7 @@ class SymbolTable {
     // Removes head
     void Pop()
     { 
+      delete elems.back();
       elems.pop_back();
     }
 
