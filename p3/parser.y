@@ -12,8 +12,8 @@
 
 SymbolTable *symbols = new SymbolTable(); 
 
-Hashtable<ClassDecl*> classes;// = new Hashtable<ClassDecl*>();
-Hashtable<InterfaceDecl*> interfaces;// = new Hashtable<InterfaceDecl*>();
+Hashtable<ClassDecl*> *classes = new Hashtable<ClassDecl*>();
+Hashtable<InterfaceDecl*> *interfaces = new Hashtable<InterfaceDecl*>();
 
 void yyerror(const char *msg); // standard error-handling routine
 
