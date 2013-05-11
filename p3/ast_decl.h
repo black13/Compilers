@@ -57,6 +57,7 @@ class ClassDecl : public Decl
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     void AddSymbol(); 
+    void AddChildren(); 
     void Check();
     void CheckChildren();
 };

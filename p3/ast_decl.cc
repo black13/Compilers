@@ -36,8 +36,15 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 void ClassDecl::AddSymbol() { 
-    if (id) {
-        id->AddSymbol(this); 
+    if (id) id->AddSymbol(this); 
+}
+
+void ClassDecl::AddChildren() { 
+    if (members) {
+        for (int i = 0; i < members->NumElements(); i++) {
+            if (dynamic_cast<VarDecl*>(members->Nth(i)))
+                members->Nth(i)->AddSymbol();
+        }
     }
 }
 
@@ -49,7 +56,8 @@ void ClassDecl::Check() {
 void ClassDecl::CheckChildren() {
     symbols->Push();
     if (extends) {
-        Decl *ex = extends->GetDecl();
+        ClassDecl *ex = dynamic_cast<ClassDecl*>(extends->GetDecl());
+        //ex->AddChildren();
     }
     if (members) {
         members->AddSymbolAll();
