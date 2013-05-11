@@ -38,6 +38,12 @@ void Identifier::CheckType(reasonT whyNeeded) {
     if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);
 }
 
+/*
+ * return the Cecl of the class, if not found returns null
+ */
 Decl* Identifier::GetDecl() {
-    return symbols->Search(name);
+    Decl* found = symbols->Search(name);
+    ClassDecl* c = dynamic_cast<ClassDecl*>(found);
+    return c;
+
 }
