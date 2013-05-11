@@ -44,6 +44,8 @@ void ClassDecl::AddChildren() {
         for (int i = 0; i < members->NumElements(); i++) {
             if (dynamic_cast<VarDecl*>(members->Nth(i)))
                 members->Nth(i)->AddSymbol();
+            else if (dynamic_cast<FnDecl*>(members->Nth(i)))
+                members->Nth(i)->AddSymbol();
         }
     }
 }
@@ -105,7 +107,9 @@ void FnDecl::Check() {
     }
 }
 
+//TODO
 void FnDecl::CheckTypeSignitures() {
+    
 }
 
 void FnDecl::CheckChildren() {
