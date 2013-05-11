@@ -33,6 +33,7 @@ class Decl : public Node
     void AddSymbol() { if (id) id->AddSymbol(this); };
     virtual void Check() {};
     virtual void CheckChildren() {};
+    virtual void CheckTypeSignitures() {};
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -85,6 +86,7 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     void Check();
     void CheckChildren();
+    void CheckTypeSignitures();
 };
 
 #endif

@@ -42,8 +42,8 @@ void NamedType::Check() {
     if (id) id->CheckType(LookingForInterface);
 }
 
-Decl* NamedType::GetDecl() {
-    return id->GetDecl();
+ClassDecl* NamedType::GetClass() {
+    return id->GetClass();
 }
 
 

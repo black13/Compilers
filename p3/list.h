@@ -90,6 +90,10 @@ template<class Element> class List {
     void CheckChildrenAll()
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->CheckChildren(); }
+
+    void CheckTypeSignituresAll()
+        { for (int i = 0; i < NumElements(); i++)
+             Nth(i)->CheckTypeSignitures(); }
 };
 
 #endif

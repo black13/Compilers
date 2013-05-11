@@ -56,16 +56,16 @@ void ClassDecl::Check() {
 void ClassDecl::CheckChildren() {
     symbols->Push();
     if (extends) {
-        ClassDecl *ex = dynamic_cast<ClassDecl*>(extends->GetDecl());
-        //ex->AddChildren();
+        ClassDecl *ex = extends->GetClass();
+        if (ex) ex->AddChildren();
     }
     if (members) {
         members->AddSymbolAll();
         members->CheckAll();
+        members->CheckTypeSignituresAll();
     }
     symbols->Pop();
 }
-
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
@@ -73,9 +73,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::AddSymbol() { 
-    if (id) {
-        id->AddSymbol(this); 
-    }
+    if (id) id->AddSymbol(this); 
 }
 
 void InterfaceDecl::CheckChildren() {
@@ -105,6 +103,9 @@ void FnDecl::Check() {
         formals->AddSymbolAll();
         formals->CheckAll();
     }
+}
+
+void FnDecl::CheckTypeSignitures() {
 }
 
 void FnDecl::CheckChildren() {

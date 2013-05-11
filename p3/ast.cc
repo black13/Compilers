@@ -41,7 +41,7 @@ void Identifier::CheckType(reasonT whyNeeded) {
 /*
  * return the Cecl of the class, if not found returns null
  */
-Decl* Identifier::GetDecl() {
+ClassDecl* Identifier::GetClass() {
     Decl* found = symbols->Search(name);
     ClassDecl* c = dynamic_cast<ClassDecl*>(found);
     return c;
