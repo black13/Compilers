@@ -22,8 +22,6 @@ class NamedType;
 class Identifier;
 class Stmt;
 
-Hashtable<ClassDecl*> classes;
-Hashtable<InterfaceDecl*> interfaces;
 
 class Decl : public Node 
 {
