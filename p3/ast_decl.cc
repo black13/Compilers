@@ -33,6 +33,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
+    functions = new Hashtable<FnDecl*>();
 }
 
 void ClassDecl::AddSymbol() { 
@@ -44,8 +45,8 @@ void ClassDecl::AddChildren() {
         for (int i = 0; i < members->NumElements(); i++) {
             if (dynamic_cast<VarDecl*>(members->Nth(i)))
                 members->Nth(i)->AddSymbol();
-            else if (dynamic_cast<FnDecl*>(members->Nth(i)))
-                members->Nth(i)->AddSymbol();
+            //else if (dynamic_cast<FnDecl*>(members->Nth(i)))
+            //    members->Nth(i)->AddSymbol();
         }
     }
 }

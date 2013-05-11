@@ -47,12 +47,28 @@ class VarDecl : public Decl
     void Check();
 };
 
+class FnDecl : public Decl 
+{
+  protected:
+    List<VarDecl*> *formals;
+    Type *returnType;
+    Stmt *body;
+    
+  public:
+    FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
+    void SetFunctionBody(Stmt *b);
+    void Check();
+    void CheckChildren();
+    void CheckTypeSignitures();
+};
+
 class ClassDecl : public Decl 
 {
   protected:
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
+    Hashtable<FnDecl*> *functions;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
@@ -74,19 +90,6 @@ class InterfaceDecl : public Decl
     void CheckChildren();
 };
 
-class FnDecl : public Decl 
-{
-  protected:
-    List<VarDecl*> *formals;
-    Type *returnType;
-    Stmt *body;
-    
-  public:
-    FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
-    void SetFunctionBody(Stmt *b);
-    void Check();
-    void CheckChildren();
-    void CheckTypeSignitures();
-};
+
 
 #endif
