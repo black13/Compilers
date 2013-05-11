@@ -38,7 +38,6 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 void ClassDecl::AddSymbol() { 
     if (id) {
         id->AddSymbol(this); 
-        id->AddClass(this);
     }
 }
 
@@ -68,7 +67,6 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 void InterfaceDecl::AddSymbol() { 
     if (id) {
         id->AddSymbol(this); 
-        id->AddInterface(this);
     }
 }
 

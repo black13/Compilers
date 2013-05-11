@@ -12,8 +12,6 @@
 #include "hashtable.h"
 
 extern SymbolTable *symbols;
-extern Hashtable<ClassDecl*> *classes;
-extern Hashtable<InterfaceDecl*> *interfaces;
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);
@@ -33,14 +31,6 @@ void Identifier::AddSymbol(Decl* parent) {
     Decl *decl = symbols->SearchHead(name);
     if (decl == NULL) symbols->Add(name, parent);
     else ReportError::DeclConflict(parent, decl);
-}
-
-void Identifier::AddClass(ClassDecl* parent) {
-    classes->Enter(name, parent, false);
-}
-
-void Identifier::AddInterface(InterfaceDecl* parent) {
-    interfaces->Enter(name, parent, false);
 }
 
 void Identifier::CheckType(reasonT whyNeeded) {
