@@ -37,6 +37,8 @@
 using namespace std;
 
 class Decl;
+class ClassDecl;
+class InterfaceDecl;
 
 class Node  {
   protected:
@@ -65,6 +67,8 @@ class Identifier : public Node
   public:
     Identifier(yyltype loc, const char *name);
     void AddSymbol(Decl* parent);
+    void AddClass(ClassDecl* parent);
+    void AddInterface(InterfaceDecl* parent);
     void CheckType(reasonT whyNeeded);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     Decl* GetDecl();

@@ -22,10 +22,8 @@ class NamedType;
 class Identifier;
 class Stmt;
 
-
-Hashtable<ClassDecl*>  ClassList;
-Hashtable<InterfaceDecl*>  InterfaceList;
-
+Hashtable<ClassDecl*> classes;
+Hashtable<InterfaceDecl*> interfaces;
 
 class Decl : public Node 
 {
@@ -60,12 +58,7 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-    void AddSymbol() { 
-        if (id) {
-            id->AddSymbol(this); 
-            id->AddClass(this);
-        }
-    };
+    void AddSymbol(); 
     void Check();
     void CheckChildren();
 };
@@ -77,12 +70,7 @@ class InterfaceDecl : public Decl
     
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
-    void AddSymbol() { 
-        if (id) {
-            id->AddSymbol(this); 
-            id->AddInterface(this);
-        }
-    };
+    void AddSymbol();
     void CheckChildren();
 };
 

@@ -9,8 +9,11 @@
 #include <stdio.h>  // printf
 #include "symboltable.h"
 #include "errors.h"
+#include "hashtable.h"
 
 extern SymbolTable *symbols;
+extern Hashtable<ClassDecl*> classes;
+extern Hashtable<InterfaceDecl*> interfaces;
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);
@@ -32,12 +35,12 @@ void Identifier::AddSymbol(Decl* parent) {
     else ReportError::DeclConflict(parent, decl);
 }
 
-void Identifier::AddClass(Decl* parent) {
-    classes->Add(name, parent);
+void Identifier::AddClass(ClassDecl* parent) {
+    classes.Enter(name, parent, false);
 }
 
-void Identifier::AddInterface(Decl* parent) {
-    interfaces->Add(name, parent);
+void Identifier::AddInterface(InterfaceDecl* parent) {
+    interfaces.Enter(name, parent, false);
 }
 
 void Identifier::CheckType(reasonT whyNeeded) {

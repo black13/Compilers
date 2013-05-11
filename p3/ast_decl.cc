@@ -35,6 +35,13 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
+void ClassDecl::AddSymbol() { 
+    if (id) {
+        id->AddSymbol(this); 
+        id->AddClass(this);
+    }
+}
+
 void ClassDecl::Check() {
     if (extends) extends->Check(LookingForClass);
     if (implements) implements->CheckAll();
@@ -56,6 +63,13 @@ void ClassDecl::CheckChildren() {
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
     (members=m)->SetParentAll(this);
+}
+
+void InterfaceDecl::AddSymbol() { 
+    if (id) {
+        id->AddSymbol(this); 
+        id->AddInterface(this);
+    }
 }
 
 void InterfaceDecl::CheckChildren() {
