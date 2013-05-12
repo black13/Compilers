@@ -46,6 +46,7 @@ class VarDecl : public Decl
   public:
     VarDecl(Identifier *name, Type *type);
     void Check();
+    Type * GetType();
 };
 
 class FnDecl : public Decl 

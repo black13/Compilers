@@ -26,6 +26,9 @@ void VarDecl::Check() {
     if (type) type->Check(LookingForType);
 }
 
+Type * VarDecl::GetType() {
+    return this->type;
+}
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
     // extends can be NULL, impl & mem may be empty lists but cannot be NULL
@@ -114,13 +117,28 @@ void FnDecl::AddTypeSignitures() {
 
 void FnDecl::CheckTypeSignitures() {
     // Check if Base class declares function
-    FnDecl *base;
-    if (base = functions->Lookup(this->id->GetName()))
+    FnDecl *base = functions->Lookup(this->id->GetName());
+    if (base)
     {
-        // TODO: Check if type signitures match
+        // Check if type signitures match
         // Compare Return types and argument types
-        if (false)
+        if (!base->returnType->IsEquivalentTo(this->returnType) ||
+            formals->NumElements() != base->formals->NumElements())
+        {
             ReportError::OverrideMismatch(this);
+            return;
+        }
+        else
+        {
+          for (int i = 0; i < formals->NumElements(); i++)
+          {
+              if (!formals->Nth(i)->GetType()->IsEquivalentTo(base->formals->Nth(i)->GetType()))
+              {
+                ReportError::OverrideMismatch(this);
+                return;
+              }
+          }
+        }
     }
 }
 
