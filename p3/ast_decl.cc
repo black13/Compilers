@@ -61,6 +61,13 @@ void ClassDecl::Check() {
 void ClassDecl::CheckChildren() {
     symbols->Push();
     functions = new Hashtable<FnDecl*>();
+    if (implements)
+    {
+      for (int i = 0; i < implements->NumElements(); i++ )
+      {
+        //implements->Nth(i)->GetInterface()->AddFunctions();;
+      }
+    }
     if (extends) {
         ClassDecl *ex = extends->GetClass();
         if (ex) ex->AddChildren();
@@ -88,7 +95,21 @@ void InterfaceDecl::CheckChildren() {
     symbols->Pop();
 }
 
-	
+void InterfaceDecl::AddFunctions()
+{
+  if (members)
+  {
+    for (int i = 0; i < members->NumElements(); i++)
+    {
+      FnDecl* f = dynamic_cast<FnDecl*>(members->Nth(i));
+      if (f)
+      {
+        f->AddTypeSignitures();
+      }
+    }
+  }
+}
+
 FnDecl::FnDecl(Identifier *n, Type *r, List<VarDecl*> *d) : Decl(n) {
     Assert(n != NULL && r!= NULL && d != NULL);
     (returnType=r)->SetParent(this);
@@ -134,7 +155,7 @@ void FnDecl::CheckTypeSignitures() {
           {
               if (!formals->Nth(i)->GetType()->IsEquivalentTo(base->formals->Nth(i)->GetType()))
               {
-                ReportError::OverrideMismatch(this);
+                //ReportError::OverrideMismatch(this);
                 return;
               }
           }

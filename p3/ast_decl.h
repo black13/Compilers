@@ -88,6 +88,7 @@ class InterfaceDecl : public Decl
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     void CheckChildren();
+    void AddFunctions();
 };
 
 
