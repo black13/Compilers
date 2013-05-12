@@ -49,5 +49,10 @@ ClassDecl* Identifier::GetClass() {
     Decl* found = symbols->Search(name);
     ClassDecl* c = dynamic_cast<ClassDecl*>(found);
     return c;
+}
 
+InterfaceDecl* Identifier::GetInterface() {
+    Decl* found = symbols->Search(name);
+    InterfaceDecl* c = dynamic_cast<InterfaceDecl*>(found);
+    return c;
 }

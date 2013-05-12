@@ -73,6 +73,7 @@ class Identifier : public Node
     const char * GetName();
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     ClassDecl* GetClass();
+    InterfaceDecl* GetInterface();
 };
 
 
