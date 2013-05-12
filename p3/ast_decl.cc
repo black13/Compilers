@@ -9,6 +9,7 @@
 #include "symboltable.h"
 
 extern SymbolTable *symbols;
+extern Hashtable<FnDecl*> *functions;
         
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
@@ -33,20 +34,18 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
-    functions = new Hashtable<FnDecl*>();
-}
-
-void ClassDecl::AddSymbol() { 
-    if (id) id->AddSymbol(this); 
 }
 
 void ClassDecl::AddChildren() { 
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
+            // Add VarDecl symbols to symbol table
+            // Makes sure we don't redeclare variables in derived class
             if (dynamic_cast<VarDecl*>(members->Nth(i)))
                 members->Nth(i)->AddSymbol();
-            //else if (dynamic_cast<FnDecl*>(members->Nth(i)))
-            //    members->Nth(i)->AddSymbol();
+            // Add type signiture to some other table
+            else if (dynamic_cast<FnDecl*>(members->Nth(i)))
+                members->Nth(i)->AddTypeSignitures();
         }
     }
 }
@@ -58,6 +57,7 @@ void ClassDecl::Check() {
 
 void ClassDecl::CheckChildren() {
     symbols->Push();
+    functions = new Hashtable<FnDecl*>();
     if (extends) {
         ClassDecl *ex = extends->GetClass();
         if (ex) ex->AddChildren();
@@ -67,16 +67,13 @@ void ClassDecl::CheckChildren() {
         members->CheckAll();
         members->CheckTypeSignituresAll();
     }
+    delete functions;
     symbols->Pop();
 }
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
     (members=m)->SetParentAll(this);
-}
-
-void InterfaceDecl::AddSymbol() { 
-    if (id) id->AddSymbol(this); 
 }
 
 void InterfaceDecl::CheckChildren() {
@@ -108,21 +105,22 @@ void FnDecl::Check() {
     }
 }
 
-//TODO
+/*
+ * Add the function name and some way to represent it's type signiture
+ */
+void FnDecl::AddTypeSignitures() {
+    functions->Enter(this->id->GetName(), this, false);
+}
+
 void FnDecl::CheckTypeSignitures() {
-    //get the class I belong to
-    ClassDecl *c = dynamic_cast<ClassDecl*>(this->parent);
-    if (c != NULL)
+    // Check if Base class declares function
+    FnDecl *base;
+    if (base = functions->Lookup(this->id->GetName()))
     {
-      if (c->functions->Lookup(this->id->GetName()) == NULL)
-      {
-        //add function to list
-        c->functions->Enter(this->id->GetName(),this);
-      }else
-      {
-        //error
-        ReportError::OverrideMismatch(this);
-      }
+        // TODO: Check if type signitures match
+        // Compare Return types and argument types
+        if (false)
+            ReportError::OverrideMismatch(this);
     }
 }
 

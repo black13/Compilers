@@ -33,6 +33,7 @@ class Decl : public Node
     void AddSymbol() { if (id) id->AddSymbol(this); };
     virtual void Check() {};
     virtual void CheckChildren() {};
+    virtual void AddTypeSignitures() {};
     virtual void CheckTypeSignitures() {};
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
@@ -59,6 +60,7 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     void Check();
     void CheckChildren();
+    void AddTypeSignitures();
     void CheckTypeSignitures();
 };
 
@@ -70,10 +72,8 @@ class ClassDecl : public Decl
     List<NamedType*> *implements;
 
   public:
-    Hashtable<FnDecl*> *functions; //TODO make private and use mutators
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-    void AddSymbol(); 
     void AddChildren(); 
     void Check();
     void CheckChildren();
@@ -86,7 +86,6 @@ class InterfaceDecl : public Decl
     
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
-    void AddSymbol();
     void CheckChildren();
 };
 
