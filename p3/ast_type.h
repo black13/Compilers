@@ -50,6 +50,7 @@ class NamedType : public Type
     void Check(reasonT reason);
     void Check();
     ClassDecl* GetClass();
+    InterfaceDecl* GetInterface();
 };
 
 class ArrayType : public Type 

@@ -46,6 +46,9 @@ ClassDecl* NamedType::GetClass() {
     return id->GetClass();
 }
 
+InterfaceDecl* NamedType::GetInterface() {
+    return id->GetInterface();
+}
 
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);
