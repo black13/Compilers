@@ -110,7 +110,20 @@ void FnDecl::Check() {
 
 //TODO
 void FnDecl::CheckTypeSignitures() {
-    
+    //get the class I belong to
+    ClassDecl *c = dynamic_cast<ClassDecl*>(this->parent);
+    if (c != NULL)
+    {
+      if (c->functions->Lookup(this->id->GetName()) == NULL)
+      {
+        //add function to list
+        c->functions->Enter(this->id->GetName(),this);
+      }else
+      {
+        //error
+        ReportError::OverrideMismatch(this);
+      }
+    }
 }
 
 void FnDecl::CheckChildren() {

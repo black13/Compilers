@@ -38,6 +38,10 @@ void Identifier::CheckType(reasonT whyNeeded) {
     if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);
 }
 
+const char * Identifier::GetName() {
+  return this->name;
+}
+
 /*
  * return the Cecl of the class, if not found returns null
  */

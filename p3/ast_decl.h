@@ -68,9 +68,9 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
-    Hashtable<FnDecl*> *functions;
 
   public:
+    Hashtable<FnDecl*> *functions; //TODO make private and use mutators
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     void AddSymbol(); 

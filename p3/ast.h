@@ -70,6 +70,7 @@ class Identifier : public Node
     void AddClass(ClassDecl* parent);
     void AddInterface(InterfaceDecl* parent);
     void CheckType(reasonT whyNeeded);
+    const char * GetName();
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     ClassDecl* GetClass();
 };
