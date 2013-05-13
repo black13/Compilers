@@ -70,6 +70,7 @@ Type * ArrayAccess::CheckType() {
   if (subType->EqualType(Type::intType)) {
     return subType;
   }
+  ReportError::SubscriptNotInteger(subscript);
   return NULL;
 }
 
