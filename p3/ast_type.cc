@@ -29,10 +29,7 @@ Type::Type(const char *n) {
 }
 
 bool Type::EqualType(Type *other) {
-    //cout << "1" << endl;
-    int x = strcmp(typeName, other->GetName());    
-    //cout << "2" << endl;
-    return x == 0;    
+    return strcmp(this->GetName(), other->GetName()) == 0;
 }
 
 	

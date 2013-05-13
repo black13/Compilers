@@ -24,7 +24,7 @@ void VarDecl::Check() {
     if (type) type->Check(LookingForType);
 }
 
-Type * VarDecl::GetType() {
+Type* VarDecl::GetType() {
     return type;
 }
 
@@ -149,7 +149,7 @@ void FnDecl::Check() {
  * Add the function name and some way to represent it's type signiture
  */
 void FnDecl::AddTypeSignitures(Hashtable<FnDecl*> *func) {
-    func->Enter(id->GetName(), this, false);
+    func->Enter(this->id->GetName(), this, false);
 }
 
 void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {

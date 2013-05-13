@@ -34,7 +34,7 @@ class Type : public Node
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     bool EqualType(Type *other);
-    const char* GetName() { return typeName; }
+    virtual const char* GetName() { return typeName; }
     virtual void Check() {};
     virtual void Check(reasonT reason) {};
 };
@@ -50,6 +50,7 @@ class NamedType : public Type
     void PrintToStream(ostream& out) { out << id; }
     void Check(reasonT reason);
     void Check();
+    const char* GetName() { return id->GetName(); }
     ClassDecl* GetClass();
     InterfaceDecl* GetInterface();
 };
@@ -64,6 +65,7 @@ class ArrayType : public Type
     
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
     void Check(reasonT reason);
+    const char* GetName() { return elemType->GetName(); }
 };
 
  
