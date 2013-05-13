@@ -15,6 +15,7 @@
 
 #include "ast.h"
 #include "ast_stmt.h"
+#include "ast_type.h"
 #include "list.h"
 
 class NamedType; // for new
@@ -26,6 +27,7 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
+    virtual Type* Check() { return NULL; };
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -212,6 +214,7 @@ class ReadIntegerExpr : public Expr
 {
   public:
     ReadIntegerExpr(yyltype loc) : Expr(loc) {}
+    Type* Check() { return Type::intType; };
 };
 
 class ReadLineExpr : public Expr

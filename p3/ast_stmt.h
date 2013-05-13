@@ -35,7 +35,7 @@ class Stmt : public Node
   public:
     Stmt() : Node() {}
     Stmt(yyltype loc) : Node(loc) {}
-    virtual void Check() {};
+    void Check() {};
     virtual void CheckChildren() {};
 };
 
