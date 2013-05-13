@@ -58,6 +58,8 @@ void ClassDecl::Check() {
 
 void ClassDecl::CheckChildren() {
     if (checked) return;
+
+    symbols->Push();
     symbols->Push();
     Hashtable<FnDecl*> *extFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
@@ -87,16 +89,10 @@ void ClassDecl::CheckChildren() {
             if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(impFun);
             if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(extFun);
         }
-        /*
-        cout << "Checking Extends" << endl;
-        for (int i = 0; i < members->NumElements(); i++) {
-            temp = members->Nth(i);
-            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(extFun);
-        }
-        */
     }
     delete extFun;
     delete impFun;
+    symbols->Pop();
     symbols->Pop();
     checked = true;
 }
@@ -108,11 +104,14 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 
 void InterfaceDecl::CheckChildren() {
     if (checked) return;
+    
+    symbols->Push();
     symbols->Push();
     if (members) {
         members->AddSymbolAll();
         members->CheckAll();
     }
+    symbols->Pop();
     symbols->Pop();
     checked = true;
 }
@@ -167,7 +166,6 @@ void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
         else if (formals->NumElements() != base->formals->NumElements()) {
             ReportError::OverrideMismatch(this);
         }
-        /*
         else {
             for (int i = 0; i < formals->NumElements(); i++) {
                 if (!(formals->Nth(i)->GetType()->EqualType(base->formals->Nth(i)->GetType())))
@@ -177,7 +175,6 @@ void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
                 }
             }
         }
-        */
     }
 }
 
