@@ -73,11 +73,9 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
 }
 
 void IfStmt::Check() {
-cout << "If Check" << endl;
     if (test) {
         Type *temp = test->CheckType();
         if (temp) { 
-        cout << temp->GetName() << endl;
             if (!temp->EqualType(Type::boolType)) 
                 ReportError::TestNotBoolean(test);
         }

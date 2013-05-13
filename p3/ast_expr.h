@@ -200,6 +200,7 @@ class NewExpr : public Expr
     
   public:
     NewExpr(yyltype loc, NamedType *clsType);
+    Type* CheckType() { return cType; };
 };
 
 class NewArrayExpr : public Expr
@@ -210,6 +211,7 @@ class NewArrayExpr : public Expr
     
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
+    Type* CheckType() { return Type::nullType; };
 };
 
 class ReadIntegerExpr : public Expr
@@ -223,7 +225,7 @@ class ReadLineExpr : public Expr
 {
   public:
     ReadLineExpr(yyltype loc) : Expr (loc) {}
-    Type* CheckType() { return Type::stringType; };
+    Type* CheckType() { return Type::nullType; };
 };
 
 #endif
