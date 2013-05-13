@@ -32,7 +32,7 @@ class Decl : public Node
   
   public:
     Decl(Identifier *name);
-    void AddSymbol() { if (id) id->AddSymbol(this); };
+    void AddSymbol(bool output) { if (id) id->AddSymbol(this, output); };
     bool IsChecked() { return checked; }
     virtual void Check() {};
     virtual void CheckChildren() {};

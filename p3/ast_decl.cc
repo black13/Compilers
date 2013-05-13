@@ -42,7 +42,7 @@ void ClassDecl::AddChildren(Hashtable<FnDecl*> *func) {
             // Add VarDecl symbols to symbol table
             // Makes sure we don't redeclare variables in derived class
             if (dynamic_cast<VarDecl*>(members->Nth(i)))
-                members->Nth(i)->AddSymbol();
+                members->Nth(i)->AddSymbol(true);
             // Add type signiture to some other table
             else if (dynamic_cast<FnDecl*>(members->Nth(i)))
                 members->Nth(i)->AddTypeSignitures(func);
@@ -58,7 +58,6 @@ void ClassDecl::Check() {
 void ClassDecl::CheckChildren() {
     if (checked) return;
 
-    symbols->Push();
     symbols->Push();
     Hashtable<FnDecl*> *extFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
@@ -80,7 +79,7 @@ void ClassDecl::CheckChildren() {
         }
     }
     if (members) {
-        members->AddSymbolAll();
+        members->AddSymbolAll(true);
         members->CheckAll();
         Decl *temp;
         for (int i = 0; i < members->NumElements(); i++) {
@@ -91,7 +90,6 @@ void ClassDecl::CheckChildren() {
     }
     delete extFun;
     delete impFun;
-    symbols->Pop();
     symbols->Pop();
     checked = true;
 }
@@ -105,12 +103,10 @@ void InterfaceDecl::CheckChildren() {
     if (checked) return;
     
     symbols->Push();
-    symbols->Push();
     if (members) {
-        members->AddSymbolAll();
+        members->AddSymbolAll(true);
         members->CheckAll();
     }
-    symbols->Pop();
     symbols->Pop();
     checked = true;
 }
@@ -139,9 +135,10 @@ void FnDecl::SetFunctionBody(Stmt *b) {
 void FnDecl::Check() {
     symbols->Push();
     if (formals) {
-        formals->AddSymbolAll();
+        formals->AddSymbolAll(true);
         formals->CheckAll();
     }
+    symbols->Pop();
 }
 
 /*
@@ -178,6 +175,8 @@ void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
 }
 
 void FnDecl::CheckChildren() {
+    symbols->Push();
+    if (formals) formals->AddSymbolAll(false);
     if (body) body->Check();
     symbols->Pop();
 }

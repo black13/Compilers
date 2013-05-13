@@ -25,7 +25,7 @@ void Program::Check() {
      */
     symbols->Push();
     if (decls) {
-        decls->AddSymbolAll();
+        decls->AddSymbolAll(true);
         decls->CheckAll();
         decls->CheckChildrenAll();
     }
@@ -41,7 +41,7 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
 void StmtBlock::Check() {
     symbols->Push();
     if (decls) {
-        decls->AddSymbolAll();
+        decls->AddSymbolAll(true);
         decls->CheckAll();
     }
     if (stmts) {

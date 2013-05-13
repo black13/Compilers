@@ -79,9 +79,9 @@ template<class Element> class List {
         { for (int i = 0; i < NumElements(); i++)
              Nth(i)->SetParent(p); }
 
-    void AddSymbolAll()
+    void AddSymbolAll(bool output)
         { for (int i = 0; i < NumElements(); i++)
-             Nth(i)->AddSymbol(); }
+             Nth(i)->AddSymbol(output); }
 
     void CheckAll()
         { for (int i = 0; i < NumElements(); i++)

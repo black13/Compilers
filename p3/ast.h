@@ -66,7 +66,7 @@ class Identifier : public Node
     
   public:
     Identifier(yyltype loc, const char *name);
-    void AddSymbol(Decl* parent);
+    void AddSymbol(Decl* parent, bool output);
     void AddClass(ClassDecl* parent);
     void AddInterface(InterfaceDecl* parent);
     void CheckType(reasonT whyNeeded);

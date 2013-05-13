@@ -27,10 +27,10 @@ Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 } 
 
-void Identifier::AddSymbol(Decl* parent) {
+void Identifier::AddSymbol(Decl* parent, bool output) {
     Decl *decl = symbols->SearchHead(name);
     if (decl == NULL) symbols->Add(name, parent);
-    else ReportError::DeclConflict(parent, decl);
+    else if (output) ReportError::DeclConflict(parent, decl);
 }
 
 void Identifier::CheckType(reasonT whyNeeded) {
