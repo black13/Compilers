@@ -4,10 +4,10 @@
 
 LIST=
 if [ "$#" = "0" ]; then
-	LIST=`ls samples/*.out`
+	LIST=`ls samples-checkpoint/*.out`
 else
 	for test in "$@"; do
-		LIST="$LIST samples/$test.out"
+		LIST="$LIST samples-checkpoint/$test.out"
 	done
 fi
 
@@ -23,8 +23,8 @@ for file in $LIST; do
 		echo "Error: Input file for base: $base not found"
 		exit 1
 	fi
-        
-	tmp=${TMP:-"./samples/"}/check.tmp
+
+	tmp=${TMP:-"./samples-checkpoint/"}/check.tmp
 	./dcc < $base.$ext 1>$tmp 2>&1
 
 	printf "Checking %-27s: " $file
@@ -35,4 +35,4 @@ for file in $LIST; do
 		echo "PASS"
 	fi
 done
-rm ./samples/check.tmp
+rm ./samples-checkpoint/check.tmp

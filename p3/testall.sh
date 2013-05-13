@@ -5,15 +5,15 @@ make
 rm -f samples/*.mine
 #cat /dev/null > out
 
-for file in `ls samples-checkpoint/*.decaf`
+for file in `ls samples/*.decaf`
 	do
                 filename=$(basename "$file")
 		extension="${filename##*.}"
 		testcasename="${filename%.*}"
 
-		my_output=samples-checkpoint/"$testcasename".mine
+		my_output=samples/"$testcasename".mine
 #                frag=samples/"$testcasename".frag
-		their_output=samples-checkpoint/"$testcasename".out
+		their_output=samples/"$testcasename".out
 
                 dos2unix --quiet $file # converts files in place
                 dos2unix --quiet $their_output #use -n option to save separate
