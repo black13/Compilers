@@ -68,6 +68,7 @@ class FnDecl : public Decl
     void CheckChildren();
     void AddTypeSignitures(Hashtable<FnDecl*> *);
     void CheckTypeSignitures(Hashtable<FnDecl*> *);
+    Type * GetType();
 };
 
 class ClassDecl : public Decl 

@@ -46,7 +46,6 @@ void StmtBlock::Check() {
     }
     if (stmts) {
         stmts->CheckAll();
-        stmts->CheckTypeAll();
     }
     symbols->Pop();
 }

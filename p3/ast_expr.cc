@@ -60,13 +60,16 @@ Type* CompoundExpr::CheckType() {
 }
 */
 
+Type* LogicalExpr::CheckType() {
+    // TODO: Need for more type checking of left/right
+    return Type::boolType;
+}
   
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
 }
 
-/*
 Type* ArrayAccess::CheckType() {
     // Check if access index is int
     Type * temp = subscript->CheckType();
@@ -76,11 +79,8 @@ Type* ArrayAccess::CheckType() {
     }
 
     // Get type of base and return
-    temp = base->CheckType();
-    return temp;
-return NULL;
+    return base->CheckType();
 }
-    */
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
@@ -90,11 +90,9 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
-/*
 Type* FieldAccess::CheckType() {
     return field->GetType();
 }
-*/
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
@@ -104,6 +102,12 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     (actuals=a)->SetParentAll(this);
 }
  
+// TODO: Implement case for Expr.Identifier()
+/*
+Type* Call::CheckType() {
+    return field->GetType();
+}
+*/
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
   Assert(c != NULL);

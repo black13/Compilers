@@ -128,6 +128,7 @@ class LogicalExpr : public CompoundExpr
     LogicalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
+    Type * CheckType();
 };
 
 class AssignExpr : public CompoundExpr 
@@ -160,7 +161,7 @@ class ArrayAccess : public LValue
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
-    //Type * CheckType();
+    Type * CheckType();
 };
 
 /* Note that field access is used both for qualified names
@@ -176,7 +177,7 @@ class FieldAccess : public LValue
     
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
-    //Type * CheckType();
+    Type * CheckType();
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -192,6 +193,7 @@ class Call : public Expr
     
   public:
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
+    //Type* CheckType();
 };
 
 class NewExpr : public Expr

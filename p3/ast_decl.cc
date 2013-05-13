@@ -141,6 +141,10 @@ void FnDecl::Check() {
     symbols->Pop();
 }
 
+Type* FnDecl::GetType() {
+    return returnType;
+}
+
 /*
  * Add the function name and some way to represent it's type signiture
  */
