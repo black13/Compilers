@@ -9,7 +9,7 @@
 #include "utility.h"
 #include "errors.h"
 #include "parser.h"
-#include "symboltable.h"
+#include "list.h"
 
 /* Function: main()
  * ----------------

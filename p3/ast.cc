@@ -7,7 +7,7 @@
 #include "ast_decl.h"
 #include <string.h> // strdup
 #include <stdio.h>  // printf
-#include "symboltable.h"
+#include "list.h"
 #include "errors.h"
 #include "hashtable.h"
 

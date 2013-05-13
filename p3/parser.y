@@ -8,7 +8,7 @@
 #include "scanner.h" // for yylex
 #include "parser.h"
 #include "errors.h"
-#include "symboltable.h"
+#include "list.h"
 
 SymbolTable *symbols = new SymbolTable(); 
 

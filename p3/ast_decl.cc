@@ -6,7 +6,7 @@
 #include "ast_type.h"
 #include "ast_stmt.h"
 #include "errors.h"
-#include "symboltable.h"
+#include "list.h"
 
 extern SymbolTable *symbols;
         
