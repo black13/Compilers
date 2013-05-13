@@ -39,10 +39,10 @@ CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
 
-Type * CompoundExpr::Check()
+Type * CompoundExpr::CheckType()
 {
-  Type *leftType = left->Check();
-  Type *rightType = right->Check();
+  Type *leftType = left->CheckType();
+  Type *rightType = right->CheckType();
   if (!leftType->EqualType(rightType))
   {
     ReportError::IncompatibleOperands(op, leftType, rightType);
@@ -65,8 +65,8 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
-Type * ArrayAccess::Check() {
-  Type * subType = subscript->Check();
+Type * ArrayAccess::CheckType() {
+  Type * subType = subscript->CheckType();
   if (subType->EqualType(Type::intType)) {
     return subType;
   }

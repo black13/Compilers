@@ -99,7 +99,7 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
-    Type * Check();
+    Type * CheckType();
 };
 
 class ArithmeticExpr : public CompoundExpr 
@@ -160,7 +160,7 @@ class ArrayAccess : public LValue
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
-    Type * Check();
+    Type * CheckType();
 };
 
 /* Note that field access is used both for qualified names
