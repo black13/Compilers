@@ -11,7 +11,6 @@
 extern SymbolTable *symbols;
 extern Hashtable<FnDecl*> *functions;
         
-         
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
     (id=n)->SetParent(this); 
@@ -27,7 +26,7 @@ void VarDecl::Check() {
 }
 
 Type * VarDecl::GetType() {
-    return this->type;
+    return type;
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
@@ -61,12 +60,12 @@ void ClassDecl::Check() {
 void ClassDecl::CheckChildren() {
     symbols->Push();
     functions = new Hashtable<FnDecl*>();
-    if (implements)
-    {
-      for (int i = 0; i < implements->NumElements(); i++ )
-      {
-        //implements->Nth(i)->GetInterface()->AddFunctions();;
-      }
+    if (implements) {
+        InterfaceDecl *temp;
+        for (int i = 0; i < implements->NumElements(); i++) {
+            temp = implements->Nth(i)->GetInterface();
+            if (temp) temp->AddChildren();
+        }
     }
     if (extends) {
         ClassDecl *ex = extends->GetClass();
@@ -75,7 +74,11 @@ void ClassDecl::CheckChildren() {
     if (members) {
         members->AddSymbolAll();
         members->CheckAll();
-        members->CheckTypeSignituresAll();
+        Decl *temp;
+        for (int i = 0; i < members->NumElements(); i++) {
+            temp = members->Nth(i);
+            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures();
+        }
     }
     delete functions;
     symbols->Pop();
@@ -95,17 +98,12 @@ void InterfaceDecl::CheckChildren() {
     symbols->Pop();
 }
 
-void InterfaceDecl::AddFunctions()
+void InterfaceDecl::AddChildren()
 {
-  if (members)
-  {
-    for (int i = 0; i < members->NumElements(); i++)
-    {
-      FnDecl* f = dynamic_cast<FnDecl*>(members->Nth(i));
-      if (f)
-      {
-        f->AddTypeSignitures();
-      }
+  if (members) {
+    for (int i = 0; i < members->NumElements(); i++) {
+        if (dynamic_cast<FnDecl*>(members->Nth(i)))
+            members->Nth(i)->AddTypeSignitures();
     }
   }
 }
@@ -133,7 +131,7 @@ void FnDecl::Check() {
  * Add the function name and some way to represent it's type signiture
  */
 void FnDecl::AddTypeSignitures() {
-    functions->Enter(this->id->GetName(), this, false);
+    functions->Enter(id->GetName(), this, false);
 }
 
 void FnDecl::CheckTypeSignitures() {
@@ -143,23 +141,24 @@ void FnDecl::CheckTypeSignitures() {
     {
         // Check if type signitures match
         // Compare Return types and argument types
-        if (!base->returnType->IsEquivalentTo(this->returnType) ||
-            formals->NumElements() != base->formals->NumElements())
-        {
+        Type *temp = base->returnType;
+        if (!(this->returnType->EqualType(base->returnType))) {
             ReportError::OverrideMismatch(this);
-            return;
         }
-        else
-        {
-          for (int i = 0; i < formals->NumElements(); i++)
-          {
-              if (!formals->Nth(i)->GetType()->IsEquivalentTo(base->formals->Nth(i)->GetType()))
-              {
-                //ReportError::OverrideMismatch(this);
-                return;
-              }
-          }
+        else if (formals->NumElements() != base->formals->NumElements()) {
+            ReportError::OverrideMismatch(this);
         }
+        /*
+        else {
+            for (int i = 0; i < formals->NumElements(); i++) {
+                if (!(formals->Nth(i)->GetType()->EqualType(base->formals->Nth(i)->GetType())))
+                {
+                    ReportError::OverrideMismatch(this);
+                    return;
+                }
+            }
+        }
+        */
     }
 }
 

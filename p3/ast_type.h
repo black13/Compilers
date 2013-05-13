@@ -33,7 +33,8 @@ class Type : public Node
     
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
-    virtual bool IsEquivalentTo(Type *other) { return this == other; }
+    bool EqualType(Type *other);
+    const char* GetName() { return typeName; }
     virtual void Check() {};
     virtual void Check(reasonT reason) {};
 };

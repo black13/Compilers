@@ -28,6 +28,11 @@ Type::Type(const char *n) {
     typeName = strdup(n);
 }
 
+bool Type::EqualType(Type *other) {
+    int x = strcmp(typeName, other->GetName());    
+    return x == 0;    
+}
+
 	
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     Assert(i != NULL);
