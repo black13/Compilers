@@ -53,7 +53,7 @@ class Node  {
     yyltype *GetLocation()   { return location; }
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
-    void Check() {};
+    virtual void Check() {};
     void Check(reasonT) {};
 
 };
@@ -70,6 +70,7 @@ class Identifier : public Node
     void AddClass(ClassDecl* parent);
     void AddInterface(InterfaceDecl* parent);
     void CheckType(reasonT whyNeeded);
+    Type* GetType();
     const char * GetName();
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     ClassDecl* GetClass();

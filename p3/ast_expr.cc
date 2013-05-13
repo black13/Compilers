@@ -39,8 +39,16 @@ CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
 
-Type * CompoundExpr::CheckType()
-{
+CompoundExpr::CompoundExpr(Operator *o, Expr *r) 
+  : Expr(Join(o->GetLocation(), r->GetLocation())) {
+    Assert(o != NULL && r != NULL);
+    left = NULL; 
+    (op=o)->SetParent(this);
+    (right=r)->SetParent(this);
+}
+   
+/*
+Type* CompoundExpr::CheckType() {
   Type *leftType = left->CheckType();
   Type *rightType = right->CheckType();
   if (!leftType->EqualType(rightType))
@@ -50,29 +58,29 @@ Type * CompoundExpr::CheckType()
   }
   return leftType;
 }
+*/
 
-CompoundExpr::CompoundExpr(Operator *o, Expr *r) 
-  : Expr(Join(o->GetLocation(), r->GetLocation())) {
-    Assert(o != NULL && r != NULL);
-    left = NULL; 
-    (op=o)->SetParent(this);
-    (right=r)->SetParent(this);
-}
-   
   
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
 }
 
-Type * ArrayAccess::CheckType() {
-  Type * subType = subscript->CheckType();
-  if (subType->EqualType(Type::intType)) {
-    return subType;
-  }
-  ReportError::SubscriptNotInteger(subscript);
-  return NULL;
+/*
+Type* ArrayAccess::CheckType() {
+    // Check if access index is int
+    Type * temp = subscript->CheckType();
+    if (temp) {
+        if (!temp->EqualType(Type::intType))
+            ReportError::SubscriptNotInteger(subscript);
+    }
+
+    // Get type of base and return
+    temp = base->CheckType();
+    return temp;
+return NULL;
 }
+    */
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
@@ -82,6 +90,11 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
+/*
+Type* FieldAccess::CheckType() {
+    return field->GetType();
+}
+*/
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
@@ -104,3 +117,14 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     (elemType=et)->SetParent(this);
 }
 
+Type* NewArrayExpr::CheckType() {
+    // Check if array size is int
+    Type *temp = size->CheckType();
+    if (temp) {
+        if (!temp->EqualType(Type::intType))
+            ReportError::NewArraySizeNotInteger(size);
+    }
+
+    // This is a new declaration, so just return nullType
+    return Type::nullType;
+}

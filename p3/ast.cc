@@ -38,6 +38,11 @@ void Identifier::CheckType(reasonT whyNeeded) {
     if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);
 }
 
+Type* Identifier::GetType() {
+    Decl *decl = symbols->Search(name);
+    return decl->GetType();
+}
+
 const char * Identifier::GetName() {
   return this->name;
 }

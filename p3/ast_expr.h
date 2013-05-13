@@ -99,7 +99,7 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
-    Type * CheckType();
+    //Type * CheckType();
 };
 
 class ArithmeticExpr : public CompoundExpr 
@@ -160,7 +160,7 @@ class ArrayAccess : public LValue
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
-    Type * CheckType();
+    //Type * CheckType();
 };
 
 /* Note that field access is used both for qualified names
@@ -176,6 +176,7 @@ class FieldAccess : public LValue
     
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+    //Type * CheckType();
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -211,7 +212,7 @@ class NewArrayExpr : public Expr
     
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
-    Type* CheckType() { return Type::nullType; };
+    Type* CheckType(); 
 };
 
 class ReadIntegerExpr : public Expr

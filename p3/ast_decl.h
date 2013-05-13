@@ -39,6 +39,7 @@ class Decl : public Node
     virtual void AddChildren(Hashtable<FnDecl*> *) {};
     virtual void CheckTypeSignitures(Hashtable<FnDecl*> *) {};
     virtual void AddTypeSignitures(Hashtable<FnDecl*> *) {};
+    virtual Type * GetType() { return NULL; };
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
