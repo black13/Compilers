@@ -38,6 +38,18 @@ CompoundExpr::CompoundExpr(Expr *l, Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
 
+Type * CompoundExpr::Check()
+{
+  Type *leftType = left->Check();
+  Type *rightType = right->Check();
+  if (!leftType->EqualType(rightType))
+  {
+    ReportError::IncompatibleOperands(op, leftType, rightType);
+    return NULL;
+  }
+  return leftType;
+}
+
 CompoundExpr::CompoundExpr(Operator *o, Expr *r) 
   : Expr(Join(o->GetLocation(), r->GetLocation())) {
     Assert(o != NULL && r != NULL);
