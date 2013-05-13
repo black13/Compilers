@@ -27,7 +27,7 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
-    virtual Type* Check() { return NULL; };
+    virtual Type* CheckType() { return NULL; };
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -216,14 +216,14 @@ class ReadIntegerExpr : public Expr
 {
   public:
     ReadIntegerExpr(yyltype loc) : Expr(loc) {}
-    Type* Check() { return Type::intType; };
+    Type* CheckType() { return Type::intType; };
 };
 
 class ReadLineExpr : public Expr
 {
   public:
     ReadLineExpr(yyltype loc) : Expr (loc) {}
+    Type* CheckType() { return Type::stringType; };
 };
 
-    
 #endif
