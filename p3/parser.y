@@ -11,7 +11,6 @@
 #include "symboltable.h"
 
 SymbolTable *symbols = new SymbolTable(); 
-Hashtable<FnDecl*> *functions;
 
 void yyerror(const char *msg); // standard error-handling routine
 

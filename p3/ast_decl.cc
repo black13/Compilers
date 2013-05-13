@@ -9,7 +9,6 @@
 #include "symboltable.h"
 
 extern SymbolTable *symbols;
-extern Hashtable<FnDecl*> *functions;
         
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -38,7 +37,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
-void ClassDecl::AddChildren() { 
+void ClassDecl::AddChildren(Hashtable<FnDecl*> *func) { 
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
             // Add VarDecl symbols to symbol table
@@ -47,7 +46,7 @@ void ClassDecl::AddChildren() {
                 members->Nth(i)->AddSymbol();
             // Add type signiture to some other table
             else if (dynamic_cast<FnDecl*>(members->Nth(i)))
-                members->Nth(i)->AddTypeSignitures();
+                members->Nth(i)->AddTypeSignitures(func);
         }
     }
 }
@@ -58,18 +57,26 @@ void ClassDecl::Check() {
 }
 
 void ClassDecl::CheckChildren() {
+    if (checked) return;
     symbols->Push();
-    functions = new Hashtable<FnDecl*>();
+    Hashtable<FnDecl*> *extFun = new Hashtable<FnDecl*>();
+    Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
     if (implements) {
         InterfaceDecl *temp;
         for (int i = 0; i < implements->NumElements(); i++) {
             temp = implements->Nth(i)->GetInterface();
-            if (temp) temp->AddChildren();
+            if (temp) {
+                temp->CheckChildren();
+                temp->AddChildren(impFun);
+            }
         }
     }
     if (extends) {
         ClassDecl *ex = extends->GetClass();
-        if (ex) ex->AddChildren();
+        if (ex) {
+            ex->CheckChildren();
+            ex->AddChildren(extFun);
+        }
     }
     if (members) {
         members->AddSymbolAll();
@@ -77,11 +84,21 @@ void ClassDecl::CheckChildren() {
         Decl *temp;
         for (int i = 0; i < members->NumElements(); i++) {
             temp = members->Nth(i);
-            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures();
+            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(impFun);
+            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(extFun);
         }
+        /*
+        cout << "Checking Extends" << endl;
+        for (int i = 0; i < members->NumElements(); i++) {
+            temp = members->Nth(i);
+            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(extFun);
+        }
+        */
     }
-    delete functions;
+    delete extFun;
+    delete impFun;
     symbols->Pop();
+    checked = true;
 }
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
@@ -90,20 +107,22 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 void InterfaceDecl::CheckChildren() {
+    if (checked) return;
     symbols->Push();
     if (members) {
         members->AddSymbolAll();
         members->CheckAll();
     }
     symbols->Pop();
+    checked = true;
 }
 
-void InterfaceDecl::AddChildren()
+void InterfaceDecl::AddChildren(Hashtable<FnDecl*> *func)
 {
   if (members) {
     for (int i = 0; i < members->NumElements(); i++) {
         if (dynamic_cast<FnDecl*>(members->Nth(i)))
-            members->Nth(i)->AddTypeSignitures();
+            members->Nth(i)->AddTypeSignitures(func);
     }
   }
 }
@@ -130,13 +149,13 @@ void FnDecl::Check() {
 /*
  * Add the function name and some way to represent it's type signiture
  */
-void FnDecl::AddTypeSignitures() {
-    functions->Enter(id->GetName(), this, false);
+void FnDecl::AddTypeSignitures(Hashtable<FnDecl*> *func) {
+    func->Enter(id->GetName(), this, false);
 }
 
-void FnDecl::CheckTypeSignitures() {
+void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
     // Check if Base class declares function
-    FnDecl *base = functions->Lookup(this->id->GetName());
+    FnDecl *base = func->Lookup(this->id->GetName());
     if (base)
     {
         // Check if type signitures match

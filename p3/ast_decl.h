@@ -21,20 +21,24 @@ class Type;
 class NamedType;
 class Identifier;
 class Stmt;
+class FnDecl;
 
 
 class Decl : public Node 
 {
   protected:
     Identifier *id;
+    bool checked;
   
   public:
     Decl(Identifier *name);
     void AddSymbol() { if (id) id->AddSymbol(this); };
+    bool IsChecked() { return checked; }
     virtual void Check() {};
     virtual void CheckChildren() {};
-    virtual void AddTypeSignitures() {};
-    virtual void CheckTypeSignitures() {};
+    virtual void AddChildren(Hashtable<FnDecl*> *) {};
+    virtual void CheckTypeSignitures(Hashtable<FnDecl*> *) {};
+    virtual void AddTypeSignitures(Hashtable<FnDecl*> *) {};
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -61,8 +65,8 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     void Check();
     void CheckChildren();
-    void AddTypeSignitures();
-    void CheckTypeSignitures();
+    void AddTypeSignitures(Hashtable<FnDecl*> *);
+    void CheckTypeSignitures(Hashtable<FnDecl*> *);
 };
 
 class ClassDecl : public Decl 
@@ -75,7 +79,7 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-    void AddChildren(); 
+    void AddChildren(Hashtable<FnDecl*> *);
     void Check();
     void CheckChildren();
 };
@@ -88,7 +92,7 @@ class InterfaceDecl : public Decl
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     void CheckChildren();
-    void AddChildren(); 
+    void AddChildren(Hashtable<FnDecl*> *);
 };
 
 
