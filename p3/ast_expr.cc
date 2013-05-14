@@ -47,18 +47,20 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
    
-/*
+
 Type* CompoundExpr::CheckType() {
-  Type *leftType = left->CheckType();
+  Type *leftType;
+  if (left) leftType = left->CheckType();
   Type *rightType = right->CheckType();
-  if (!leftType->EqualType(rightType))
-  {
+  if (leftType && rightType) {
+    if (leftType->EqualType(rightType)) {
+      return leftType;
+    }
     ReportError::IncompatibleOperands(op, leftType, rightType);
-    return NULL;
   }
-  return leftType;
+  return Type::nullType;
 }
-*/
+
 
 Type* LogicalExpr::CheckType() {
     // TODO: Need for more type checking of left/right
