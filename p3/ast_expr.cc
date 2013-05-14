@@ -48,9 +48,9 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
    
 
-/*
+
 Type* CompoundExpr::CheckType() {
-  return Type::nullType;
+  return Type::nullType; //IAN TODO
   Type *leftType = NULL;
   if (left) leftType = left->CheckType();
   Type *rightType = NULL;
@@ -63,7 +63,7 @@ Type* CompoundExpr::CheckType() {
   }
   return Type::nullType;
 }
-*/
+
 
 Type* RelationalExpr::CheckType() {
     Type *lhs = NULL; 
