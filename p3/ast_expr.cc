@@ -62,6 +62,13 @@ Type* CompoundExpr::CheckType() {
 
 Type* LogicalExpr::CheckType() {
     // TODO: Need for more type checking of left/right
+    Type *lhs = left->CheckType();
+    Type *rhs = right->CheckType();
+    if (rhs && lhs) {
+        if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
+            ReportError::IncompatibleOperands(op, lhs, rhs);
+    }
+    
     return Type::boolType;
 }
   
