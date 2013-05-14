@@ -48,6 +48,7 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
    
 
+/*
 Type* CompoundExpr::CheckType() {
   Type *leftType;
   if (left) leftType = left->CheckType();
@@ -60,14 +61,15 @@ Type* CompoundExpr::CheckType() {
   }
   return Type::nullType;
 }
-
+*/
 
 Type* RelationalExpr::CheckType() {
-    Type *lhs, *rhs;
+    Type *lhs = NULL; 
+    Type *rhs = NULL;
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
+        if (!rhs->EqualType(lhs))
             ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
@@ -75,11 +77,12 @@ Type* RelationalExpr::CheckType() {
 }
 
 Type* EqualityExpr::CheckType() {
-    Type *lhs, *rhs;
+    Type *lhs = NULL; 
+    Type *rhs = NULL;
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
+        if (!rhs->EqualType(lhs))
             ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
@@ -87,12 +90,17 @@ Type* EqualityExpr::CheckType() {
 }
 
 Type* LogicalExpr::CheckType() {
-    Type *lhs, *rhs;
+    Type *lhs = NULL; 
+    Type *rhs = NULL;
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
         if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
             ReportError::IncompatibleOperands(op, lhs, rhs);
+    }
+    else {
+        if (!rhs->EqualType(Type::boolType))
+            ReportError::IncompatibleOperand(op, rhs);
     }
     
     return Type::boolType;

@@ -104,7 +104,7 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
-    Type * CheckType();
+    //Type * CheckType();
 };
 
 class ArithmeticExpr : public CompoundExpr 
