@@ -1,4 +1,6 @@
 #! /bin/sh
+make clean
+make
 
 [ -x dcc ] || { echo "Error: dcc not executable"; exit 1; }
 
