@@ -60,10 +60,34 @@ Type* CompoundExpr::CheckType() {
 }
 */
 
+Type* RelationalExpr::CheckType() {
+    Type *lhs, *rhs;
+    if (left) lhs = left->CheckType();
+    if (right) rhs = right->CheckType();
+    if (rhs && lhs) {
+        if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
+            ReportError::IncompatibleOperands(op, lhs, rhs);
+    }
+    
+    return Type::boolType;
+}
+
+Type* EqualityExpr::CheckType() {
+    Type *lhs, *rhs;
+    if (left) lhs = left->CheckType();
+    if (right) rhs = right->CheckType();
+    if (rhs && lhs) {
+        if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
+            ReportError::IncompatibleOperands(op, lhs, rhs);
+    }
+    
+    return Type::boolType;
+}
+
 Type* LogicalExpr::CheckType() {
-    // TODO: Need for more type checking of left/right
-    Type *lhs = left->CheckType();
-    Type *rhs = right->CheckType();
+    Type *lhs, *rhs;
+    if (left) lhs = left->CheckType();
+    if (right) rhs = right->CheckType();
     if (rhs && lhs) {
         if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
             ReportError::IncompatibleOperands(op, lhs, rhs);

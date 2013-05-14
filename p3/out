@@ -90,8 +90,7 @@ Checking samples/bad2.out           : FAIL <--
 > *** Incompatible operands: double / int
 > 
 Checking samples/bad3.out           : FAIL <--
-0a1,24
-> 
+1a2,19
 > *** Error line 8.
 >     num[1] = 2;
 >     ^^^
@@ -109,11 +108,6 @@ Checking samples/bad3.out           : FAIL <--
 >       ^^^
 > *** Array subscript must be an integer
 > 
-> 
-> *** Error line 14.
->   NewArray("hello", string);
->            ^^^^^^^
-> *** Size for NewArray must be an integer
 > 
 Checking samples/bad4.out           : FAIL <--
 0a1,18
@@ -238,8 +232,12 @@ Checking samples/bad7.out           : FAIL <--
 > *** Incompatible operands: double + int
 > 
 Checking samples/bad8.out           : FAIL <--
-0a1,30
-> 
+2,5c2,29
+< *** Error line 19.
+<   if (red.Park()) 
+<       ^^^^^^^^^^
+< *** Test expression must have boolean type
+---
 > *** Error line 18.
 >   red.wheels = 2;
 >       ^^^^^^
@@ -268,7 +266,6 @@ Checking samples/bad8.out           : FAIL <--
 >   red = (blue < red && blue == null);
 >       ^
 > *** Incompatible operands: Honda = bool
-> 
 Checking samples/bad9.out           : FAIL <--
 0a1,30
 > 
@@ -310,13 +307,13 @@ Checking samples/new.out            : FAIL <--
 > *** Incompatible argument 1: double given, int expected
 > 
 > 
-42a49,54
-> 
-> *** Error line 16.
->    a[test(4)];
->      ^^^^^^^
-> *** Array subscript must be an integer
-> 
+34,39d39
+<          ^^^
+< *** Array subscript must be an integer
+< 
+< 
+< *** Error line 14.
+<    if (a[3+5]) 1;
 Checking samples/queue.out          : PASS
 Checking samples/stack.out          : PASS
 Checking samples/t1.out             : PASS
