@@ -49,9 +49,11 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
    
 
 Type* CompoundExpr::CheckType() {
-  Type *leftType;
+  return Type::nullType;
+  Type *leftType = NULL;
   if (left) leftType = left->CheckType();
-  Type *rightType = right->CheckType();
+  Type *rightType = NULL;
+  if (right) rightType = right->CheckType();
   if (leftType && rightType) {
     if (leftType->EqualType(rightType)) {
       return leftType;
