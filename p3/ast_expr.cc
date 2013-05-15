@@ -48,20 +48,18 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
    
 
-/*
-Type* CompoundExpr::CheckType() {
-  Type *leftType;
-  if (left) leftType = left->CheckType();
-  Type *rightType = right->CheckType();
-  if (leftType && rightType) {
-    if (leftType->EqualType(rightType)) {
-      return leftType;
-    }
-    ReportError::IncompatibleOperands(op, leftType, rightType);
+Type* ArithmeticExpr::CheckType() {
+  Type *lhs = NULL;
+  Type *rhs = NULL;
+  if (left) lhs = left->CheckType();
+  if (right) rhs = right->CheckType();
+  if (lhs && rhs) {
+      if (lhs->EqualType(rhs))
+          return lhs;
+      ReportError::IncompatibleOperands(op, lhs, rhs);
   }
-  return Type::nullType;
+  return NULL;
 }
-*/
 
 Type* RelationalExpr::CheckType() {
     Type *lhs = NULL; 
@@ -69,11 +67,12 @@ Type* RelationalExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (!rhs->EqualType(lhs))
-            ReportError::IncompatibleOperands(op, lhs, rhs);
+        if (rhs->EqualType(lhs))
+            return Type::boolType;
+        ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
-    return Type::boolType;
+    return NULL;
 }
 
 Type* EqualityExpr::CheckType() {
@@ -82,11 +81,12 @@ Type* EqualityExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (!rhs->EqualType(lhs))
-            ReportError::IncompatibleOperands(op, lhs, rhs);
+        if (rhs->EqualType(lhs))
+            return Type::boolType;
+        ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
-    return Type::boolType;
+    return NULL;
 }
 
 Type* LogicalExpr::CheckType() {
@@ -95,15 +95,31 @@ Type* LogicalExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (!rhs->EqualType(Type::boolType) || !lhs->EqualType(Type::boolType))
-            ReportError::IncompatibleOperands(op, lhs, rhs);
+        if (rhs->EqualType(Type::boolType) && lhs->EqualType(Type::boolType))
+            return Type::boolType;
+        ReportError::IncompatibleOperands(op, lhs, rhs);
     }
-    else {
-        if (!rhs->EqualType(Type::boolType))
-            ReportError::IncompatibleOperand(op, rhs);
+    else if (rhs) {
+        if (rhs->EqualType(Type::boolType))
+            return Type::boolType;
+        ReportError::IncompatibleOperand(op, rhs);
     }
     
-    return Type::boolType;
+    return NULL;
+}
+  
+Type* AssignExpr::CheckType() {
+    Type *lhs = NULL; 
+    Type *rhs = NULL;
+    if (left) lhs = left->CheckType();
+    if (right) rhs = right->CheckType();
+    if (rhs && lhs) {
+        if (rhs->EqualType(lhs))
+            return rhs;
+        ReportError::IncompatibleOperands(op, lhs, rhs);
+    }
+    
+    return NULL;
 }
   
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -113,14 +129,20 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 
 Type* ArrayAccess::CheckType() {
     // Check if access index is int
-    Type * temp = subscript->CheckType();
-    if (temp) {
-        if (!temp->EqualType(Type::intType))
+    Type * type = subscript->CheckType();
+    if (type) {
+        if (!type->EqualType(Type::intType))
             ReportError::SubscriptNotInteger(subscript);
     }
 
     // Get type of base and return
-    return base->CheckType();
+    if (base) {
+        type = base->CheckType();
+        if (dynamic_cast<ArrayType*>(type))
+            return type;
+        ReportError::BracketsOnNonArray(subscript);
+    }
+    return NULL;
 }
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
@@ -132,7 +154,11 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 }
 
 Type* FieldAccess::CheckType() {
-    return field->GetType();
+    // No base, this is a variable access
+    if (!base) {
+        return field->CheckType(LookingForVariable);
+    }
+    return Type::nullType;
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
@@ -143,12 +169,12 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     (actuals=a)->SetParentAll(this);
 }
  
-// TODO: Implement case for Expr.Identifier()
-/*
 Type* Call::CheckType() {
-    return field->GetType();
+    if (!base) {
+        return field->CheckType(LookingForFunction);
+    }
+    return Type::nullType;
 }
-*/
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
   Assert(c != NULL);
@@ -164,12 +190,14 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
 
 Type* NewArrayExpr::CheckType() {
     // Check if array size is int
-    Type *temp = size->CheckType();
-    if (temp) {
-        if (!temp->EqualType(Type::intType))
+    Type *type = size->CheckType();
+    if (type) {
+        if (!type->EqualType(Type::intType))
             ReportError::NewArraySizeNotInteger(size);
     }
+    type = elemType->CheckType(LookingForType);
+    if (type) return new ArrayType(elemType);
 
     // This is a new declaration, so just return nullType
-    return Type::nullType;
+    return NULL;
 }

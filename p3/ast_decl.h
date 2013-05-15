@@ -29,6 +29,7 @@ class Decl : public Node
   protected:
     Identifier *id;
     bool checked;
+    Hashtable<Decl*> *scope;
   
   public:
     Decl(Identifier *name);
@@ -77,6 +78,7 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
+    Hashtable<FnDecl*> *extFun;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 

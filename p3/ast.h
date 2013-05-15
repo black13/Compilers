@@ -69,8 +69,7 @@ class Identifier : public Node
     void AddSymbol(Decl* parent, bool output);
     void AddClass(ClassDecl* parent);
     void AddInterface(InterfaceDecl* parent);
-    void CheckType(reasonT whyNeeded);
-    Type* GetType();
+    Type* CheckType(reasonT whyNeeded);
     const char * GetName();
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     ClassDecl* GetClass();

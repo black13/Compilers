@@ -112,6 +112,7 @@ class ArithmeticExpr : public CompoundExpr
   public:
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
+    Type * CheckType();
 };
 
 class RelationalExpr : public CompoundExpr 
@@ -143,6 +144,7 @@ class AssignExpr : public CompoundExpr
   public:
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
+    Type * CheckType();
 };
 
 class LValue : public Expr 
@@ -200,7 +202,7 @@ class Call : public Expr
     
   public:
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
-    //Type* CheckType();
+    Type* CheckType();
 };
 
 class NewExpr : public Expr

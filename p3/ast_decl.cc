@@ -59,7 +59,7 @@ void ClassDecl::CheckChildren() {
     if (checked) return;
 
     symbols->Push();
-    Hashtable<FnDecl*> *extFun = new Hashtable<FnDecl*>();
+    extFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
     if (implements) {
         InterfaceDecl *temp;

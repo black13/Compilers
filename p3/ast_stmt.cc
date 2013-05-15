@@ -66,6 +66,30 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     (step=s)->SetParent(this);
 }
 
+void ForStmt::Check() {
+    if (test) {
+        Type *type = test->CheckType();
+        if (type) { 
+            if (!type->EqualType(Type::boolType)) 
+                ReportError::TestNotBoolean(test);
+        }
+    }
+    if (init) init->Check();
+    if (step) step->Check();
+    if (body) body->Check();
+}
+
+void WhileStmt::Check() {
+    if (test) {
+        Type *type = test->CheckType();
+        if (type) { 
+            if (!type->EqualType(Type::boolType)) 
+                ReportError::TestNotBoolean(test);
+        }
+    }
+    if (body) body->Check();
+}
+
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;

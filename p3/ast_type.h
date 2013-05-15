@@ -37,6 +37,7 @@ class Type : public Node
     virtual const char* GetName() { return typeName; }
     virtual void Check() {};
     virtual void Check(reasonT reason) {};
+    virtual Type* CheckType(reasonT reason) { return this; };
 };
 
 class NamedType : public Type 
@@ -50,6 +51,7 @@ class NamedType : public Type
     void PrintToStream(ostream& out) { out << id; }
     void Check(reasonT reason);
     void Check();
+    Type* CheckType(reasonT reason) { return id->CheckType(reason); }; 
     const char* GetName() { return id->GetName(); }
     ClassDecl* GetClass();
     InterfaceDecl* GetInterface();
@@ -62,9 +64,11 @@ class ArrayType : public Type
 
   public:
     ArrayType(yyltype loc, Type *elemType);
+    ArrayType(Type *elemType);
     
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
     void Check(reasonT reason);
+    Type* CheckType(reasonT reason) { return elemType->CheckType(reason); }; 
     const char* GetName() { return elemType->GetName(); }
 };
 

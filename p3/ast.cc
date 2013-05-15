@@ -33,14 +33,12 @@ void Identifier::AddSymbol(Decl* parent, bool output) {
     else if (output) ReportError::DeclConflict(parent, decl);
 }
 
-void Identifier::CheckType(reasonT whyNeeded) {
+Type* Identifier::CheckType(reasonT whyNeeded) {
     Decl *decl = symbols->Search(name);
-    if (decl == NULL) ReportError::IdentifierNotDeclared(this, whyNeeded);
-}
-
-Type* Identifier::GetType() {
-    Decl *decl = symbols->Search(name);
-    return decl->GetType();
+    if (decl) return decl->GetType();
+    
+    ReportError::IdentifierNotDeclared(this, whyNeeded);
+    return NULL;
 }
 
 const char * Identifier::GetName() {
