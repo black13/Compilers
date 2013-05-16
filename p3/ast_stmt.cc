@@ -99,10 +99,8 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
 void IfStmt::Check() {
     if (test) {
         Type *type = test->CheckType();
-        if (type) { 
-            if (!type->EqualType(Type::boolType)) 
-                ReportError::TestNotBoolean(test);
-        }
+        if (!type || !type->EqualType(Type::boolType)) 
+            ReportError::TestNotBoolean(test);
     }
     if (body) body->Check();
     if (elseBody) elseBody->Check();

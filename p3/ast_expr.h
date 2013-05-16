@@ -212,7 +212,7 @@ class NewExpr : public Expr
     
   public:
     NewExpr(yyltype loc, NamedType *clsType);
-    Type* CheckType() { return cType; };
+    Type* CheckType(); 
 };
 
 class NewArrayExpr : public Expr

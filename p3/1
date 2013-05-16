@@ -1,5 +1,0 @@
-./check.sh: line 16:  8670 Segmentation fault      (core dumped) ./dcc < $base.$ext > $tmp 2>&1
-./check.sh: line 16:  8710 Segmentation fault      (core dumped) ./dcc < $base.$ext > $tmp 2>&1
-./check.sh: line 16:  8717 Segmentation fault      (core dumped) ./dcc < $base.$ext > $tmp 2>&1
-./check.sh: line 16:  8724 Segmentation fault      (core dumped) ./dcc < $base.$ext > $tmp 2>&1
-./check.sh: line 16:  8737 Segmentation fault      (core dumped) ./dcc < $base.$ext > $tmp 2>&1

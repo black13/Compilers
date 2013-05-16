@@ -177,10 +177,14 @@ Type* Call::CheckType() {
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 
-  Assert(c != NULL);
-  (cType=c)->SetParent(this);
+    Assert(c != NULL);
+    (cType=c)->SetParent(this);
 }
 
+Type* NewExpr::CheckType() {
+    Type *type = cType->CheckType(LookingForClass);
+    return type;
+}
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     Assert(sz != NULL && et != NULL);
@@ -195,7 +199,8 @@ Type* NewArrayExpr::CheckType() {
         if (!type->EqualType(Type::intType))
             ReportError::NewArraySizeNotInteger(size);
     }
-    type = elemType->CheckType(LookingForType);
+    type = NULL;
+    if (elemType) type = elemType->CheckType(LookingForType);
     if (type) return new ArrayType(elemType);
 
     // This is a new declaration, so just return nullType

@@ -34,8 +34,24 @@ void Identifier::AddSymbol(Decl* parent, bool output) {
 }
 
 Type* Identifier::CheckType(reasonT whyNeeded) {
-    Decl *decl = symbols->Search(name);
-    if (decl) return decl->GetType();
+    Decl *decl;
+    if (whyNeeded == LookingForType) {
+        decl = this->GetClass();
+        if (!decl) decl = this->GetInterface();
+    }
+    else if (whyNeeded == LookingForClass) {
+        decl = this->GetClass();
+    }
+    else if (whyNeeded == LookingForInterface) {
+        decl = this->GetInterface();
+    }
+    else {
+        decl = symbols->Search(name);
+    }
+
+    if (decl) {
+        return decl->GetType();
+    }
     
     ReportError::IdentifierNotDeclared(this, whyNeeded);
     return NULL;
@@ -45,9 +61,6 @@ const char * Identifier::GetName() {
   return this->name;
 }
 
-/*
- * return the Cecl of the class, if not found returns null
- */
 ClassDecl* Identifier::GetClass() {
     Decl* found = symbols->Search(name);
     ClassDecl* c = dynamic_cast<ClassDecl*>(found);
