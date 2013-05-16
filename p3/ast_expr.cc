@@ -81,12 +81,13 @@ Type* EqualityExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (rhs->EqualType(lhs))
-            return Type::boolType;
-        ReportError::IncompatibleOperands(op, lhs, rhs);
+        if (!rhs->ConvertableTo(lhs))
+            ReportError::IncompatibleOperands(op, lhs, rhs);
+        else if (!lhs->ConvertableTo(rhs))
+            ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
-    return NULL;
+    return Type::boolType;
 }
 
 Type* LogicalExpr::CheckType() {
@@ -104,7 +105,6 @@ Type* LogicalExpr::CheckType() {
     }
     
     return Type::boolType;
-    //return NULL;
 }
   
 Type* AssignExpr::CheckType() {

@@ -32,6 +32,20 @@ bool Type::EqualType(Type *other) {
     return strcmp(this->GetName(), other->GetName()) == 0;
 }
 
+// TODO: Finish this function
+bool Type::ConvertableTo(Type *other) {
+    if (this == Type::voidType || other == Type::voidType)
+        return false;
+    else if (this == Type::intType && other == Type::doubleType)
+        return false;
+    else if (this == Type::doubleType && other == Type::intType)
+        return false;
+
+    // Cases for checking class convertable
+
+    return strcmp(this->GetName(), other->GetName()) == 0;
+}
+
 	
 NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
     Assert(i != NULL);

@@ -126,4 +126,12 @@ PrintStmt::PrintStmt(List<Expr*> *a) {
     (args=a)->SetParentAll(this);
 }
 
+void PrintStmt::Check() {
+    for (int i = 0; i < args->NumElements(); i++) {
+        Type *type = args->Nth(i)->CheckType();
+        if (!(type->EqualType(Type::intType) || type->EqualType(Type::boolType) || type->EqualType(Type::stringType)))
+            ReportError::PrintArgMismatch(args->Nth(i), i+1, type);
+    }
+}
+
 

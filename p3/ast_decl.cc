@@ -175,6 +175,7 @@ void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
                 }
             }
         }
+        func->Remove(this->id->GetName(), base);
     }
 }
 

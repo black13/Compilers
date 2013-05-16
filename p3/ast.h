@@ -39,6 +39,7 @@ using namespace std;
 class Decl;
 class ClassDecl;
 class InterfaceDecl;
+class VarDecl;
 
 class Node  {
   protected:
@@ -74,6 +75,7 @@ class Identifier : public Node
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
     ClassDecl* GetClass();
     InterfaceDecl* GetInterface();
+    VarDecl* GetVariable();
 };
 
 

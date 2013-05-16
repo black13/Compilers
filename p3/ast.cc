@@ -45,6 +45,9 @@ Type* Identifier::CheckType(reasonT whyNeeded) {
     else if (whyNeeded == LookingForInterface) {
         decl = this->GetInterface();
     }
+    else if (whyNeeded == LookingForVariable) {
+        decl = this->GetVariable();
+    }
     else {
         decl = symbols->Search(name);
     }
@@ -70,5 +73,11 @@ ClassDecl* Identifier::GetClass() {
 InterfaceDecl* Identifier::GetInterface() {
     Decl* found = symbols->Search(name);
     InterfaceDecl* c = dynamic_cast<InterfaceDecl*>(found);
+    return c;
+}
+
+VarDecl* Identifier::GetVariable() {
+    Decl* found = symbols->Search(name);
+    VarDecl* c = dynamic_cast<VarDecl*>(found);
     return c;
 }
