@@ -86,6 +86,7 @@ class ClassDecl : public Decl
     void AddChildren(Hashtable<FnDecl*> *);
     void Check();
     void CheckChildren();
+    Type * GetType();
 };
 
 class InterfaceDecl : public Decl 

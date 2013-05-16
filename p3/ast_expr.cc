@@ -139,7 +139,7 @@ Type* ArrayAccess::CheckType() {
         type = base->CheckType();
         if (dynamic_cast<ArrayType*>(type))
             return type;
-        ReportError::BracketsOnNonArray(subscript);
+        ReportError::BracketsOnNonArray(base);
     }
     return NULL;
 }
@@ -157,7 +157,8 @@ Type* FieldAccess::CheckType() {
     if (!base) {
         return field->CheckType(LookingForVariable);
     }
-    return Type::nullType;
+    return NULL;
+    //return Type::nullType;
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
@@ -172,7 +173,8 @@ Type* Call::CheckType() {
     if (!base) {
         return field->CheckType(LookingForFunction);
     }
-    return Type::nullType;
+    return NULL;
+    //return Type::nullType;
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 

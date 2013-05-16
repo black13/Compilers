@@ -94,6 +94,11 @@ void ClassDecl::CheckChildren() {
     checked = true;
 }
 
+Type* ClassDecl::GetType() {
+    return new NamedType(id);
+}
+
+
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);
     (members=m)->SetParentAll(this);
