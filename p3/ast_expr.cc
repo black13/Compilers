@@ -95,17 +95,16 @@ Type* LogicalExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (rhs->EqualType(Type::boolType) && lhs->EqualType(Type::boolType))
-            return Type::boolType;
-        ReportError::IncompatibleOperands(op, lhs, rhs);
+        if (!rhs->EqualType(Type::boolType) && lhs->EqualType(Type::boolType))
+            ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     else if (rhs) {
-        if (rhs->EqualType(Type::boolType))
-            return Type::boolType;
-        ReportError::IncompatibleOperand(op, rhs);
+        if (!rhs->EqualType(Type::boolType))
+            ReportError::IncompatibleOperand(op, rhs);
     }
     
-    return NULL;
+    return Type::boolType;
+    //return NULL;
 }
   
 Type* AssignExpr::CheckType() {

@@ -9,6 +9,7 @@
 #include "list.h"
 
 extern SymbolTable *symbols;
+bool inLoop;
 
 Program::Program(List<Decl*> *d) {
     Assert(d != NULL);
@@ -76,7 +77,9 @@ void ForStmt::Check() {
     }
     if (init) init->Check();
     if (step) step->Check();
+    inLoop = true;
     if (body) body->Check();
+    inLoop = false;
 }
 
 void WhileStmt::Check() {
@@ -87,7 +90,9 @@ void WhileStmt::Check() {
                 ReportError::TestNotBoolean(test);
         }
     }
+    inLoop = true;
     if (body) body->Check();
+    inLoop = false;
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
@@ -106,6 +111,10 @@ void IfStmt::Check() {
     if (elseBody) elseBody->Check();
 }
 
+
+void BreakStmt::Check() {
+    if (!inLoop) ReportError::BreakOutsideLoop(this);
+}
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
     Assert(e != NULL);
