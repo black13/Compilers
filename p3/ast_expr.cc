@@ -54,7 +54,7 @@ Type* ArithmeticExpr::CheckType() {
   if (left) lhs = left->CheckType();
   if (right) rhs = right->CheckType();
   if (lhs && rhs) {
-      if (lhs->EqualType(rhs))
+      if (lhs->ConvertableTo(rhs))
           return lhs;
       ReportError::IncompatibleOperands(op, lhs, rhs);
   }
@@ -81,9 +81,7 @@ Type* EqualityExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (!rhs->ConvertableTo(lhs))
-            ReportError::IncompatibleOperands(op, lhs, rhs);
-        else if (!lhs->ConvertableTo(rhs))
+        if (!rhs->ConvertableTo(lhs) && !lhs->ConvertableTo(rhs))
             ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
@@ -113,8 +111,8 @@ Type* AssignExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (rhs->EqualType(lhs))
-            return rhs;
+        if (rhs->ConvertableTo(lhs))
+            return lhs;
         ReportError::IncompatibleOperands(op, lhs, rhs);
     }
     
@@ -157,8 +155,13 @@ Type* FieldAccess::CheckType() {
     if (!base) {
         return field->CheckType(LookingForVariable);
     }
+    if (dynamic_cast<This*>(base)) {
+        return field->CheckType(LookingForVariable);
+    }
+    else if (!dynamic_cast<NamedType*>(base->CheckType())) {
+        ReportError::FieldNotFoundInBase(field, base->CheckType());
+    }
     return NULL;
-    //return Type::nullType;
 }
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
@@ -171,10 +174,40 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
  
 Type* Call::CheckType() {
     if (!base) {
+        Type *returnType = field->CheckType(LookingForFunction);
+        FnDecl *function = field->GetFunction();
+        if (function) {
+            List<VarDecl*> *formals = function->GetFormals();
+            if (actuals->NumElements() != formals->NumElements())
+                ReportError::NumArgsMismatch(field, formals->NumElements(), actuals->NumElements());
+            else {
+                for (int i = 0; i < actuals->NumElements(); i++) {
+                    Type *given = actuals->Nth(i)->CheckType();
+                    Type *expected = formals->Nth(i)->GetType();
+                    if (!given->ConvertableTo(expected))
+                        ReportError::ArgMismatch(actuals->Nth(i), i+1, given, expected);
+                }
+            }
+            return returnType;
+        }
+        return NULL;
+    }
+    else if (dynamic_cast<This*>(base)) {
         return field->CheckType(LookingForFunction);
     }
+    else if (dynamic_cast<ArrayType*>(base->CheckType())) {
+        if (strcmp(field->GetName(),"length") != 0)
+            ReportError::FieldNotFoundInBase(field, base->CheckType());
+    }
+    // SegFault
+    //
+    // If the Type is not a NamedType, then it is a primative that has no fields; int, double, etc.
+    else if (dynamic_cast<NamedType*>(base->CheckType()) == NULL) {
+        Type *type = base->CheckType();
+        if (type) ReportError::FieldNotFoundInBase(field, type);
+    }
+
     return NULL;
-    //return Type::nullType;
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 

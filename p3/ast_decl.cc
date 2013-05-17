@@ -81,6 +81,7 @@ void ClassDecl::CheckChildren() {
     if (members) {
         members->AddSymbolAll(true);
         members->CheckAll();
+        members->CheckChildrenAll();
         Decl *temp;
         for (int i = 0; i < members->NumElements(); i++) {
             temp = members->Nth(i);

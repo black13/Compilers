@@ -42,6 +42,8 @@ bool Type::ConvertableTo(Type *other) {
         return false;
 
     // Cases for checking class convertable
+    else if (this == Type::nullType)
+        return true;
 
     return strcmp(this->GetName(), other->GetName()) == 0;
 }

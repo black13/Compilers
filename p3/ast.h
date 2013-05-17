@@ -40,6 +40,7 @@ class Decl;
 class ClassDecl;
 class InterfaceDecl;
 class VarDecl;
+class FnDecl;
 
 class Node  {
   protected:
@@ -76,6 +77,7 @@ class Identifier : public Node
     ClassDecl* GetClass();
     InterfaceDecl* GetInterface();
     VarDecl* GetVariable();
+    FnDecl* GetFunction();
 };
 
 

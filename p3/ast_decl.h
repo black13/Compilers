@@ -70,6 +70,7 @@ class FnDecl : public Decl
     void AddTypeSignitures(Hashtable<FnDecl*> *);
     void CheckTypeSignitures(Hashtable<FnDecl*> *);
     Type * GetType();
+    List<VarDecl*> * GetFormals() { return formals; };
 };
 
 class ClassDecl : public Decl 
