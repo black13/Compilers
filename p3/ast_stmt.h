@@ -111,6 +111,7 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
+    void Check();
 };
 
 class PrintStmt : public Stmt

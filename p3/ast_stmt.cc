@@ -9,6 +9,7 @@
 #include "list.h"
 
 extern SymbolTable *symbols;
+extern Type *funcReturnType;
 bool inLoop;
 
 Program::Program(List<Decl*> *d) {
@@ -121,6 +122,12 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     (expr=e)->SetParent(this);
 }
   
+void ReturnStmt::Check() {
+    Type *given = expr->CheckType();
+    if (given && !funcReturnType->ConvertableTo(given))
+        ReportError::ReturnMismatch(this, given, funcReturnType);
+}
+
 PrintStmt::PrintStmt(List<Expr*> *a) {    
     Assert(a != NULL);
     (args=a)->SetParentAll(this);

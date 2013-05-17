@@ -8,6 +8,7 @@
 #include "errors.h"
 
 extern SymbolTable *symbols;
+Type *funcReturnType;
         
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -186,9 +187,11 @@ void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
 }
 
 void FnDecl::CheckChildren() {
+    funcReturnType = returnType;
     symbols->Push();
     if (formals) formals->AddSymbolAll(false);
     if (body) body->Check();
     symbols->Pop();
+    funcReturnType = NULL;
 }
 

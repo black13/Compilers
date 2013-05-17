@@ -34,7 +34,9 @@ bool Type::EqualType(Type *other) {
 
 // TODO: Finish this function
 bool Type::ConvertableTo(Type *other) {
-    if (this == Type::voidType || other == Type::voidType)
+    if (this == Type::nullType || other == Type::nullType)
+        return true;
+    else if (this == Type::voidType || other == Type::voidType)
         return false;
     else if (this == Type::intType && other == Type::doubleType)
         return false;
@@ -42,8 +44,6 @@ bool Type::ConvertableTo(Type *other) {
         return false;
 
     // Cases for checking class convertable
-    else if (this == Type::nullType)
-        return true;
 
     return strcmp(this->GetName(), other->GetName()) == 0;
 }
