@@ -131,10 +131,12 @@ class SymbolTable {
     }
 
     // Removes head
-    void Pop()
+    Hashtable<Decl*> * Pop()
     { 
-      delete elems.back();
+      //delete elems.back();
+      Hashtable<Decl*> *back = elems.back();
       elems.pop_back();
+      return back;
     }
 
     // Checks if id exists in current scope 

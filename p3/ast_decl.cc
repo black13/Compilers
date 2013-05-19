@@ -94,13 +94,18 @@ void ClassDecl::CheckChildren() {
     }
     delete extFun;
     delete impFun;
-    symbols->Pop();
+    scope = symbols->Pop();
     checked = true;
     classType = NULL;
 }
 
 Type* ClassDecl::GetType() {
     return new NamedType(id);
+}
+
+Decl* ClassDecl::CheckMember(Identifier *id) {
+    if (scope) return scope->Lookup(id->GetName());
+    return NULL;
 }
 
 // Check if this is convertable to other 

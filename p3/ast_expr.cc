@@ -213,6 +213,16 @@ Type* Call::CheckType() {
         Type *type = base->CheckType();
         if (type) ReportError::FieldNotFoundInBase(field, type);
     }
+    else {
+        Type *type = base->CheckType();
+        if (type) {
+            ClassDecl *klass = type->GetClass();
+            if (klass) {
+                Decl *decl = klass->CheckMember(field);
+                if (!decl) ReportError::FieldNotFoundInBase(field, type);
+            }
+        }
+    }
 
     return NULL;
 }

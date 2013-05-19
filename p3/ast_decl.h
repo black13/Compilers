@@ -29,9 +29,9 @@ class Decl : public Node
   protected:
     Identifier *id;
     bool checked;
-    Hashtable<Decl*> *scope;
   
   public:
+    Hashtable<Decl*> *scope;
     Decl(Identifier *name);
     void AddSymbol(bool output) { if (id) id->AddSymbol(this, output); };
     bool IsChecked() { return checked; }
@@ -89,6 +89,7 @@ class ClassDecl : public Decl
     void CheckChildren();
     Type * GetType();
     bool ConvertableTo(Type *other);
+    Decl * CheckMember(Identifier *id);
 };
 
 class InterfaceDecl : public Decl 
