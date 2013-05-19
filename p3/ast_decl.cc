@@ -9,7 +9,7 @@
 
 extern SymbolTable *symbols;
 Type *funcReturnType;
-Type *classType;
+ClassDecl *thisClass;
         
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -46,8 +46,10 @@ void ClassDecl::AddChildren(Hashtable<FnDecl*> *func) {
             if (dynamic_cast<VarDecl*>(members->Nth(i)))
                 members->Nth(i)->AddSymbol(true);
             // Add type signiture to some other table
-            else if (dynamic_cast<FnDecl*>(members->Nth(i)))
+            else if (dynamic_cast<FnDecl*>(members->Nth(i))) {
+                members->Nth(i)->AddSymbol(true);
                 members->Nth(i)->AddTypeSignitures(func);
+            }
         }
     }
 }
@@ -58,10 +60,12 @@ void ClassDecl::Check() {
 }
 
 void ClassDecl::CheckChildren() {
-    if (checked) return;
-    classType = new NamedType(id);
+    if (checked) {
+        return;
+    }
+    thisClass = this;
 
-    symbols->Push();
+    scope = symbols->Push();
     extFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *memberFun = new Hashtable<FnDecl*>();
@@ -83,7 +87,14 @@ void ClassDecl::CheckChildren() {
         }
     }
     if (members) {
-        members->AddSymbolAll(true);
+        //members->AddSymbolAll(true);
+        for (int i = 0; i < members->NumElements(); i++) {
+            if (dynamic_cast<VarDecl*>(members->Nth(i)))
+                members->Nth(i)->AddSymbol(true);
+            else if (dynamic_cast<FnDecl*>(members->Nth(i))) {
+                members->Nth(i)->AddSymbol(false);
+            }
+        }
         members->CheckAll();
         members->CheckChildrenAll();
         Decl *temp;
@@ -121,7 +132,7 @@ void ClassDecl::CheckChildren() {
     delete memberFun;
     scope = symbols->Pop();
     checked = true;
-    classType = NULL;
+    thisClass = NULL;
 }
 
 
@@ -146,8 +157,7 @@ Type* ClassDecl::GetType() {
 }
 
 Decl* ClassDecl::CheckMember(Identifier *id) {
-    //cout << this << ":" << id << endl;
-    if (scope && id) return scope->Search((char*)id->GetName());
+    if (scope) return scope->Search((char*)id->GetName());
     return NULL;
 }
 

@@ -8,7 +8,8 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 
-extern Type *classType;
+extern ClassDecl *thisClass;
+extern SymbolTable *symbols;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -121,8 +122,9 @@ Type* AssignExpr::CheckType() {
 }
   
 Type* This::CheckType() {
-    if (!classType) ReportError::ThisOutsideClassScope(this);
-    return classType;
+    if (thisClass) return thisClass->GetType();
+    ReportError::ThisOutsideClassScope(this);
+    return NULL;
 }
 
 
@@ -176,7 +178,7 @@ Type* FieldAccess::CheckType() {
             if (klass) {
                 Decl *decl = klass->CheckMember(field);
                 if (!decl) ReportError::FieldNotFoundInBase(field, type);
-                else ReportError::InaccessibleField(field, type);
+                else if (!thisClass || !thisClass->GetType()->ConvertableTo(type)) ReportError::InaccessibleField(field, type);
             }
         }
     }

@@ -142,18 +142,19 @@ class SymbolTable {
 
     // Adds element to list end
     // Call this whenever we go int 
-    void Push()
+    SymbolTable* Push()
     { 
       Table *temp = new Table();
       temp->parent = branch;
       branch = temp;
       level++;
+      return new SymbolTable(temp, level);
     }
 
     // Removes head
     SymbolTable* Pop()
     { 
-        if (branch) {
+      if (branch) {
         Table *temp = branch;
         branch = branch->parent;
         level--;
