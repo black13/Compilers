@@ -117,7 +117,7 @@ class Table {
       Iterator<Decl*> it = tbl->table->GetIterator();
       Decl* temp = it.GetNextValue();
       while (temp){
-        cout << temp << " ";
+        out << temp << " ";
         temp = it.GetNextValue();
       }
       return out;
