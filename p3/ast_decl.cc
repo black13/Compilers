@@ -9,6 +9,7 @@
 
 extern SymbolTable *symbols;
 Type *funcReturnType;
+Type *classType;
         
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -58,6 +59,7 @@ void ClassDecl::Check() {
 
 void ClassDecl::CheckChildren() {
     if (checked) return;
+    classType = new NamedType(id);
 
     symbols->Push();
     extFun = new Hashtable<FnDecl*>();
@@ -119,6 +121,7 @@ void ClassDecl::CheckChildren() {
     delete memberFun;
     symbols->Pop();
     checked = true;
+    classType = NULL;
 }
 
 
@@ -140,6 +143,20 @@ bool InterfaceDecl::CoversFunctions(Hashtable<FnDecl*> *classFunctions) {
 
 Type* ClassDecl::GetType() {
     return new NamedType(id);
+}
+
+// Check if this is convertable to other 
+bool ClassDecl::ConvertableTo(Type *other) {
+    if (extends) {
+        if (extends->EqualType(other)) return true;
+        if (extends->GetClass()->ConvertableTo(other)) return true;
+    }
+    if (implements) {
+        for (int i = 0; i < implements->NumElements(); i++) {
+            if (implements->Nth(i)->EqualType(other)) return true;
+        }
+    }
+    return false;
 }
 
 

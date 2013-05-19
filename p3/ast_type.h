@@ -39,6 +39,7 @@ class Type : public Node
     virtual void Check() {};
     virtual void Check(reasonT reason) {};
     virtual Type* CheckType(reasonT reason) { return this; };
+    virtual ClassDecl* GetClass() { return NULL; };
 };
 
 class NamedType : public Type 

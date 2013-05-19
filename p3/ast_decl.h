@@ -90,6 +90,7 @@ class ClassDecl : public Decl
     void Check();
     void CheckChildren();
     Type * GetType();
+    bool ConvertableTo(Type *other);
 };
 
 class InterfaceDecl : public Decl 
