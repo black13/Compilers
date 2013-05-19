@@ -88,7 +88,7 @@ class ClassDecl : public Decl
     void Check();
     void CheckChildren();
     Type * GetType();
-    bool ConvertableTo(Type *other);
+    ClassDecl * GetParent();
 };
 
 class InterfaceDecl : public Decl 

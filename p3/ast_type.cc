@@ -42,10 +42,16 @@ bool Type::ConvertableTo(Type *other) {
         return false;
     else if (this == Type::doubleType && other == Type::intType)
         return false;
+    else if (strcmp(this->GetName(), other->GetName()) == 0)
+        return true;
 
     // Cases for checking class convertable
+    ClassDecl *a = other->GetClass();
+    if (a) {
+        return a->ConvertableTo(this);
+    }
 
-    return strcmp(this->GetName(), other->GetName()) == 0;
+    return false;
 }
 
 	

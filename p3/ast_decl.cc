@@ -100,6 +100,20 @@ Type* ClassDecl::GetType() {
     return new NamedType(id);
 }
 
+// Check if this is convertable to other 
+bool ClassDecl::ConvertableTo(Type *other) {
+    if (extends) {
+        if (extends->EqualType(other)) return true;
+        if (extends->GetClass()->ConvertableTo(other)) return true;
+    }
+    if (implements) {
+        for (int i = 0; i < implements->NumElements(); i++) {
+            if (implements->Nth(i)->EqualType(other)) return true;
+        }
+    }
+    return false;
+}
+
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
     Assert(n != NULL && m != NULL);

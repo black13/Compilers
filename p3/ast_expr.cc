@@ -111,7 +111,7 @@ Type* AssignExpr::CheckType() {
     if (left) lhs = left->CheckType();
     if (right) rhs = right->CheckType();
     if (rhs && lhs) {
-        if (rhs->ConvertableTo(lhs))
+        if (lhs->ConvertableTo(rhs))
             return lhs;
         ReportError::IncompatibleOperands(op, lhs, rhs);
     }
