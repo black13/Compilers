@@ -8,6 +8,7 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 
+extern Type *classType;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -119,6 +120,12 @@ Type* AssignExpr::CheckType() {
     return NULL;
 }
   
+Type* This::CheckType() {
+    if (!classType) ReportError::ThisOutsideClassScope(this);
+    return classType;
+}
+
+
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);

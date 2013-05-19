@@ -161,6 +161,7 @@ class This : public Expr
 {
   public:
     This(yyltype loc) : Expr(loc) {}
+    Type * CheckType();
 };
 
 class ArrayAccess : public LValue 

@@ -9,6 +9,7 @@
 
 extern SymbolTable *symbols;
 Type *funcReturnType;
+Type *classType;
         
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -58,6 +59,7 @@ void ClassDecl::Check() {
 
 void ClassDecl::CheckChildren() {
     if (checked) return;
+    classType = new NamedType(id);
 
     symbols->Push();
     extFun = new Hashtable<FnDecl*>();
@@ -94,6 +96,7 @@ void ClassDecl::CheckChildren() {
     delete impFun;
     symbols->Pop();
     checked = true;
+    classType = NULL;
 }
 
 Type* ClassDecl::GetType() {
