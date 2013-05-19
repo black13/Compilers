@@ -168,6 +168,17 @@ Type* FieldAccess::CheckType() {
     else if (!dynamic_cast<NamedType*>(base->CheckType())) {
         ReportError::FieldNotFoundInBase(field, base->CheckType());
     }
+    else {
+        Type *type = base->CheckType();
+        if (type) {
+            ClassDecl *klass = type->GetClass();
+            if (klass) {
+                Decl *decl = klass->CheckMember(field);
+                if (!decl) ReportError::FieldNotFoundInBase(field, type);
+                else ReportError::InaccessibleField(field, type);
+            }
+        }
+    }
     return NULL;
 }
 
@@ -210,13 +221,12 @@ Type* Call::CheckType() {
         if (strcmp(field->GetName(),"length") != 0)
             ReportError::FieldNotFoundInBase(field, base->CheckType());
     }
-    // SegFault
-    //
     // If the Type is not a NamedType, then it is a primative that has no fields; int, double, etc.
     else if (dynamic_cast<NamedType*>(base->CheckType()) == NULL) {
         Type *type = base->CheckType();
         if (type) ReportError::FieldNotFoundInBase(field, type);
     }
+    // If we're dealing with a function call from a class
     else {
         Type *type = base->CheckType();
         if (type) {
@@ -224,6 +234,17 @@ Type* Call::CheckType() {
             if (klass) {
                 Decl *decl = klass->CheckMember(field);
                 if (!decl) ReportError::FieldNotFoundInBase(field, type);
+                FnDecl *function = dynamic_cast<FnDecl*>(decl);
+                if (function) {
+                    List<VarDecl*> *formals = function->GetFormals();
+                    for (int i = 0; i < actuals->NumElements(); i++) {
+                        Type *given = actuals->Nth(i)->CheckType();
+                        Type *expected = formals->Nth(i)->GetType();
+                        if (!given->ConvertableTo(expected))
+                            ReportError::ArgMismatch(actuals->Nth(i), i+1, given, expected);
+                    }
+                    return function->GetType();
+                }
             }
         }
     }
