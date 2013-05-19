@@ -62,6 +62,7 @@ void ClassDecl::CheckChildren() {
     symbols->Push();
     extFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
+    Hashtable<FnDecl*> *memberFun = new Hashtable<FnDecl*>();
     if (implements) {
         InterfaceDecl *temp;
         for (int i = 0; i < implements->NumElements(); i++) {
@@ -84,16 +85,57 @@ void ClassDecl::CheckChildren() {
         members->CheckAll();
         members->CheckChildrenAll();
         Decl *temp;
+        FnDecl *tempFn;
         for (int i = 0; i < members->NumElements(); i++) {
             temp = members->Nth(i);
-            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(impFun);
-            if (dynamic_cast<FnDecl*>(temp)) temp->CheckTypeSignitures(extFun);
+            tempFn = dynamic_cast<FnDecl*>(temp);
+            if (tempFn)
+            {
+              //add the member function to the hashmap
+              tempFn->AddTypeSignitures(memberFun);
+              temp->CheckTypeSignitures(impFun);
+              temp->CheckTypeSignitures(extFun);
+            }
         }
     }
+    //check for classes not fully implementing interface
+    if (implements) {
+        InterfaceDecl *temp;
+        Hashtable<FnDecl*> *impFunCheck;
+        for (int i = 0; i < implements->NumElements(); i++) {
+            temp = implements->Nth(i)->GetInterface();
+            if (temp) {
+                  //check that each FnDecl in this interface im implemented
+                  if (!temp->CoversFunctions(memberFun)) {
+                      ReportError::InterfaceNotImplemented(this,implements->Nth(i));
+                  }
+                
+            }
+        }
+    }
+    
     delete extFun;
     delete impFun;
+    delete memberFun;
     symbols->Pop();
     checked = true;
+}
+
+
+bool InterfaceDecl::CoversFunctions(Hashtable<FnDecl*> *classFunctions) {
+    for (int i = 0; i < members->NumElements(); i++) {
+        FnDecl* currFunction = dynamic_cast<FnDecl*>(members->Nth(i));
+        if (currFunction) {
+          FnDecl* classFn = classFunctions->Lookup(currFunction->GetName());
+          if (classFn) {
+            //test that the function signatures are equal
+            return currFunction->EqualSignature(classFn);
+          }else{
+            return false;
+          }
+        }
+    }
+    return true;
 }
 
 Type* ClassDecl::GetType() {
@@ -159,28 +201,33 @@ void FnDecl::AddTypeSignitures(Hashtable<FnDecl*> *func) {
     func->Enter(this->id->GetName(), this, false);
 }
 
+bool FnDecl::EqualSignature(FnDecl* other) {
+    // Check if type signitures match
+    // Compare Return types and argument types
+    Type *temp = other->returnType;
+    if (!(this->returnType->EqualType(other->returnType))) {
+        return false;
+    }
+    else if (formals->NumElements() != other->formals->NumElements()) {
+        return false;
+    }
+    else {
+        for (int i = 0; i < formals->NumElements(); i++) {
+            if (!(formals->Nth(i)->GetType()->EqualType(other->formals->Nth(i)->GetType())))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void FnDecl::CheckTypeSignitures(Hashtable<FnDecl*> *func) {
     // Check if Base class declares function
     FnDecl *base = func->Lookup(this->id->GetName());
-    if (base)
-    {
-        // Check if type signitures match
-        // Compare Return types and argument types
-        Type *temp = base->returnType;
-        if (!(this->returnType->EqualType(base->returnType))) {
-            ReportError::OverrideMismatch(this);
-        }
-        else if (formals->NumElements() != base->formals->NumElements()) {
-            ReportError::OverrideMismatch(this);
-        }
-        else {
-            for (int i = 0; i < formals->NumElements(); i++) {
-                if (!(formals->Nth(i)->GetType()->EqualType(base->formals->Nth(i)->GetType())))
-                {
-                    ReportError::OverrideMismatch(this);
-                    return;
-                }
-            }
+    if (base) {
+        if (!EqualSignature(base)) {
+          ReportError::OverrideMismatch(this);
         }
         func->Remove(this->id->GetName(), base);
     }

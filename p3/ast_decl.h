@@ -41,6 +41,7 @@ class Decl : public Node
     virtual void CheckTypeSignitures(Hashtable<FnDecl*> *) {};
     virtual void AddTypeSignitures(Hashtable<FnDecl*> *) {};
     virtual Type * GetType() { return NULL; };
+    const char * GetName() { return id->GetName(); } ;
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -70,6 +71,7 @@ class FnDecl : public Decl
     void AddTypeSignitures(Hashtable<FnDecl*> *);
     void CheckTypeSignitures(Hashtable<FnDecl*> *);
     Type * GetType();
+    bool EqualSignature(FnDecl* other);
     List<VarDecl*> * GetFormals() { return formals; };
 };
 
@@ -98,7 +100,12 @@ class InterfaceDecl : public Decl
   public:
     InterfaceDecl(Identifier *name, List<Decl*> *members);
     void CheckChildren();
+    //adds each member to the hashtable passed in
     void AddChildren(Hashtable<FnDecl*> *);
+    
+    //returns true if every method in this interface is 
+    //implemented by a fucntion in the list passed in
+    bool CoversFunctions(Hashtable<FnDecl*> *classFunctions);
 };
 
 
