@@ -142,9 +142,10 @@ Type* ArrayAccess::CheckType() {
     // Get type of base and return
     if (base) {
         type = base->CheckType();
-        if (dynamic_cast<ArrayType*>(type))
-            return type;
-        ReportError::BracketsOnNonArray(base);
+        if (!dynamic_cast<ArrayType*>(type))
+            ReportError::BracketsOnNonArray(base);
+        type = type->GetType();
+        if (type) return type;
     }
     return NULL;
 }

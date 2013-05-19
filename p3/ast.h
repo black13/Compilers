@@ -164,18 +164,18 @@ class SymbolTable {
     // Find the loc in the nearest scope
     // if not found returns NULL
     Decl* Search(char* id) {
-      if (branch) {
-          Table *temp = branch;
-          do {
-            Decl *decl = temp->table->Lookup(id);
-            if (decl != NULL)
-            {
-              return decl;
-            }
-            temp = temp->parent;
-          } while (temp != NULL);
-      }
-      return NULL;
+        if (branch) {
+            Table *temp = branch;
+            do {
+                Decl *decl = temp->table->Lookup(id);
+                if (decl != NULL)
+                {
+                  return decl;
+                }
+                temp = temp->parent;
+            } while (temp != NULL);
+        }
+        return NULL;
     }
 
     // Add a new declared variable to current scope

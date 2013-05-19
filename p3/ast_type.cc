@@ -90,4 +90,3 @@ void ArrayType::Check(reasonT reason) {
     if (elemType) elemType->Check(reason);
 }
 
-

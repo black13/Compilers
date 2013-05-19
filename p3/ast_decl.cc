@@ -146,7 +146,7 @@ Type* ClassDecl::GetType() {
 }
 
 Decl* ClassDecl::CheckMember(Identifier *id) {
-    //cout << id << endl;
+    //cout << this << ":" << id << endl;
     if (scope && id) return scope->Search((char*)id->GetName());
     return NULL;
 }

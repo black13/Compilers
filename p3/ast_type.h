@@ -40,6 +40,7 @@ class Type : public Node
     virtual void Check(reasonT reason) {};
     virtual Type* CheckType(reasonT reason) { return this; };
     virtual ClassDecl* GetClass() { return NULL; };
+    virtual Type* GetType() { return NULL; }; 
 };
 
 class NamedType : public Type 
@@ -71,6 +72,7 @@ class ArrayType : public Type
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
     void Check(reasonT reason);
     Type* CheckType(reasonT reason) { return elemType->CheckType(reason); }; 
+    Type* GetType() { return elemType; }; 
     const char* GetName() { return elemType->GetName(); }
 };
 
