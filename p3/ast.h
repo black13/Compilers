@@ -118,19 +118,16 @@ class Table {
 class SymbolTable {
 
  private:
-   //std::list<Hashtable<Decl*>*> elems;
    Table *branch;
    int level;
 
  public:
-    // Create a new empty list
     SymbolTable() { branch = NULL; level = 0; }
     SymbolTable(Table *table, int lvl) { branch = table; level = lvl; }
 
     // Returns count of elements currently in list
     const int Size() const
     { 
-      //return (const int)elems.size(); 
       return level;
     }
 
@@ -142,62 +139,49 @@ class SymbolTable {
       temp->parent = branch;
       branch = temp;
       level++;
-      //elems.push_back(new Hashtable<Decl*>()); 
     }
 
     // Removes head
     SymbolTable* Pop()
     { 
-      //delete elems.back();
-      //Hashtable<Decl*> *back = elems.back();
-      //elems.pop_back();
-      Table *temp = branch;
-      branch = branch->parent;
-      level--;
-      return new SymbolTable(temp, level+1);
+        if (branch) {
+        Table *temp = branch;
+        branch = branch->parent;
+        level--;
+        return new SymbolTable(temp, level+1);
+      }else {
+        return NULL;
+      }
     }
 
     // Checks if id exists in current scope 
     Decl* SearchHead(char* id)
     { 
-      //return (elems.back()->Lookup(id));
-      if (branch->table) return branch->table->Lookup(id);
+      if (branch && branch->table) return branch->table->Lookup(id);
       return NULL;
     }
 
     // Find the loc in the nearest scope
     // if not found returns NULL
     Decl* Search(char* id) {
-    /*
-      for (std::list<Hashtable<Decl*>*>::reverse_iterator rit=elems.rbegin(); rit!=elems.rend(); ++rit)
-      {
-        Decl *decl = (*rit)->Lookup(id);
-        if (decl != NULL)
-        {
-          return decl;
-        }
+      if (branch) {
+          Table *temp = branch;
+          do {
+            Decl *decl = temp->table->Lookup(id);
+            if (decl != NULL)
+            {
+              return decl;
+            }
+            temp = temp->parent;
+          } while (temp != NULL);
       }
-      return NULL;
-      */
-      Table *temp = branch;
-      do {
-        Decl *decl = temp->table->Lookup(id);
-        if (decl != NULL)
-        {
-          return decl;
-        }
-        temp = temp->parent;
-      } while (temp != NULL);
-      
       return NULL;
     }
 
     // Add a new declared variable to current scope
     void Add(char* id, Decl* decl)
     {
-      //TODO add redecleration checking
-      //elems.back()->Enter(id, decl, false);
-      if (branch->table) branch->table->Enter(id, decl, false);
+      if (branch && branch->table) branch->table->Enter(id, decl, false);
     }
 };
 
