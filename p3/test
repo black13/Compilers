@@ -5,7 +5,7 @@
 # ./test TESTNAME (without the extension) runs just that test and displays the diff of the output
 
 # This is the path to the samples you want to test
-SAMPLES_DIR=samples-checkpoint
+SAMPLES_DIR=samples
 
 # This is the path to shunit2
 SHUNIT="./shunit2"
