@@ -180,6 +180,10 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
 }
  
 Type* Call::CheckType() {
+    // Because we need to output the error that the variable doesn't exist before we check if the function exists.
+    for (int i = 0; i < actuals->NumElements(); i++) {
+        Type *given = actuals->Nth(i)->CheckType();
+    }
     if (!base) {
         Type *returnType = field->CheckType(LookingForFunction);
         FnDecl *function = field->GetFunction();
@@ -218,8 +222,8 @@ Type* Call::CheckType() {
         if (type) {
             ClassDecl *klass = type->GetClass();
             if (klass) {
-                Decl *decl = klass->CheckMember(field);
-                if (!decl) ReportError::FieldNotFoundInBase(field, type);
+                //Decl *decl = klass->CheckMember(field);
+                //if (!decl) ReportError::FieldNotFoundInBase(field, type);
             }
         }
     }
