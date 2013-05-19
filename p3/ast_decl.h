@@ -22,6 +22,7 @@ class NamedType;
 class Identifier;
 class Stmt;
 class FnDecl;
+class SymbolTable;
 
 
 class Decl : public Node 
@@ -29,9 +30,9 @@ class Decl : public Node
   protected:
     Identifier *id;
     bool checked;
+    SymbolTable *scope;
   
   public:
-    Hashtable<Decl*> *scope;
     Decl(Identifier *name);
     void AddSymbol(bool output) { if (id) id->AddSymbol(this, output); };
     bool IsChecked() { return checked; }

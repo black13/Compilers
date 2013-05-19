@@ -125,6 +125,7 @@ class SymbolTable {
  public:
     // Create a new empty list
     SymbolTable() { branch = NULL; level = 0; }
+    SymbolTable(Table *table, int lvl) { branch = table; level = lvl; }
 
     // Returns count of elements currently in list
     const int Size() const
@@ -145,7 +146,7 @@ class SymbolTable {
     }
 
     // Removes head
-    Hashtable<Decl*> * Pop()
+    SymbolTable* Pop()
     { 
       //delete elems.back();
       //Hashtable<Decl*> *back = elems.back();
@@ -153,7 +154,7 @@ class SymbolTable {
       Table *temp = branch;
       branch = branch->parent;
       level--;
-      return temp->table;
+      return new SymbolTable(temp, level+1);
     }
 
     // Checks if id exists in current scope 
