@@ -113,6 +113,15 @@ class Table {
     Hashtable<Decl*> *table;
     Table *parent;
     Table() { table = new Hashtable<Decl*>(); };
+    friend ostream& operator<<(ostream& out, Table *tbl) { 
+      Iterator<Decl*> it = tbl->table->GetIterator();
+      Decl* temp = it.GetNextValue();
+      while (temp){
+        cout << temp << " ";
+        temp = it.GetNextValue();
+      }
+      return out;
+    }
 };
 
 class SymbolTable {
@@ -182,6 +191,20 @@ class SymbolTable {
     void Add(char* id, Decl* decl)
     {
       if (branch && branch->table) branch->table->Enter(id, decl, false);
+    }
+
+    friend ostream& operator<<(ostream& out, SymbolTable *sym) {
+      if (sym->branch) {
+        out << "Level: " << sym->level;
+        Table *temp = sym->branch;
+        while (temp != NULL) {
+          out << "[" << temp << "]";
+          temp = temp->parent;
+        }
+      } else {
+        out << "Empty";
+      }
+      return out;
     }
 };
 
