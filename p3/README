@@ -4,3 +4,14 @@ Jon Larson j1larson@ucsd.edu
 
 Design Decisions
 
+  Initially we designed the symbol table to be a pure stack. But after realizing
+  that would not work we redesigned it to be more of a tree-like structure.
+  We modeled our check functions after the print function from P2 with check()
+  and checkChildren().
+
+Error Handling
+  
+  We make at least 3 passes over the AST so that we can identify errors in the 
+  correct order. For some errors we will make many passes over the same section
+  so that we can correctly match the expected output.
+
