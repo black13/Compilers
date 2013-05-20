@@ -112,12 +112,12 @@ class Table {
   public:
     Hashtable<Decl*> *table;
     Table *parent;
-    Table() { table = new Hashtable<Decl*>(); };
+    Table(Table *p) { table = new Hashtable<Decl*>(); parent = p; };
     friend ostream& operator<<(ostream& out, Table *tbl) { 
       Iterator<Decl*> it = tbl->table->GetIterator();
       Decl* temp = it.GetNextValue();
       while (temp){
-        cout << temp << " ";
+        out << temp << " ";
         temp = it.GetNextValue();
       }
       return out;
@@ -144,23 +144,17 @@ class SymbolTable {
     // Call this whenever we go int 
     SymbolTable* Push()
     { 
-      Table *temp = new Table();
-      temp->parent = branch;
-      branch = temp;
+      branch = new Table(branch);
       level++;
-      return new SymbolTable(temp, level);
+      return new SymbolTable(branch, level);
     }
 
     // Removes head
-    SymbolTable* Pop()
+    void Pop()
     { 
       if (branch) {
-        Table *temp = branch;
         branch = branch->parent;
         level--;
-        return new SymbolTable(temp, level+1);
-      }else {
-        return NULL;
       }
     }
 
@@ -174,13 +168,18 @@ class SymbolTable {
     // Find the loc in the nearest scope
     // if not found returns NULL
     Decl* Search(char* id) {
-        if (branch) {
+        cout << this << endl;
+        //cout << "0" << endl;
+        if (branch != NULL) {
+            //cout << "1" << endl;
+            //cout << branch << endl;
             Table *temp = branch;
             do {
+                //cout << "2" << endl;
                 Decl *decl = temp->table->Lookup(id);
                 if (decl != NULL)
                 {
-                  return decl;
+                    return decl;
                 }
                 temp = temp->parent;
             } while (temp != NULL);

@@ -47,7 +47,7 @@ void ClassDecl::AddChildren(Hashtable<FnDecl*> *func) {
                 members->Nth(i)->AddSymbol(true);
             // Add type signiture to some other table
             else if (dynamic_cast<FnDecl*>(members->Nth(i))) {
-                members->Nth(i)->AddSymbol(true);
+                members->Nth(i)->AddSymbol(false);
                 members->Nth(i)->AddTypeSignitures(func);
             }
         }
@@ -60,15 +60,20 @@ void ClassDecl::Check() {
 }
 
 void ClassDecl::CheckChildren() {
-    if (checked) {
-        return;
-    }
+    if (checked) return;
     thisClass = this;
 
     scope = symbols->Push();
     extFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *impFun = new Hashtable<FnDecl*>();
     Hashtable<FnDecl*> *memberFun = new Hashtable<FnDecl*>();
+    if (members) {
+        for (int i = 0; i < members->NumElements(); i++) {
+            if (dynamic_cast<FnDecl*>(members->Nth(i))) {
+                members->Nth(i)->AddSymbol(false);
+            }
+        }
+    }
     if (implements) {
         InterfaceDecl *temp;
         for (int i = 0; i < implements->NumElements(); i++) {
@@ -91,9 +96,6 @@ void ClassDecl::CheckChildren() {
         for (int i = 0; i < members->NumElements(); i++) {
             if (dynamic_cast<VarDecl*>(members->Nth(i)))
                 members->Nth(i)->AddSymbol(true);
-            else if (dynamic_cast<FnDecl*>(members->Nth(i))) {
-                members->Nth(i)->AddSymbol(false);
-            }
         }
         members->CheckAll();
         members->CheckChildrenAll();
@@ -130,7 +132,7 @@ void ClassDecl::CheckChildren() {
     delete extFun;
     delete impFun;
     delete memberFun;
-    scope = symbols->Pop();
+    symbols->Pop();
     checked = true;
     thisClass = NULL;
 }
@@ -157,6 +159,7 @@ Type* ClassDecl::GetType() {
 }
 
 Decl* ClassDecl::CheckMember(Identifier *id) {
+    cout << this << ":" << id << endl;
     if (scope) return scope->Search((char*)id->GetName());
     return NULL;
 }
