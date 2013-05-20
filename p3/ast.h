@@ -108,11 +108,12 @@ class Error : public Node
 #include "hashtable.h"
 #include "ast_decl.h"
 
-class Table {
-  public:
+/*
+struct Table {
     Hashtable<Decl*> *table;
     Table *parent;
-    Table(Table *p) { table = new Hashtable<Decl*>(); parent = p; };
+    //Table(Table *p) { table = new Hashtable<Decl*>(); parent = p; };
+
     friend ostream& operator<<(ostream& out, Table *tbl) { 
       Iterator<Decl*> it = tbl->table->GetIterator();
       Decl* temp = it.GetNextValue();
@@ -123,34 +124,54 @@ class Table {
       return out;
     }
 };
+    */
 
 class SymbolTable {
+   struct Table {
+       Hashtable<Decl*> *table;
+       Table *parent;
+   };
 
- private:
    Table *branch;
    int level;
 
  public:
-    SymbolTable() { branch = NULL; level = 0; }
-    SymbolTable(Table *table, int lvl) { branch = table; level = lvl; }
+    SymbolTable() { 
+        branch = NULL; 
+        level = 0; 
+    }
+    SymbolTable(Table *table, int lvl) { 
+        branch = table; 
+        level = lvl; 
+    }
 
     // Returns count of elements currently in list
-    const int Size() const
-    { 
-      return level;
-    }
+    const int Size() const { return level; }
 
     // Adds element to list end
     // Call this whenever we go int 
     SymbolTable* Push()
     { 
-      branch = new Table(branch);
+      Table *temp = new Table;
+      temp->table = new Hashtable<Decl*>();
+      temp->parent = branch;
+      branch = temp;
       level++;
       return new SymbolTable(branch, level);
     }
 
     // Removes head
     void Pop()
+    { 
+      if (branch) {
+        Table *temp = branch;
+        branch = branch->parent;
+        //delete temp;
+        level--;
+      }
+    }
+
+    void SavePop()
     { 
       if (branch) {
         branch = branch->parent;
@@ -168,9 +189,9 @@ class SymbolTable {
     // Find the loc in the nearest scope
     // if not found returns NULL
     Decl* Search(char* id) {
-        cout << this << endl;
         //cout << "0" << endl;
-        if (branch != NULL) {
+        //cout << &(*branch) << endl;
+        if (branch) {
             //cout << "1" << endl;
             //cout << branch << endl;
             Table *temp = branch;
@@ -193,6 +214,7 @@ class SymbolTable {
       if (branch && branch->table) branch->table->Enter(id, decl, false);
     }
 
+/*
     friend ostream& operator<<(ostream& out, SymbolTable *sym) {
       if (sym->branch) {
         out << "Level: " << sym->level;
@@ -206,6 +228,7 @@ class SymbolTable {
       }
       return out;
     }
+    */
 };
 
 #endif

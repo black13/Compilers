@@ -36,6 +36,8 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
+    scope = NULL;
+    checked = false;
 }
 
 void ClassDecl::AddChildren(Hashtable<FnDecl*> *func) { 
@@ -159,7 +161,6 @@ Type* ClassDecl::GetType() {
 }
 
 Decl* ClassDecl::CheckMember(Identifier *id) {
-    cout << this << ":" << id << endl;
     if (scope) return scope->Search((char*)id->GetName());
     return NULL;
 }
