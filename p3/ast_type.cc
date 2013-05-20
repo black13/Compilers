@@ -32,7 +32,6 @@ bool Type::EqualType(Type *other) {
     return strcmp(this->GetName(), other->GetName()) == 0;
 }
 
-// TODO: Finish this function
 bool Type::ConvertableTo(Type *other) {
     if (this == Type::nullType || other == Type::nullType)
         return true;
