@@ -27,6 +27,7 @@ class Decl : public Node
   
   public:
     Decl(Identifier *name);
+    const char * GetName() { return id->GetName(); }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -34,9 +35,19 @@ class VarDecl : public Decl
 {
   protected:
     Type *type;
+    Location * loc;
     
   public:
+    //returns the type of the ident
+    const Type * GetType() { return type; }
     VarDecl(Identifier *name, Type *type);
+    //Used to set the location of this variable in memeory to a new Location object
+    // offset is the offset from the program start untill this variable is defined
+    void SetLoc(int location);
+
+    // returns the size in bytes of the object
+    int GetBytes() { return CodeGenerator::VarSize; }
+    virtual Location* Emit(CodeGenerator* codeGen);
 };
 
 class ClassDecl : public Decl 
@@ -49,6 +60,7 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
+    virtual Location* Emit(CodeGenerator* codeGen);
 };
 
 class InterfaceDecl : public Decl 
@@ -57,6 +69,7 @@ class InterfaceDecl : public Decl
     List<Decl*> *members;
     
   public:
+    virtual Location* Emit(CodeGenerator* codeGen);
     InterfaceDecl(Identifier *name, List<Decl*> *members);
 };
 
@@ -70,6 +83,7 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
+    virtual Location* Emit(CodeGenerator* codeGen);
 };
 
 #endif

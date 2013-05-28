@@ -32,6 +32,7 @@
 
 #include <stdlib.h>   // for NULL
 #include "location.h"
+#include "codegen.h"
 #include <iostream>
 using namespace std;
 
@@ -44,10 +45,11 @@ class Node  {
     Node(yyltype loc);
     Node();
     virtual ~Node() {}
-    
     yyltype *GetLocation()   { return location; }
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
+    //method for each node to emit it's children and itself.
+    virtual Location* Emit(CodeGenerator* codeGen) { return NULL; }
 };
    
 
@@ -58,6 +60,7 @@ class Identifier : public Node
     
   public:
     Identifier(yyltype loc, const char *name);
+    const char * GetName() { return name; }
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 

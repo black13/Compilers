@@ -15,6 +15,7 @@
 
 #include "list.h"
 #include "ast.h"
+#include "codegen.h"
 
 class Decl;
 class VarDecl;
@@ -24,6 +25,7 @@ class Program : public Node
 {
   protected:
      List<Decl*> *decls;
+     CodeGenerator * codeGen;
      
   public:
      Program(List<Decl*> *declList);
@@ -36,6 +38,8 @@ class Stmt : public Node
   public:
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
+    // returns the size in bytes of the object
+    virtual int GetBytes() { return 55; }
 };
 
 class StmtBlock : public Stmt 
@@ -46,6 +50,7 @@ class StmtBlock : public Stmt
     
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
+    virtual int GetBytes();
 };
 
   
@@ -57,6 +62,7 @@ class ConditionalStmt : public Stmt
   
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
+    virtual int GetBytes();
 };
 
 class LoopStmt : public ConditionalStmt 
@@ -64,6 +70,7 @@ class LoopStmt : public ConditionalStmt
   public:
     LoopStmt(Expr *testExpr, Stmt *body)
             : ConditionalStmt(testExpr, body) {}
+    //virtual int GetBytes();
 };
 
 class ForStmt : public LoopStmt 
@@ -73,12 +80,14 @@ class ForStmt : public LoopStmt
   
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
+    virtual int GetBytes();
 };
 
 class WhileStmt : public LoopStmt 
 {
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
+    //virtual int GetBytes();
 };
 
 class IfStmt : public ConditionalStmt 
@@ -88,12 +97,14 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
+    virtual int GetBytes();
 };
 
 class BreakStmt : public Stmt 
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
+    //virtual int GetBytes();
 };
 
 class ReturnStmt : public Stmt  
@@ -103,6 +114,7 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
+    virtual int GetBytes();
 };
 
 class PrintStmt : public Stmt
@@ -112,6 +124,7 @@ class PrintStmt : public Stmt
     
   public:
     PrintStmt(List<Expr*> *arguments);
+    virtual int GetBytes();
 };
 
 

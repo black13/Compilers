@@ -26,6 +26,7 @@ class Expr : public Stmt
   public:
     Expr(yyltype loc) : Stmt(loc) {}
     Expr() : Stmt() {}
+    virtual int GetBytes() { return 0; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -43,6 +44,7 @@ class IntConstant : public Expr
   
   public:
     IntConstant(yyltype loc, int val);
+    int GetBytes();
 };
 
 class DoubleConstant : public Expr 
@@ -52,6 +54,7 @@ class DoubleConstant : public Expr
     
   public:
     DoubleConstant(yyltype loc, double val);
+    int GetBytes();
 };
 
 class BoolConstant : public Expr 
@@ -61,6 +64,7 @@ class BoolConstant : public Expr
     
   public:
     BoolConstant(yyltype loc, bool val);
+    int GetBytes();
 };
 
 class StringConstant : public Expr 
@@ -70,12 +74,14 @@ class StringConstant : public Expr
     
   public:
     StringConstant(yyltype loc, const char *val);
+    int GetBytes();
 };
 
 class NullConstant: public Expr 
 {
   public: 
     NullConstant(yyltype loc) : Expr(loc) {}
+    int GetBytes();
 };
 
 class Operator : public Node 
@@ -97,6 +103,7 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
+    int GetBytes();
 };
 
 class ArithmeticExpr : public CompoundExpr 
@@ -153,6 +160,7 @@ class ArrayAccess : public LValue
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
+    int GetBytes();
 };
 
 /* Note that field access is used both for qualified names
@@ -168,6 +176,7 @@ class FieldAccess : public LValue
     
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+    int GetBytes();
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -183,6 +192,7 @@ class Call : public Expr
     
   public:
     Call(yyltype loc, Expr *base, Identifier *field, List<Expr*> *args);
+    int GetBytes();
 };
 
 class NewExpr : public Expr
@@ -192,6 +202,7 @@ class NewExpr : public Expr
     
   public:
     NewExpr(yyltype loc, NamedType *clsType);
+    int GetBytes();
 };
 
 class NewArrayExpr : public Expr
@@ -202,6 +213,7 @@ class NewArrayExpr : public Expr
     
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
+    int GetBytes();
 };
 
 class ReadIntegerExpr : public Expr

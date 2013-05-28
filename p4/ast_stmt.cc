@@ -9,6 +9,7 @@
 
 
 Program::Program(List<Decl*> *d) {
+    codeGen = new CodeGenerator;
     Assert(d != NULL);
     (decls=d)->SetParentAll(this);
 }
@@ -27,6 +28,27 @@ void Program::Emit() {
      *      which makes for a great use of inheritance and
      *      polymorphism in the node classes.
      */
+    
+    int offset = CodeGenerator::OffsetToFirstGlobal;
+    int n = decls->NumElements();
+
+    //get locations for all VarDecls
+    for (int i = 0; i < n; ++i) {
+        VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
+        if (d) {
+          d->SetLoc(offset);
+          offset += d->GetBytes();
+        }
+    }
+
+    for (int i = 0; i < n; ++i) {
+        Decl* d = decls->Nth(i);
+        cout << "Emit["<<i<<"]: " << d->GetName() << endl;
+        d->Emit(codeGen);
+    }
+
+    //final step
+    codeGen->DoFinalCodeGen();
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -35,10 +57,31 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     (stmts=s)->SetParentAll(this);
 }
 
+int StmtBlock::GetBytes() {
+  int bytes = 0;
+  int n = decls->NumElements();
+
+  for (int i = 0; i < n; i++){
+    bytes += decls->Nth(i)->GetBytes();
+  }
+  
+  n = stmts->NumElements();
+  for (int i = 0; i < n; i++){
+    bytes += stmts->Nth(i)->GetBytes();
+  }
+  return bytes;
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this); 
     (body=b)->SetParent(this);
+}
+
+int ConditionalStmt::GetBytes() {
+  int offset = test->GetBytes();
+  offset += body->GetBytes();
+  return offset;
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
@@ -47,21 +90,49 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     (step=s)->SetParent(this);
 }
 
+int ForStmt::GetBytes(){
+  int offset = LoopStmt::GetBytes();
+  offset += init->GetBytes();
+  offset += step->GetBytes();
+  return offset;
+}
+
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
 }
 
+int IfStmt::GetBytes() {
+  int offset = ConditionalStmt::GetBytes();
+  offset += elseBody->GetBytes();
+  return offset;
+}
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
     Assert(e != NULL);
     (expr=e)->SetParent(this);
 }
-  
+
+int ReturnStmt::GetBytes() {
+  if (expr){
+    return expr->GetBytes();
+  }
+  return 0;
+}
+
 PrintStmt::PrintStmt(List<Expr*> *a) {    
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
+}
+
+int PrintStmt::GetBytes() {
+  int bytes = 0;
+  int n = args->NumElements();
+  for (int i = 0; i<n; i++) {
+    bytes += args->Nth(i)->GetBytes();
+  }
+  return bytes;
 }
 
 
