@@ -39,7 +39,7 @@ class Stmt : public Node
      Stmt() : Node() {}
      Stmt(yyltype loc) : Node(loc) {}
     // returns the size in bytes of the object
-    virtual int GetBytes() { return 55; }
+    virtual int GetBytes() { return 0; }
 };
 
 class StmtBlock : public Stmt 
