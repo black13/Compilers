@@ -1,6 +1,12 @@
 /* File: parser.y
  * --------------
  * Bison input file to generate the parser for the compiler.
+ *
+ * pp4: add parser rules and tree construction from your past projects. 
+ *      You should not need to make any significant changes in the parser itself. 
+ *      After parsing completes, if no errors were found, the parser calls
+ *      program->Emit() to kick off the code generation pass. The
+ *      interesting work happens during the tree traversal.
  */
 
 %{
@@ -103,6 +109,9 @@ Program   :    DeclList            {
                                       // if no errors, advance to next phase
                                       if (ReportError::NumErrors() == 0) 
                                           program->Check(); 
+                                      // comment out prev line to skip semantic analysis
+                                      if (ReportError::NumErrors() == 0) 
+                                          program->Emit();
                                     }
           ;
 
