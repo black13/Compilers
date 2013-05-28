@@ -72,6 +72,21 @@ int StmtBlock::GetBytes() {
   return bytes;
 }
 
+Location* StmtBlock::Emit(CodeGenerator* codeGen) {
+  int n = decls->NumElements();
+  for (int i=0; i<n; i++) {
+    VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
+    if (v) {
+      //d->SetLoc(); //TODO
+    }
+  }
+  n = stmts->NumElements();
+  for (int i=0; i<n; i++) {
+    stmts->Nth(i)->Emit(codeGen);
+  }
+  return NULL;
+}
+
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
     Assert(t != NULL && b != NULL);
     (test=t)->SetParent(this); 
@@ -97,10 +112,20 @@ int ForStmt::GetBytes(){
   return offset;
 }
 
+Location* ForStmt::Emit(CodeGenerator* codegen) {
+  cout << "EMIT:TODO" << endl;
+  return NULL;
+}
+
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
     if (elseBody) elseBody->SetParent(this);
+}
+
+Location* IfStmt::Emit(CodeGenerator* codegen) {
+  cout << "EMIT:TODO" << endl;
+  return NULL;
 }
 
 int IfStmt::GetBytes() {
@@ -121,6 +146,11 @@ int ReturnStmt::GetBytes() {
   return 0;
 }
 
+Location* ReturnStmt::Emit(CodeGenerator* codegen) {
+  cout << "EMIT:TODO" << endl;
+  return NULL;
+}
+
 PrintStmt::PrintStmt(List<Expr*> *a) {    
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
@@ -133,6 +163,15 @@ int PrintStmt::GetBytes() {
     bytes += args->Nth(i)->GetBytes();
   }
   return bytes;
+}
+
+Location* PrintStmt::Emit(CodeGenerator* codegen) {
+  int n = args->NumElements();
+  for (int i = 0; i<n; i++) {
+    Expr* e = args->Nth(i);
+  }
+
+  return NULL;
 }
 
 

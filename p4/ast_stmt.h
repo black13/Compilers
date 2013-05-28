@@ -51,6 +51,7 @@ class StmtBlock : public Stmt
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     int GetBytes();
+    Location* Emit(CodeGenerator* codeGen);
 
 };
 
@@ -82,12 +83,14 @@ class ForStmt : public LoopStmt
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
     int GetBytes();
+    Location* Emit(CodeGenerator* codeGen);
 };
 
 class WhileStmt : public LoopStmt 
 {
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
+    Location* Emit(CodeGenerator* codeGen);
     //int GetBytes();
 };
 
@@ -98,6 +101,7 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
+    Location* Emit(CodeGenerator* codeGen);
     int GetBytes();
 };
 
@@ -105,6 +109,7 @@ class BreakStmt : public Stmt
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
+    Location* Emit(CodeGenerator* codeGen);
     //int GetBytes();
 };
 
@@ -115,6 +120,7 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
+    Location* Emit(CodeGenerator* codeGen);
     int GetBytes();
 };
 
@@ -125,6 +131,7 @@ class PrintStmt : public Stmt
     
   public:
     PrintStmt(List<Expr*> *arguments);
+    Location* Emit(CodeGenerator* codeGen);
     int GetBytes();
 };
 
