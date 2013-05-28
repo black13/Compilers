@@ -50,7 +50,8 @@ class StmtBlock : public Stmt
     
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
-    virtual int GetBytes();
+    int GetBytes();
+
 };
 
   
@@ -80,14 +81,14 @@ class ForStmt : public LoopStmt
   
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
-    virtual int GetBytes();
+    int GetBytes();
 };
 
 class WhileStmt : public LoopStmt 
 {
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
-    //virtual int GetBytes();
+    //int GetBytes();
 };
 
 class IfStmt : public ConditionalStmt 
@@ -97,14 +98,14 @@ class IfStmt : public ConditionalStmt
   
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
-    virtual int GetBytes();
+    int GetBytes();
 };
 
 class BreakStmt : public Stmt 
 {
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
-    //virtual int GetBytes();
+    //int GetBytes();
 };
 
 class ReturnStmt : public Stmt  
@@ -114,7 +115,7 @@ class ReturnStmt : public Stmt
   
   public:
     ReturnStmt(yyltype loc, Expr *expr);
-    virtual int GetBytes();
+    int GetBytes();
 };
 
 class PrintStmt : public Stmt
@@ -124,7 +125,7 @@ class PrintStmt : public Stmt
     
   public:
     PrintStmt(List<Expr*> *arguments);
-    virtual int GetBytes();
+    int GetBytes();
 };
 
 

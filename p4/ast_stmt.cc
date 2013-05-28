@@ -32,7 +32,7 @@ void Program::Emit() {
     int offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
 
-    //get locations for all VarDecls
+    //set locations for all VarDecls
     for (int i = 0; i < n; ++i) {
         VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
         if (d) {

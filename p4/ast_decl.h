@@ -47,7 +47,7 @@ class VarDecl : public Decl
 
     // returns the size in bytes of the object
     int GetBytes() { return CodeGenerator::VarSize; }
-    virtual Location* Emit(CodeGenerator* codeGen);
+    Location* Emit(CodeGenerator* codeGen);
 };
 
 class ClassDecl : public Decl 
@@ -60,7 +60,7 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-    virtual Location* Emit(CodeGenerator* codeGen);
+    Location* Emit(CodeGenerator* codeGen);
 };
 
 class InterfaceDecl : public Decl 
@@ -69,8 +69,8 @@ class InterfaceDecl : public Decl
     List<Decl*> *members;
     
   public:
-    virtual Location* Emit(CodeGenerator* codeGen);
     InterfaceDecl(Identifier *name, List<Decl*> *members);
+    Location* Emit(CodeGenerator* codeGen);
 };
 
 class FnDecl : public Decl 
@@ -83,7 +83,7 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
-    virtual Location* Emit(CodeGenerator* codeGen);
+    Location* Emit(CodeGenerator* codeGen);
 };
 
 #endif
