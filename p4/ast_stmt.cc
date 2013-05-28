@@ -43,7 +43,6 @@ void Program::Emit() {
 
     for (int i = 0; i < n; ++i) {
         Decl* d = decls->Nth(i);
-        cout << "Emit["<<i<<"]: " << d->GetName() << endl;
         d->Emit(codeGen);
     }
 
@@ -112,7 +111,7 @@ int ForStmt::GetBytes(){
   return offset;
 }
 
-Location* ForStmt::Emit(CodeGenerator* codegen) {
+Location* ForStmt::Emit(CodeGenerator* codeGen) {
   cout << "EMIT:TODO" << endl;
   return NULL;
 }
@@ -123,7 +122,7 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
-Location* IfStmt::Emit(CodeGenerator* codegen) {
+Location* IfStmt::Emit(CodeGenerator* codeGen) {
   cout << "EMIT:TODO" << endl;
   return NULL;
 }
@@ -146,7 +145,7 @@ int ReturnStmt::GetBytes() {
   return 0;
 }
 
-Location* ReturnStmt::Emit(CodeGenerator* codegen) {
+Location* ReturnStmt::Emit(CodeGenerator* codeGen) {
   cout << "EMIT:TODO" << endl;
   return NULL;
 }
@@ -165,10 +164,23 @@ int PrintStmt::GetBytes() {
   return bytes;
 }
 
-Location* PrintStmt::Emit(CodeGenerator* codegen) {
+Location* PrintStmt::Emit(CodeGenerator* codeGen) {
   int n = args->NumElements();
   for (int i = 0; i<n; i++) {
     Expr* e = args->Nth(i);
+    Type* t = e->GetType();
+
+    //determine which print TAC to use
+    BuiltIn b = NumBuiltIns;
+    if (t->IsEquivalentTo(Type::intType))
+      b = PrintInt;
+    else if (t->IsEquivalentTo(Type::stringType))
+      b = PrintString;
+    else if (t->IsEquivalentTo(Type::boolType))
+      b = PrintBool;
+    
+    //generate the code!
+    codeGen->GenBuiltInCall(b,e->Emit(codeGen));
   }
 
   return NULL;

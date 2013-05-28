@@ -26,6 +26,7 @@ typedef enum { Alloc, ReadLine, ReadInteger, StringEqual,
 class CodeGenerator {
   private:
     List<Instruction*> *code;
+    int offset;
 
   public:
            // Here are some class constants to remind you of the offsets

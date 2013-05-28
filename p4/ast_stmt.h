@@ -36,8 +36,8 @@ class Program : public Node
 class Stmt : public Node
 {
   public:
-     Stmt() : Node() {}
-     Stmt(yyltype loc) : Node(loc) {}
+    Stmt() : Node() {}
+    Stmt(yyltype loc) : Node(loc) {}
     // returns the size in bytes of the object
     virtual int GetBytes() { return 0; }
 };

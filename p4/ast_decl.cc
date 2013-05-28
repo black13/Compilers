@@ -19,7 +19,7 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Var" << endl;
+  cout << "Var:TODO" << endl;
   return NULL;
 }
 
@@ -37,7 +37,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Class" << endl;
+  cout << "Class:TODO" << endl;
   return NULL;
 }
 
@@ -47,7 +47,7 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 Location* InterfaceDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Interface" << endl;
+  cout << "Interface:TODO" << endl;
   return NULL;
 }
 
@@ -64,7 +64,6 @@ void FnDecl::SetFunctionBody(Stmt *b) {
 }
 
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Fn" << endl;
 
   int offset = CodeGenerator::OffsetToFirstParam;
 
