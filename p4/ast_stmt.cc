@@ -116,6 +116,11 @@ Location* ForStmt::Emit(CodeGenerator* codeGen) {
   return NULL;
 }
 
+Location* WhileStmt::Emit(CodeGenerator* codeGen) {
+  cout << "EMIT:TODO" << endl;
+  return NULL;
+}
+
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
     Assert(t != NULL && tb != NULL); // else can be NULL
     elseBody = eb;
@@ -131,6 +136,11 @@ int IfStmt::GetBytes() {
   int offset = ConditionalStmt::GetBytes();
   offset += elseBody->GetBytes();
   return offset;
+}
+
+Location* BreakStmt::Emit(CodeGenerator* codegen) {
+  cout << "EMIT:TODO" << endl;
+  return NULL;
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 

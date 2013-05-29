@@ -115,8 +115,8 @@ class CompoundExpr : public Expr
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
     int GetBytes();
-    Type* GetType();
-    Location* Emit(CodeGenerator *codeGen);
+    //Type* GetType();
+    //Location* Emit(CodeGenerator *codeGen);
 };
 
 class ArithmeticExpr : public CompoundExpr 
