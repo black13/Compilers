@@ -22,3 +22,10 @@ Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 } 
 
+/*
+void Identifier::AddSymbol(Decl* parent) {
+    Decl *decl = symbols->SearchHead(name);
+    if (decl == NULL) symbols->Add(name, parent);
+}
+*/
+

@@ -36,8 +36,6 @@
 #include <iostream>
 using namespace std;
 
-class Decl;
-
 class Node  {
   protected:
     yyltype *location;
@@ -63,7 +61,6 @@ class Identifier : public Node
   public:
     Identifier(yyltype loc, const char *name);
     const char * GetName() { return name; }
-    //void AddSymbol(Decl* parent);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
 

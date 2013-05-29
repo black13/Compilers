@@ -15,6 +15,7 @@
 
 #include "ast.h"
 #include "ast_stmt.h"
+#include "ast_type.h"
 #include "list.h"
 
 class NamedType; // for new
@@ -45,8 +46,8 @@ class IntConstant : public Expr
   
   public:
     IntConstant(yyltype loc, int val);
-    int GetBytes();
-    Type* GetType();
+    int GetBytes() { return 4; };
+    Type* GetType() { return Type::intType; };
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -57,8 +58,8 @@ class DoubleConstant : public Expr
     
   public:
     DoubleConstant(yyltype loc, double val);
-    Type* GetType();
-    int GetBytes();
+    int GetBytes() { return 4; };
+    Type* GetType() { return Type::doubleType; };
     //Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -69,8 +70,8 @@ class BoolConstant : public Expr
     
   public:
     BoolConstant(yyltype loc, bool val);
-    int GetBytes();
-    Type* GetType();
+    int GetBytes() { return 4; };
+    Type* GetType() { return Type::boolType; };
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -81,8 +82,8 @@ class StringConstant : public Expr
     
   public:
     StringConstant(yyltype loc, const char *val);
-    int GetBytes();
-    Type* GetType();
+    int GetBytes() { return 4; };
+    Type* GetType() { return Type::stringType; };
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -90,8 +91,8 @@ class NullConstant: public Expr
 {
   public: 
     NullConstant(yyltype loc) : Expr(loc) {}
-    int GetBytes();
-    Type* GetType();
+    int GetBytes() { return 4; }
+    Type* GetType() { return Type::nullType; };
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -114,7 +115,6 @@ class CompoundExpr : public Expr
   public:
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
-    int GetBytes();
     //Type* GetType();
     //Location* Emit(CodeGenerator *codeGen);
 };
@@ -186,7 +186,6 @@ class ArrayAccess : public LValue
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
-    int GetBytes();
     Type* GetType();
     Location* Emit(CodeGenerator *codeGen);
 };
@@ -204,7 +203,6 @@ class FieldAccess : public LValue
     
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
-    int GetBytes();
     Type* GetType();
     Location* Emit(CodeGenerator *codeGen);
 };
@@ -234,8 +232,8 @@ class NewExpr : public Expr
     
   public:
     NewExpr(yyltype loc, NamedType *clsType);
-    int GetBytes();
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -247,7 +245,6 @@ class NewArrayExpr : public Expr
     
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
-    int GetBytes();
     Type* GetType();
     Location* Emit(CodeGenerator *codeGen);
 };

@@ -13,40 +13,16 @@ IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
 }
 
-int IntConstant::GetBytes(){
-  return 4;
-}
-
 Location* IntConstant::Emit(CodeGenerator* codeGen) {
   return codeGen->GenLoadConstant(value);
-}
-
-Type* IntConstant::GetType() {
-    return Type::intType;
 }
 
 DoubleConstant::DoubleConstant(yyltype loc, double val) : Expr(loc) {
     value = val;
 }
 
-Type* DoubleConstant::GetType() {
-    return Type::doubleType;
-}
-
-int DoubleConstant::GetBytes(){
-  return 4;
-}
-
 BoolConstant::BoolConstant(yyltype loc, bool val) : Expr(loc) {
     value = val;
-}
-
-Type* BoolConstant::GetType() {
-    return Type::boolType;
-}
-
-int BoolConstant::GetBytes(){
-  return 4;
 }
 
 Location* BoolConstant::Emit(CodeGenerator *codeGen) {
@@ -58,34 +34,14 @@ StringConstant::StringConstant(yyltype loc, const char *val) : Expr(loc) {
     value = strdup(val);
 }
 
-Type* StringConstant::GetType() {
-    return Type::stringType;
-}
-
-int StringConstant::GetBytes(){
-  return 4;
-}
-
 Location* StringConstant::Emit(CodeGenerator *codeGen) {
     return codeGen->GenLoadConstant(value);
-}
-
-int NullConstant::GetBytes(){
-  return 4;
 }
 
 Location* NullConstant::Emit(CodeGenerator *codeGen) {
     return codeGen->GenLoadConstant(0);
 }
 
-Type* NullConstant::GetType() {
-    return Type::nullType;
-}
-
-int CompoundExpr::GetBytes(){
-  cout << "CompoundExpr::GetBytes:TODO" << endl;
-  return 0;
-}
 
 Type* ArithmeticExpr::GetType() {
     return right->GetType();
@@ -176,12 +132,6 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
-int ArrayAccess::GetBytes(){
-  cout << "ArrayAccess::GetBytes:TODO" << endl;
-  return 0;
-}
-
-
 Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
   //TODO
   cout << "Expr::Emit:TODO" << endl;
@@ -213,11 +163,6 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     (field=f)->SetParent(this);
 }
 
-int FieldAccess::GetBytes(){
-  cout << "FieldAccess::GetBytes:TODO" << endl;
-  return 0;
-}
-
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)
     base = b;
@@ -229,7 +174,7 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
 
 Type* Call::GetType() {
     //TODO
-    cout << "call::GetType:TODO" << endl;
+    cout << "Call::GetType:TODO" << endl;
     return NULL;
 }
 
@@ -240,7 +185,7 @@ int Call::GetBytes(){
 
 Location* Call::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "Call::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -258,7 +203,7 @@ Type* NewExpr::GetType() {
 
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "NewExpr::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -286,12 +231,6 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
   return NULL;
 }
 
-
-
-int NewArrayExpr::GetBytes(){
-  cout << "NewArrayExpr::GetBytes:TODO" << endl;
-  return 0;
-}
 
 Type* ReadIntegerExpr::GetType() {
     return Type::intType;
