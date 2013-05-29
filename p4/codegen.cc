@@ -197,12 +197,23 @@ void CodeGenerator::DoFinalCodeGen()
 {
   if (IsDebugOn("tac")) { // if debug don't translate to mips, just print Tac
     for (int i = 0; i < code->NumElements(); i++)
-	code->Nth(i)->Print();
+      code->Nth(i)->Print();
    }  else {
      Mips mips;
      mips.EmitPreamble();
-     for (int i = 0; i < code->NumElements(); i++)
-	 code->Nth(i)->Emit(&mips);
+     //TODO optimize this
+     mips.EmitPrintInt();
+     mips.EmitPrintString();
+     mips.EmitPrintBool();
+     mips.EmitAlloc();
+     mips.EmitStringEqual();
+     mips.EmitHalt();
+     mips.EmitReadInteger();
+     mips.EmitReadLine();
+
+     for (int i = 0; i < code->NumElements(); i++) {
+      code->Nth(i)->Emit(&mips);
+     }
   }
 }
 
