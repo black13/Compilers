@@ -7,6 +7,7 @@
 #include "ast_decl.h"
 #include "ast_expr.h"
 
+extern SymbolTable *symbols;
 
 Program::Program(List<Decl*> *d) {
     codeGen = new CodeGenerator;
@@ -32,6 +33,7 @@ void Program::Emit() {
     int offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
 
+    symbols->Push();
     //set locations for all VarDecls
     for (int i = 0; i < n; ++i) {
         VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
@@ -48,6 +50,7 @@ void Program::Emit() {
 
     //final step
     codeGen->DoFinalCodeGen();
+    symbols->Pop();
 }
 
 StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
@@ -72,17 +75,23 @@ int StmtBlock::GetBytes() {
 }
 
 Location* StmtBlock::Emit(CodeGenerator* codeGen) {
+  symbols->Push();
+
+  // TODO: This sort of works, but should break with a function with args
+  int offset = CodeGenerator::OffsetToFirstParam;
   int n = decls->NumElements();
   for (int i=0; i<n; i++) {
     VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
     if (v) {
-      //d->SetLoc(); //TODO
+      v->SetLoc(offset);
+      offset += v->GetBytes();
     }
   }
   n = stmts->NumElements();
   for (int i=0; i<n; i++) {
     stmts->Nth(i)->Emit(codeGen);
   }
+  symbols->Pop();
   return NULL;
 }
 

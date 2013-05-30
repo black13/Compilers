@@ -8,6 +8,7 @@
 #include "ast_type.h"
 #include "ast_decl.h"
 
+extern SymbolTable *symbols;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -49,7 +50,7 @@ Type* ArithmeticExpr::GetType() {
 
 Location* ArithmeticExpr::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "ArithmeticExpr::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -59,7 +60,7 @@ Type* RelationalExpr::GetType() {
 
 Location* RelationalExpr::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "RelationalExpr::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -69,7 +70,7 @@ Type* EqualityExpr::GetType() {
 
 Location* EqualityExpr::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "EqualityExpr::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -79,7 +80,7 @@ Type* LogicalExpr::GetType() {
 
 Location* LogicalExpr::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "LogicalExpr::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -88,21 +89,20 @@ Type* AssignExpr::GetType() {
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  codeGen->GenAssign(left->Emit(codeGen), right->Emit(codeGen));
   return NULL;
 }
 
 
 Type* This::GetType() {
     //TODO
-    cout << "this::GetType:TODO" << endl;
+    cout << "This::GetType:TODO" << endl;
     return NULL;
 }
 
 Location* This::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "This::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -127,6 +127,11 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
    
+int CompoundExpr::GetBytes() {
+    if (left && right) return left->GetBytes() + right->GetBytes();
+    return right->GetBytes();
+}
+
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
@@ -134,7 +139,7 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 
 Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "ArrayAccess::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -144,15 +149,20 @@ Type* ArrayAccess::GetType() {
 
 Type* FieldAccess::GetType() {
     //TODO
-    cout << "FieldAccess::GetType:TODO" << endl;
-    return NULL;
+    //cout << "FieldAccess::GetType:TODO" << endl;
+    Decl *decl = symbols->Search(field->GetName());
+    
+    return decl->GetType();
 }
 
 
 Location* FieldAccess::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "Expr::Emit:TODO" << endl;
-  return NULL;
+  //cout << "FieldAccess::Emit:TODO" << endl;
+  Decl *decl = symbols->Search(field->GetName());
+  //cout << "FieldAccess::Emit:TODO" << endl;
+  Location *loc = decl->GetLoc();
+  //cout << "FieldAccess::Emit:TODO" << endl;
+  return loc;
 }
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
@@ -227,7 +237,7 @@ Type* NewArrayExpr::GetType() {
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
   //TODO
-  cout << "Expr::Emit:TODO" << endl;
+  cout << "NewArrayExpr::Emit:TODO" << endl;
   return NULL;
 }
 
@@ -235,7 +245,6 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
 Type* ReadIntegerExpr::GetType() {
     return Type::intType;
 }
-
 Location* ReadIntegerExpr::Emit(CodeGenerator *codeGen) {
     return codeGen->GenBuiltInCall(ReadInteger);
 }
@@ -243,7 +252,6 @@ Location* ReadIntegerExpr::Emit(CodeGenerator *codeGen) {
 Type* ReadLineExpr::GetType() {
     return Type::stringType;
 }
-
 Location* ReadLineExpr::Emit(CodeGenerator *codeGen) {
     return codeGen->GenBuiltInCall(ReadLine);
 }

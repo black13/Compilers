@@ -15,7 +15,7 @@
 #include "parser.h"
 #include "errors.h"
 
-//SymbolTable *symbols = new SymbolTable(); 
+SymbolTable *symbols = new SymbolTable(); 
 
 void yyerror(const char *msg); // standard error-handling routine
 

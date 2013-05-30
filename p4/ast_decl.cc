@@ -5,7 +5,8 @@
 #include "ast_decl.h"
 #include "ast_type.h"
 #include "ast_stmt.h"
-        
+
+extern SymbolTable *symbols;
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -19,12 +20,13 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Var:TODO" << endl;
+  //cout << "Var:TODO" << endl;
   return NULL;
 }
 
 void VarDecl::SetLoc(int location) {
     this->loc = new Location(gpRelative, location, this->GetName());
+    symbols->Add(id->GetName(), this);
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {

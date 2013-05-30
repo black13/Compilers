@@ -62,7 +62,7 @@ class Identifier : public Node
     
   public:
     Identifier(yyltype loc, const char *name);
-    const char * GetName() { return name; }
+    char * GetName() { return name; }
     //void AddSymbol(Decl* parent);
     friend ostream& operator<<(ostream& out, Identifier *id) { return out << id->name; }
 };
@@ -79,6 +79,144 @@ class Error : public Node
     Error() : Node() {}
 };
 
+#endif
 
+
+/**
+ * SymbolTable Class
+ *  
+ */
+
+#ifndef _H_symbol_table
+#define _H_symbol_table
+
+#include <list>
+#include "utility.h"  // for Assert()
+#include "location.h"
+#include "hashtable.h"
+#include "ast_decl.h"
+
+/*
+struct Table {
+    Hashtable<Decl*> *table;
+    Table *parent;
+    //Table(Table *p) { table = new Hashtable<Decl*>(); parent = p; };
+
+    friend ostream& operator<<(ostream& out, Table *tbl) { 
+      Iterator<Decl*> it = tbl->table->GetIterator();
+      Decl* temp = it.GetNextValue();
+      while (temp){
+        out << temp << " ";
+        temp = it.GetNextValue();
+      }
+      return out;
+    }
+};
+    */
+
+class SymbolTable {
+   struct Table {
+       Hashtable<Decl*> *table;
+       Table *parent;
+   };
+
+   Table *branch;
+   int level;
+
+ public:
+    SymbolTable() { 
+        branch = NULL; 
+        level = 0; 
+    }
+    SymbolTable(Table *table, int lvl) { 
+        branch = table; 
+        level = lvl; 
+    }
+
+    // Returns count of elements currently in list
+    const int Size() const { return level; }
+
+    // Adds element to list end
+    // Call this whenever we go int 
+    SymbolTable* Push()
+    { 
+      Table *temp = new Table;
+      temp->table = new Hashtable<Decl*>();
+      temp->parent = branch;
+      branch = temp;
+      level++;
+      return new SymbolTable(branch, level);
+    }
+
+    // Removes head
+    void Pop()
+    { 
+      if (branch) {
+        Table *temp = branch;
+        branch = branch->parent;
+        //delete temp;
+        level--;
+      }
+    }
+
+    void SavePop()
+    { 
+      if (branch) {
+        branch = branch->parent;
+        level--;
+      }
+    }
+
+    // Checks if id exists in current scope 
+    Decl* SearchHead(char* id)
+    { 
+      if (branch && branch->table) return branch->table->Lookup(id);
+      return NULL;
+    }
+
+    // Find the loc in the nearest scope
+    // if not found returns NULL
+    Decl* Search(char* id) {
+        //cout << "0" << endl;
+        //cout << &(*branch) << endl;
+        if (branch) {
+            //cout << "1" << endl;
+            //cout << branch << endl;
+            Table *temp = branch;
+            do {
+                //cout << "2" << endl;
+                Decl *decl = temp->table->Lookup(id);
+                if (decl != NULL)
+                {
+                    return decl;
+                }
+                temp = temp->parent;
+            } while (temp != NULL);
+        }
+        return NULL;
+    }
+
+    // Add a new declared variable to current scope
+    void Add(char* id, Decl* decl)
+    {
+      if (branch && branch->table) branch->table->Enter(id, decl, false);
+    }
+
+/*
+    friend ostream& operator<<(ostream& out, SymbolTable *sym) {
+      if (sym->branch) {
+        out << "Level: " << sym->level;
+        Table *temp = sym->branch;
+        while (temp != NULL) {
+          out << "[" << temp << "]";
+          temp = temp->parent;
+        }
+      } else {
+        out << "Empty";
+      }
+      return out;
+    }
+    */
+};
 
 #endif

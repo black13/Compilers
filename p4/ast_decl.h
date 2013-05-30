@@ -28,6 +28,8 @@ class Decl : public Node
   public:
     Decl(Identifier *name);
     const char * GetName() { return id->GetName(); }
+    virtual Location* GetLoc() { return NULL; };
+    virtual Type* GetType() { return NULL; };
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -39,11 +41,12 @@ class VarDecl : public Decl
     
   public:
     //returns the type of the ident
-    const Type * GetType() { return type; }
+    Type * GetType() { return type; }
     VarDecl(Identifier *name, Type *type);
     //Used to set the location of this variable in memeory to a new Location object
     // offset is the offset from the program start untill this variable is defined
     void SetLoc(int location);
+    Location* GetLoc() { return loc; };
 
     // returns the size in bytes of the object
     int GetBytes() { return CodeGenerator::VarSize; }
