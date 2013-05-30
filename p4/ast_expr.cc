@@ -48,40 +48,94 @@ Type* ArithmeticExpr::GetType() {
     return right->GetType();
 }
 
+int ArithmeticExpr::GetBytes() {
+    if (left && right) return CodeGenerator::VarSize + left->GetBytes() + right->GetBytes();
+    return (2 * CodeGenerator::VarSize) + right->GetBytes();
+}
+
 Location* ArithmeticExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "ArithmeticExpr::Emit:TODO" << endl;
-  return NULL;
+    if (left && right)
+        return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
+
+    // If the operator is '-' return 'right == false'
+    return codeGen->GenBinaryOp("-", codeGen->GenLoadConstant(0), right->Emit(codeGen));
 }
 
 Type* RelationalExpr::GetType() {
     return Type::boolType;
 }
 
+int RelationalExpr::GetBytes() {
+    int size = CodeGenerator::VarSize + left->GetBytes() + right->GetBytes(); 
+    if (op->EqualTo("<="))
+        return (2 * CodeGenerator::VarSize) + size;
+    else if (op->EqualTo(">"))
+        return (4 * CodeGenerator::VarSize) + size;
+    else if (op->EqualTo(">="))
+        return (2 * CodeGenerator::VarSize) + size;
+    else
+        return size;
+}
+
 Location* RelationalExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "RelationalExpr::Emit:TODO" << endl;
-  return NULL;
+    Location *l     = left->Emit(codeGen);
+    Location *r     = right->Emit(codeGen);
+    if (op->EqualTo("<"))
+        return codeGen->GenBinaryOp("<", l, r);
+    else if (op->EqualTo("<=")) {
+        Location *equal = codeGen->GenBinaryOp("==", l, r);
+        Location *less  = codeGen->GenBinaryOp("<", l, r);
+        return codeGen->GenBinaryOp("||", less, equal);
+    }
+    else if (op->EqualTo(">")) {
+        Location *equal = codeGen->GenBinaryOp("==", l, r);
+        Location *less  = codeGen->GenBinaryOp("<", l, r);
+        Location *leq   = codeGen->GenBinaryOp("||", less, equal);
+        return codeGen->GenBinaryOp("==", codeGen->GenLoadConstant(0), leq);
+    }
+    else if (op->EqualTo(">=")) {
+        Location *less  = codeGen->GenBinaryOp("<", l, r);
+        return codeGen->GenBinaryOp("==", codeGen->GenLoadConstant(0), less);
+    }
+
+    return NULL;
 }
 
 Type* EqualityExpr::GetType() {
     return Type::boolType;
 }
 
+int EqualityExpr::GetBytes() {
+    int size = CodeGenerator::VarSize + left->GetBytes() + right->GetBytes(); 
+    if (op->EqualTo("=="))
+        return size;
+    return size + (2 * CodeGenerator::VarSize);
+}
+
 Location* EqualityExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "EqualityExpr::Emit:TODO" << endl;
-  return NULL;
+    Location *loc = codeGen->GenBinaryOp("==", left->Emit(codeGen), right->Emit(codeGen));
+    if (op->EqualTo("=="))
+        return loc;
+
+    // If operator is '!=' reverse the result of '=='
+    return codeGen->GenBinaryOp("==", codeGen->GenLoadConstant(0), loc);
 }
 
 Type* LogicalExpr::GetType() {
     return Type::boolType;
 }
 
+int LogicalExpr::GetBytes() {
+    if (left && right) return CodeGenerator::VarSize + left->GetBytes() + right->GetBytes();
+    return (2 * CodeGenerator::VarSize) + right->GetBytes();
+}
+
 Location* LogicalExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "LogicalExpr::Emit:TODO" << endl;
-  return NULL;
+    if (left && right)
+        return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
+
+    // If the operator is '!' return 'right == false'
+    return codeGen->GenBinaryOp("==", codeGen->GenLoadConstant(0), right->Emit(codeGen));
 }
 
 Type* AssignExpr::GetType() {
@@ -89,8 +143,9 @@ Type* AssignExpr::GetType() {
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
-  codeGen->GenAssign(left->Emit(codeGen), right->Emit(codeGen));
-  return NULL;
+    Location *r = right->Emit(codeGen);
+    codeGen->GenAssign(left->Emit(codeGen), r);
+    return r;
 }
 
 
@@ -128,8 +183,16 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
 }
    
 int CompoundExpr::GetBytes() {
-    if (left && right) return left->GetBytes() + right->GetBytes();
-    return right->GetBytes();
+    if (left && right) return CodeGenerator::VarSize + left->GetBytes() + right->GetBytes();
+    return CodeGenerator::VarSize + right->GetBytes();
+}
+
+Location* CompoundExpr::Emit(CodeGenerator *codeGen) {
+    if (left && right)
+        return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
+
+    // TODO: Handle case of one operand.
+    return NULL;
 }
 
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
@@ -147,23 +210,6 @@ Type* ArrayAccess::GetType() {
     return base->GetType();
 }
 
-Type* FieldAccess::GetType() {
-    //TODO
-    //cout << "FieldAccess::GetType:TODO" << endl;
-    Decl *decl = symbols->Search(field->GetName());
-    
-    return decl->GetType();
-}
-
-
-Location* FieldAccess::Emit(CodeGenerator *codeGen) {
-  //cout << "FieldAccess::Emit:TODO" << endl;
-  Decl *decl = symbols->Search(field->GetName());
-  //cout << "FieldAccess::Emit:TODO" << endl;
-  Location *loc = decl->GetLoc();
-  //cout << "FieldAccess::Emit:TODO" << endl;
-  return loc;
-}
 
 FieldAccess::FieldAccess(Expr *b, Identifier *f) 
   : LValue(b? Join(b->GetLocation(), f->GetLocation()) : *f->GetLocation()) {
@@ -172,6 +218,19 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
     if (base) base->SetParent(this); 
     (field=f)->SetParent(this);
 }
+
+Type* FieldAccess::GetType() {
+    Decl *decl = symbols->Search(field->GetName());
+    
+    return decl->GetType();
+}
+
+Location* FieldAccess::Emit(CodeGenerator *codeGen) {
+  Decl *decl = symbols->Search(field->GetName());
+  Location *loc = decl->GetLoc();
+  return loc;
+}
+
 
 Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
     Assert(f != NULL && a != NULL); // b can be be NULL (just means no explicit base)

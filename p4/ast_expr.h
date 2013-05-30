@@ -103,6 +103,8 @@ class Operator : public Node
     
   public:
     Operator(yyltype loc, const char *tok);
+    const char* GetName() { return tokenString; };
+    bool EqualTo(const char* op) { return !strcmp(tokenString, op); };
     friend ostream& operator<<(ostream& out, Operator *o) { return out << o->tokenString; }
  };
  
@@ -116,8 +118,7 @@ class CompoundExpr : public Expr
     CompoundExpr(Expr *lhs, Operator *op, Expr *rhs); // for binary
     CompoundExpr(Operator *op, Expr *rhs);             // for unary
     int GetBytes();
-    //Type* GetType();
-    //Location* Emit(CodeGenerator *codeGen);
+    Location* Emit(CodeGenerator *codeGen);
 };
 
 class ArithmeticExpr : public CompoundExpr 
@@ -126,6 +127,7 @@ class ArithmeticExpr : public CompoundExpr
     ArithmeticExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     ArithmeticExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -134,6 +136,7 @@ class RelationalExpr : public CompoundExpr
   public:
     RelationalExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -143,6 +146,7 @@ class EqualityExpr : public CompoundExpr
     EqualityExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "EqualityExpr"; }
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -153,6 +157,7 @@ class LogicalExpr : public CompoundExpr
     LogicalExpr(Operator *op, Expr *rhs) : CompoundExpr(op,rhs) {}
     const char *GetPrintNameForNode() { return "LogicalExpr"; }
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
