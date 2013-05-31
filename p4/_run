@@ -36,10 +36,6 @@ if [ $? -ne 0 -o -s tmp.errors ]; then
   exit 1;
 fi
 
-if [ ! -r $filename.in ]; then
-  $SPIM -file tmp.asm
-else
-  $SPIM -file tmp.asm < filename.in
-fi
+$SPIM -file tmp.asm
 
 exit 0;

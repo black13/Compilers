@@ -28,7 +28,11 @@ for file in $LIST; do
         
   #tail -n +6 $file > $file.trim
   tmp=${TMP:-"./samples/"}/check.tmp
-  ./_run $base.$ext 2>&1 | tail -n +7 > $tmp
+  if [ ! -r $base.in ]; then
+    ./_run $base.$ext 2>&1 | tail -n +7 > $tmp
+  else
+    ./_run $base.$ext < $base.in 2>&1 | tail -n +7 > $tmp
+  fi
 
   printf "Checking %-27s: " $file
   if ! cmp -s $tmp $file.trim; then
