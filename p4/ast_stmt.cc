@@ -8,6 +8,7 @@
 #include "ast_expr.h"
 
 extern SymbolTable *symbols;
+extern int fn_offset;
 
 Program::Program(List<Decl*> *d) {
     codeGen = new CodeGenerator;
@@ -78,13 +79,12 @@ Location* StmtBlock::Emit(CodeGenerator* codeGen) {
   symbols->Push();
 
   // TODO: This sort of works, but should break with a function with args
-  int offset = CodeGenerator::OffsetToFirstParam;
   int n = decls->NumElements();
   for (int i=0; i<n; i++) {
     VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
     if (v) {
-      v->SetLoc(offset);
-      offset += v->GetBytes();
+      v->SetLoc(fn_offset);
+      fn_offset -= v->GetBytes();
     }
   }
   n = stmts->NumElements();

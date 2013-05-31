@@ -7,6 +7,7 @@
 #include "ast_stmt.h"
 
 extern SymbolTable *symbols;
+int fn_offset;
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -78,6 +79,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
   }
 
   if (body) {
+    fn_offset = CodeGenerator::OffsetToFirstLocal;
     codeGen->GenLabel(GetName());
     codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
     body->Emit(codeGen);
