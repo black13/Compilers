@@ -1,0 +1,16 @@
+int foo(int a, int b)
+{
+    return a + b;
+}
+
+void main()
+{
+    int c;
+    int d;
+    int e;
+    c = 1;
+    d = 5;
+
+    e = foo(c, d);
+    Print(e);
+}

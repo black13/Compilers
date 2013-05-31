@@ -165,8 +165,10 @@ int ReturnStmt::GetBytes() {
 }
 
 Location* ReturnStmt::Emit(CodeGenerator* codeGen) {
-  cout << "EMIT:TODO" << endl;
-  return NULL;
+    if (expr) codeGen->GenReturn(expr->Emit(codeGen));
+    else codeGen->GenReturn();
+
+    return NULL;
 }
 
 PrintStmt::PrintStmt(List<Expr*> *a) {    

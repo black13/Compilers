@@ -248,14 +248,40 @@ Type* Call::GetType() {
 }
 
 int Call::GetBytes(){
-  cout << "Call::GetBytes:TODO" << endl;
-  return 0;
+    int n = 0;
+    for (int i = 0; i < actuals->NumElements(); i++) {
+        n += actuals->Nth(i)->GetBytes();
+    }
+
+    if (!base) {
+        Decl *decl = symbols->Search(field->GetName());
+        if (!decl->GetType()->IsEquivalentTo(Type::voidType)) {
+            n += CodeGenerator::VarSize;
+        }
+    }
+    return n;
 }
 
 Location* Call::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "Call::Emit:TODO" << endl;
-  return NULL;
+    Location *result;
+    int bytes = 0;
+    // Tac instructions push params right to left.
+    for (int i = actuals->NumElements() - 1; i >= 0; i--) {
+        bytes += CodeGenerator::VarSize;
+        Location *loc = actuals->Nth(i)->Emit(codeGen);
+        codeGen->GenPushParam(loc);
+    }
+    if (!base) {
+        Decl *decl = symbols->Search(field->GetName());
+        if (decl->GetType()->IsEquivalentTo(Type::voidType)) {
+            result = codeGen->GenLCall(field->GetName(), false);
+        }
+        else {
+            result = codeGen->GenLCall(field->GetName(), true);
+        }
+    }
+    codeGen->GenPopParams(bytes);
+    return result;
 }
 
 NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) { 

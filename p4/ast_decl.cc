@@ -21,7 +21,6 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
-  //cout << "Var:TODO" << endl;
   return NULL;
 }
 
@@ -67,26 +66,26 @@ void FnDecl::SetFunctionBody(Stmt *b) {
 }
 
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
+    int offset = CodeGenerator::OffsetToFirstParam;
+    symbols->Add(id->GetName(), this);
 
-  int offset = CodeGenerator::OffsetToFirstParam;
+    //deal with formals
+    int n = formals->NumElements();
+    for (int i = 0; i < n; i++) {
+        VarDecl* v = formals->Nth(i);
+        v->SetLoc(offset);
+        offset += v->GetBytes();
+    }
 
-  //deal with formals
-  int n = formals->NumElements();
-  for (int i = 0; i < n; i++) {
-    VarDecl* v = formals->Nth(i);
-    v->SetLoc(offset);
-    offset += v->GetBytes();
-  }
-
-  if (body) {
-    fn_offset = CodeGenerator::OffsetToFirstLocal;
-    codeGen->GenLabel(GetName());
-    codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
-    body->Emit(codeGen);
-    codeGen->GenEndFunc();
-  }
+    if (body) {
+        fn_offset = CodeGenerator::OffsetToFirstLocal;
+        codeGen->GenLabel(id->GetName());
+        codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
+        body->Emit(codeGen);
+        codeGen->GenEndFunc();
+    }
   
-  return NULL;
+    return NULL;
 }
 
 

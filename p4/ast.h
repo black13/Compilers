@@ -37,6 +37,7 @@
 using namespace std;
 
 class Decl;
+class Type;
 
 class Node  {
   protected:

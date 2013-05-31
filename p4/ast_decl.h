@@ -86,6 +86,7 @@ class FnDecl : public Decl
   public:
     FnDecl(Identifier *name, Type *returnType, List<VarDecl*> *formals);
     void SetFunctionBody(Stmt *b);
+    Type* GetType() { return returnType; };
     Location* Emit(CodeGenerator* codeGen);
 };
 
