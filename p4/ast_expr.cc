@@ -9,6 +9,7 @@
 #include "ast_decl.h"
 
 extern SymbolTable *symbols;
+extern int labelNum;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -113,10 +114,16 @@ int EqualityExpr::GetBytes() {
 }
 
 Location* EqualityExpr::Emit(CodeGenerator *codeGen) {
-    Location *loc = codeGen->GenBinaryOp("==", left->Emit(codeGen), right->Emit(codeGen));
+    Location *loc = NULL;
+    if (left->GetType()->IsEquivalentTo(Type::stringType) && right->GetType()->IsEquivalentTo(Type::stringType)) {
+        loc = codeGen->GenBuiltInCall(StringEqual, left->Emit(codeGen), right->Emit(codeGen));
+    }
+    else {
+        loc = codeGen->GenBinaryOp("==", left->Emit(codeGen), right->Emit(codeGen));
+    }
+
     if (op->EqualTo("=="))
         return loc;
-
     // If operator is '!=' reverse the result of '=='
     return codeGen->GenBinaryOp("==", codeGen->GenLoadConstant(0), loc);
 }
@@ -354,12 +361,18 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
 Type* ReadIntegerExpr::GetType() {
     return Type::intType;
 }
+int ReadIntegerExpr::GetBytes() {
+    return CodeGenerator::VarSize;
+}
 Location* ReadIntegerExpr::Emit(CodeGenerator *codeGen) {
     return codeGen->GenBuiltInCall(ReadInteger);
 }
 
 Type* ReadLineExpr::GetType() {
     return Type::stringType;
+}
+int ReadLineExpr::GetBytes() {
+    return CodeGenerator::VarSize;
 }
 Location* ReadLineExpr::Emit(CodeGenerator *codeGen) {
     return codeGen->GenBuiltInCall(ReadLine);
