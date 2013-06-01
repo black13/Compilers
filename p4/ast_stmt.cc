@@ -123,12 +123,40 @@ int ForStmt::GetBytes(){
 }
 
 Location* ForStmt::Emit(CodeGenerator* codeGen) {
-    cout << "EMIT:TODO" << endl;
+    char label0[80];
+    char label1[80];
+    sprintf(label0, "_L%d", labelNum);
+    labelNum++;
+    sprintf(label1, "_L%d", labelNum);
+    labelNum++;
+    breakLabel = label1;
+
+    init->Emit(codeGen);
+    codeGen->GenLabel(label0);
+    codeGen->GenIfZ(test->Emit(codeGen), label1);
+    body->Emit(codeGen);
+    step->Emit(codeGen);
+    codeGen->GenGoto(label0);
+    codeGen->GenLabel(label1);
+
     return NULL;
 }
 
 Location* WhileStmt::Emit(CodeGenerator* codeGen) {
-    cout << "EMIT:TODO" << endl;
+    char label0[80];
+    char label1[80];
+    sprintf(label0, "_L%d", labelNum);
+    labelNum++;
+    sprintf(label1, "_L%d", labelNum);
+    labelNum++;
+    breakLabel = label1;
+
+    codeGen->GenLabel(label0);
+    codeGen->GenIfZ(test->Emit(codeGen), label1);
+    body->Emit(codeGen);
+    codeGen->GenGoto(label0);
+    codeGen->GenLabel(label1);
+
     return NULL;
 }
 
@@ -167,9 +195,11 @@ Location* IfStmt::Emit(CodeGenerator* codeGen) {
     return NULL;
 }
 
-Location* BreakStmt::Emit(CodeGenerator* codegen) {
-  cout << "EMIT:TODO" << endl;
-  return NULL;
+Location* BreakStmt::Emit(CodeGenerator* codeGen) {
+    Node *parent = this->GetParent();
+    while (parent && !parent->IsLoop()) parent = parent->GetParent();
+    if (parent && parent->GetBreakLabel()) codeGen->GenGoto(parent->GetBreakLabel());
+    return NULL;
 }
 
 ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) { 
@@ -178,10 +208,10 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
 }
 
 int ReturnStmt::GetBytes() {
-  if (expr){
-    return expr->GetBytes();
-  }
-  return 0;
+    if (expr){
+      return expr->GetBytes();
+    }
+    return 0;
 }
 
 Location* ReturnStmt::Emit(CodeGenerator* codeGen) {

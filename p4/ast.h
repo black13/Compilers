@@ -52,6 +52,8 @@ class Node  {
     yyltype *GetLocation()   { return location; }
     void SetParent(Node *p)  { parent = p; }
     Node *GetParent()        { return parent; }
+    virtual bool IsLoop()    { return false; }
+    virtual char * GetBreakLabel() { return NULL; }
     //method for each node to emit it's children and itself.
     virtual Location* Emit(CodeGenerator* codeGen) { return NULL; }
 };

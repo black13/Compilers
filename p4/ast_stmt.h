@@ -69,9 +69,14 @@ class ConditionalStmt : public Stmt
 
 class LoopStmt : public ConditionalStmt 
 {
+  protected:
+    char *breakLabel;
+
   public:
     LoopStmt(Expr *testExpr, Stmt *body)
             : ConditionalStmt(testExpr, body) {}
+    bool IsLoop() { return true; }
+    char * GetBreakLabel() { return breakLabel; }
     //virtual int GetBytes();
 };
 
