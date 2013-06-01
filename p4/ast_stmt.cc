@@ -116,20 +116,20 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
 }
 
 int ForStmt::GetBytes(){
-  int offset = LoopStmt::GetBytes();
-  offset += init->GetBytes();
-  offset += step->GetBytes();
-  return offset;
+    int offset = LoopStmt::GetBytes();
+    offset += init->GetBytes();
+    offset += step->GetBytes();
+    return offset;
 }
 
 Location* ForStmt::Emit(CodeGenerator* codeGen) {
-  cout << "EMIT:TODO" << endl;
-  return NULL;
+    cout << "EMIT:TODO" << endl;
+    return NULL;
 }
 
 Location* WhileStmt::Emit(CodeGenerator* codeGen) {
-  cout << "EMIT:TODO" << endl;
-  return NULL;
+    cout << "EMIT:TODO" << endl;
+    return NULL;
 }
 
 IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) { 
@@ -139,9 +139,9 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
 }
 
 int IfStmt::GetBytes() {
-  int offset = ConditionalStmt::GetBytes();
-  if (elseBody) offset += elseBody->GetBytes();
-  return offset;
+    int offset = ConditionalStmt::GetBytes();
+    if (elseBody) offset += elseBody->GetBytes();
+    return offset;
 }
 
 Location* IfStmt::Emit(CodeGenerator* codeGen) {

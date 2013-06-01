@@ -42,4 +42,3 @@ ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     (elemType=et)->SetParent(this);
 }
 
-

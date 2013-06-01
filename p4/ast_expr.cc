@@ -205,7 +205,7 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 }
 
 Type* ArrayAccess::GetType() {
-    return base->GetType();
+    return base->GetType()->GetType();
 }
 
 int ArrayAccess::GetBytes() {
@@ -251,8 +251,13 @@ Call::Call(yyltype loc, Expr *b, Identifier *f, List<Expr*> *a) : Expr(loc)  {
  
 
 Type* Call::GetType() {
-    //TODO
-    cout << "Call::GetType:TODO" << endl;
+    if (!base) {
+        return field->GetType();
+    }
+    else if (base->GetType()->IsArrayType()) {
+        if (strcmp(field->GetName(), "length") == 0)
+            return Type::intType;
+    }
     return NULL;
 }
 
@@ -289,13 +294,16 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             result = codeGen->GenLCall(field->GetName(), true);
         }
     }
-    /*
-    else if (dynamic_cast<ArrayType>(base->GetType())) {
+    else if (base->GetType()->IsArrayType()) {
+        /*
+        char label[80];
+        sprintf(label, "_%s_length", base->GetName());
         if (strcmp(field->GetName(), "length") == 0) {
-            
+            result = codeGen->GenLCall(label, true);
         }
+        */
+        result = codeGen->GenLoadConstant(0);
     }
-    */
     codeGen->GenPopParams(bytes);
     return result;
 }

@@ -33,6 +33,9 @@ class Type : public Node
     virtual void PrintToStream(ostream& out) { out << typeName; }
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     virtual bool IsEquivalentTo(Type *other) { return this == other; }
+    virtual Type* GetType() { return NULL; }
+    virtual bool IsArrayType() { return false; }
+    virtual bool IsNamedType() { return false; }
 };
 
 class NamedType : public Type 
@@ -42,6 +45,7 @@ class NamedType : public Type
     
   public:
     NamedType(Identifier *i);
+    bool IsNamedType() { return true; }
     
     void PrintToStream(ostream& out) { out << id; }
 };
@@ -53,6 +57,8 @@ class ArrayType : public Type
 
   public:
     ArrayType(yyltype loc, Type *elemType);
+    Type* GetType() { return elemType; }
+    bool IsArrayType() { return true; }
     
     void PrintToStream(ostream& out) { out << elemType << "[]"; }
 };

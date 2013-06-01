@@ -8,6 +8,8 @@
 #include <string.h> // strdup
 #include <stdio.h>  // printf
 
+extern SymbolTable *symbols;
+
 Node::Node(yyltype loc) {
     location = new yyltype(loc);
     parent = NULL;
@@ -21,6 +23,12 @@ Node::Node() {
 Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 } 
+
+Type * Identifier::GetType() {
+    Decl *decl = symbols->Search(name);
+    if (decl) return decl->GetType();
+    return NULL;
+}
 
 /*
 void Identifier::AddSymbol(Decl* parent) {
