@@ -13,6 +13,10 @@ else
   done
 fi
 
+total_tests=0
+pass_tests=0
+fail_tests=0
+
 for file in $LIST; do
   base=`echo $file | sed 's/\(.*\)\.out/\1/'`
 
@@ -36,10 +40,16 @@ for file in $LIST; do
 
   printf "Checking %-27s: " $file
   if ! cmp -s $tmp $file.trim; then
+    let fail_tests++
     echo "FAIL <--"
    # diff $tmp $file.trim
   else
+    let pass_tests++
     echo "PASS"
   fi
+  let total_tests++
 done
 rm ./samples/check.tmp
+
+echo "Fail: $fail_tests/$total_tests"
+echo "Pass: $pass_tests/$total_tests"
