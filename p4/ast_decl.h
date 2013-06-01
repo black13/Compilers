@@ -45,7 +45,7 @@ class VarDecl : public Decl
     VarDecl(Identifier *name, Type *type);
     //Used to set the location of this variable in memeory to a new Location object
     // offset is the offset from the program start untill this variable is defined
-    void SetLoc(int location);
+    void SetLoc(int location, bool func);
     Location* GetLoc() { return loc; };
 
     // returns the size in bytes of the object

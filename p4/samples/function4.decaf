@@ -41,7 +41,7 @@ void main()
 {
 	int i;
 	for (i = 0; i < 4; i = i + 1) {
-		//three(i*10);
+		three(i*10);
 	}
 }
 

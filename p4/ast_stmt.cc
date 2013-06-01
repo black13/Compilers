@@ -41,7 +41,7 @@ void Program::Emit() {
     for (int i = 0; i < n; ++i) {
         VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
         if (d) {
-          d->SetLoc(offset);
+          d->SetLoc(offset, false);
           offset += d->GetBytes();
         }
     }
@@ -85,7 +85,7 @@ Location* StmtBlock::Emit(CodeGenerator* codeGen) {
   for (int i=0; i<n; i++) {
     VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
     if (v) {
-      v->SetLoc(fn_offset);
+      v->SetLoc(fn_offset, true);
       fn_offset -= v->GetBytes();
     }
   }

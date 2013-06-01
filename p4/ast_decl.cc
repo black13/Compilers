@@ -21,11 +21,15 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
 }
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
-  return NULL;
+    return NULL;
 }
 
-void VarDecl::SetLoc(int location) {
-    this->loc = new Location(gpRelative, location, this->GetName());
+void VarDecl::SetLoc(int location, bool func) {
+    if (func) 
+        this->loc = new Location(fpRelative, location, this->GetName());
+    else 
+        this->loc = new Location(gpRelative, location, this->GetName());
+    
     symbols->Add(id->GetName(), this);
 }
 
@@ -39,8 +43,8 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Class:TODO" << endl;
-  return NULL;
+    cout << "Class:TODO" << endl;
+    return NULL;
 }
 
 InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
@@ -49,8 +53,8 @@ InterfaceDecl::InterfaceDecl(Identifier *n, List<Decl*> *m) : Decl(n) {
 }
 
 Location* InterfaceDecl::Emit(CodeGenerator* codeGen) {
-  cout << "Interface:TODO" << endl;
-  return NULL;
+    cout << "Interface:TODO" << endl;
+    return NULL;
 }
 
 	
@@ -73,7 +77,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     int n = formals->NumElements();
     for (int i = 0; i < n; i++) {
         VarDecl* v = formals->Nth(i);
-        v->SetLoc(offset);
+        v->SetLoc(offset, true);
         offset += v->GetBytes();
     }
 
