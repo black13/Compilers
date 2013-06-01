@@ -204,14 +204,19 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
-Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "ArrayAccess::Emit:TODO" << endl;
-  return NULL;
-}
-
 Type* ArrayAccess::GetType() {
     return base->GetType();
+}
+
+int ArrayAccess::GetBytes() {
+    return CodeGenerator::VarSize;
+}
+
+Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
+    Location *varSize = codeGen->GenLoadConstant(CodeGenerator::VarSize);
+    Location *offset = codeGen->GenBinaryOp("*", subscript->Emit(codeGen), varSize);
+    Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
+    return codeGen->GenLoad(location); 
 }
 
 
@@ -267,7 +272,7 @@ int Call::GetBytes(){
 }
 
 Location* Call::Emit(CodeGenerator *codeGen) {
-    Location *result;
+    Location *result = NULL;
     int bytes = 0;
     // Tac instructions push params right to left.
     for (int i = actuals->NumElements() - 1; i >= 0; i--) {
@@ -284,6 +289,13 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             result = codeGen->GenLCall(field->GetName(), true);
         }
     }
+    /*
+    else if (dynamic_cast<ArrayType>(base->GetType())) {
+        if (strcmp(field->GetName(), "length") == 0) {
+            
+        }
+    }
+    */
     codeGen->GenPopParams(bytes);
     return result;
 }
@@ -319,15 +331,15 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
 }
 
 Type* NewArrayExpr::GetType() {
-    //TODO
-    cout << "NewArr::Type:TODO" << endl;
-    return NULL;
+    return elemType;
+}
+
+int NewArrayExpr::GetBytes() {
+    return CodeGenerator::VarSize;
 }
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "NewArrayExpr::Emit:TODO" << endl;
-  return NULL;
+    return codeGen->GenBuiltInCall(Alloc, size->Emit(codeGen));
 }
 
 

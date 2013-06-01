@@ -175,7 +175,7 @@ class LValue : public Expr
 {
   public:
     LValue(yyltype loc) : Expr(loc) {}
-    virtual Type* GetType() { return NULL; }
+    Type* GetType() { return NULL; }
 };
 
 class This : public Expr 
@@ -194,6 +194,7 @@ class ArrayAccess : public LValue
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -253,6 +254,7 @@ class NewArrayExpr : public Expr
   public:
     NewArrayExpr(yyltype loc, Expr *sizeExpr, Type *elemType);
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 
