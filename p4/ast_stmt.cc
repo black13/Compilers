@@ -9,6 +9,7 @@
 
 extern SymbolTable *symbols;
 extern int fn_offset;
+int labelNum;
 
 Program::Program(List<Decl*> *d) {
     codeGen = new CodeGenerator;
@@ -33,6 +34,7 @@ void Program::Emit() {
     
     int offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
+    labelNum = 0;
 
     symbols->Push();
     //set locations for all VarDecls
@@ -136,15 +138,33 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
-Location* IfStmt::Emit(CodeGenerator* codeGen) {
-  cout << "EMIT:TODO" << endl;
-  return NULL;
-}
-
 int IfStmt::GetBytes() {
   int offset = ConditionalStmt::GetBytes();
-  offset += elseBody->GetBytes();
+  if (elseBody) offset += elseBody->GetBytes();
   return offset;
+}
+
+Location* IfStmt::Emit(CodeGenerator* codeGen) {
+    char label0[80];
+    char label1[80];
+    sprintf(label0, "_L%d", labelNum);
+    labelNum++;
+    
+    if (elseBody) {
+        sprintf(label1, "_L%d", labelNum);
+        labelNum++;
+    }
+    
+    codeGen->GenIfZ(test->Emit(codeGen), label0);
+    body->Emit(codeGen);
+
+    if (elseBody) codeGen->GenGoto(label1);
+    codeGen->GenLabel(label0);
+    if (elseBody) {
+        elseBody->Emit(codeGen);
+        codeGen->GenLabel(label1);
+    }
+    return NULL;
 }
 
 Location* BreakStmt::Emit(CodeGenerator* codegen) {

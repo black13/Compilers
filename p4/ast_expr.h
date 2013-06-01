@@ -167,6 +167,7 @@ class AssignExpr : public CompoundExpr
     AssignExpr(Expr *lhs, Operator *op, Expr *rhs) : CompoundExpr(lhs,op,rhs) {}
     const char *GetPrintNameForNode() { return "AssignExpr"; }
     Type* GetType();
+    int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
 };
 

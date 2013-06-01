@@ -142,6 +142,10 @@ Type* AssignExpr::GetType() {
     return left->GetType();
 }
 
+int AssignExpr::GetBytes() {
+    return right->GetBytes();
+}
+
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
     Location *r = right->Emit(codeGen);
     codeGen->GenAssign(left->Emit(codeGen), r);

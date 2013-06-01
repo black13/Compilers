@@ -1,0 +1,9 @@
+void main() {
+  int a;
+
+  a = 23;
+  if (a == 23)
+    a = 10;
+  else
+    a = 19;
+}
