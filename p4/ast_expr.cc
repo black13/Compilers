@@ -233,8 +233,14 @@ Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
     codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_out_of_bounds));
     codeGen->GenBuiltInCall(Halt);
     codeGen->GenLabel(label);
+
+
     Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
-    return codeGen->GenLoad(location); 
+
+    //add varSize to the offset for the array header
+    Location *ret = codeGen->GenBinaryOp("+", location, offset);
+
+    return codeGen->GenLoad(ret); 
 }
 
 
@@ -320,7 +326,9 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             result = codeGen->GenLCall(label, true);
         }
         */
-        result = codeGen->GenLoadConstant(0);
+        //result = codeGen->GenLoadConstant(0);
+        //array length call
+        result = codeGen->GenLoad(base->Emit(codeGen));
     }
     codeGen->GenPopParams(bytes);
     return result;
@@ -360,8 +368,8 @@ Type* NewArrayExpr::GetType() {
     return elemType;
 }
 
-int NewArrayExpr::GetBytes() {
-    return size->GetBytes() + (3 * CodeGenerator::VarSize);
+int NewArrayExpr::GetBytes() {//TODO this may not be correct
+    return size->GetBytes() + (5 * CodeGenerator::VarSize);
 }
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
@@ -377,7 +385,20 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
     codeGen->GenBuiltInCall(Halt);
     codeGen->GenLabel(label);
 
-    return codeGen->GenBuiltInCall(Alloc, s);
+    //multiply size times varsize for alloc
+    Location * c = codeGen->GenLoadConstant(CodeGenerator::VarSize);
+    Location * n = codeGen->GenBinaryOp("*",s,c);
+
+    //add 1 to the size to store the array size
+    Location * t = codeGen->GenBinaryOp("+",n,c);
+
+    //allocate space
+    Location * ret = codeGen->GenBuiltInCall(Alloc, t);
+
+    //store the size as the first element
+    codeGen->GenStore(ret,s);
+
+    return ret;
 }
 
 

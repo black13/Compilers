@@ -1,6 +1,7 @@
 void main() {
   int[] b;
   b = NewArray(10, int);
-
-  //b[3] = 5;
+  Print("Len: ",b.length(), "\n");
+  b[3] = 5;
+  Print("b[3]: ",b[3],"\n");
 }
