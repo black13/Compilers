@@ -156,6 +156,14 @@ int AssignExpr::GetBytes() {
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
     Location *r = right->Emit(codeGen);
+
+    //check to see if we need to save a variable
+    ArrayAccess* lval = dynamic_cast<ArrayAccess*>(left);
+    if (lval) {
+        return lval->EmitStore(codeGen,r);
+    }
+
+    //otherwise copy the data over
     codeGen->GenAssign(left->Emit(codeGen), r);
     return r;
 }
@@ -214,6 +222,12 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
+Location* ArrayAccess::EmitStore(CodeGenerator* codeGen,Location* var) {
+    Location *saveloc = GetOffsetLocation(codeGen);
+    codeGen->GenStore(saveloc,var);
+    return codeGen->GenLoad(saveloc);
+}
+
 Type* ArrayAccess::GetType() {
     return base->GetType()->GetType();
 }
@@ -222,7 +236,7 @@ int ArrayAccess::GetBytes() {
     return subscript->GetBytes() + base->GetBytes() + (6 * CodeGenerator::VarSize);
 }
 
-Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
+Location* ArrayAccess::GetOffsetLocation(CodeGenerator* codeGen) {
     Location *varSize = codeGen->GenLoadConstant(CodeGenerator::VarSize);
     Location *offset = codeGen->GenBinaryOp("*", subscript->Emit(codeGen), varSize);
 
@@ -236,13 +250,14 @@ Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
     codeGen->GenBuiltInCall(Halt);
     codeGen->GenLabel(label);
 
-
     Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
 
     //add varSize to the offset for the array header
-    Location *ret = codeGen->GenBinaryOp("+", location, varSize);
+    return codeGen->GenBinaryOp("+", location, varSize);
+}
 
-    return codeGen->GenLoad(ret); 
+Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
+    return codeGen->GenLoad(GetOffsetLocation(codeGen));
 }
 
 

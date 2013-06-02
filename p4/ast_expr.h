@@ -190,12 +190,14 @@ class ArrayAccess : public LValue
 {
   protected:
     Expr *base, *subscript;
+    Location* GetOffsetLocation(CodeGenerator* codeGen);
     
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     Type* GetType();
     int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
+    Location* EmitStore(CodeGenerator* codeGen, Location* loc);
 };
 
 /* Note that field access is used both for qualified names
