@@ -240,7 +240,7 @@ Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
     Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
 
     //add varSize to the offset for the array header
-    Location *ret = codeGen->GenBinaryOp("+", location, offset);
+    Location *ret = codeGen->GenBinaryOp("+", location, varSize);
 
     return codeGen->GenLoad(ret); 
 }
