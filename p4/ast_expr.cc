@@ -168,9 +168,11 @@ Type* This::GetType() {
 }
 
 Location* This::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "This::Emit:TODO" << endl;
-  return NULL;
+    Decl *decl = symbols->Search("this");
+    if (decl) {
+        return codeGen->GenLoad(decl->GetLoc(), 0);
+    }
+    return NULL;
 }
 
 Operator::Operator(yyltype loc, const char *tok) : Node(loc) {
@@ -253,9 +255,16 @@ Type* FieldAccess::GetType() {
 }
 
 Location* FieldAccess::Emit(CodeGenerator *codeGen) {
-  Decl *decl = symbols->Search(field->GetName());
-  Location *loc = decl->GetLoc();
-  return loc;
+    if (!base) {
+        Decl *decl = symbols->Search(field->GetName());
+        Location *loc = decl->GetLoc();
+        return loc;
+    }
+    else if (dynamic_cast<This*>(base)) {
+        Decl *thiss = symbols->Search("this");
+        Decl *decl = symbols->Search(field->GetName());
+        
+    }
 }
 
 
@@ -339,8 +348,6 @@ Type* NewExpr::GetType() {
 
 
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
-  //TODO
-  cout << "NewExpr::Emit:TODO" << endl;
   return NULL;
 }
 

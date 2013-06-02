@@ -30,6 +30,8 @@ class Decl : public Node
     const char * GetName() { return id->GetName(); }
     virtual Location* GetLoc() { return NULL; };
     virtual Type* GetType() { return NULL; };
+    virtual void SetLoc(int location, bool func) {};
+    virtual int GetBytes() { return 0; }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -59,11 +61,13 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
+    Location * loc;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     Location* Emit(CodeGenerator* codeGen);
+    Location* GetLoc() { return loc; };
 };
 
 class InterfaceDecl : public Decl 
