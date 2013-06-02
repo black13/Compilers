@@ -7,6 +7,7 @@
 #include "ast_expr.h"
 #include "ast_type.h"
 #include "ast_decl.h"
+#include "errors.h"
 
 extern SymbolTable *symbols;
 extern int labelNum;
@@ -150,7 +151,7 @@ Type* AssignExpr::GetType() {
 }
 
 int AssignExpr::GetBytes() {
-    return right->GetBytes();
+    return left->GetBytes() + right->GetBytes() + CodeGenerator::VarSize;
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
@@ -216,12 +217,22 @@ Type* ArrayAccess::GetType() {
 }
 
 int ArrayAccess::GetBytes() {
-    return CodeGenerator::VarSize;
+    return subscript->GetBytes() + base->GetBytes() + (6 * CodeGenerator::VarSize);
 }
 
 Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
     Location *varSize = codeGen->GenLoadConstant(CodeGenerator::VarSize);
     Location *offset = codeGen->GenBinaryOp("*", subscript->Emit(codeGen), varSize);
+
+    // Check that index is in bounds
+    Location *test = codeGen->GenBinaryOp("<", offset, codeGen->GenLoadConstant(0));
+    char label[80];
+    sprintf(label, "_L%d", labelNum);
+    labelNum++;
+    codeGen->GenIfZ(test, label);
+    codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_out_of_bounds));
+    codeGen->GenBuiltInCall(Halt);
+    codeGen->GenLabel(label);
     Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
     return codeGen->GenLoad(location); 
 }
@@ -350,11 +361,23 @@ Type* NewArrayExpr::GetType() {
 }
 
 int NewArrayExpr::GetBytes() {
-    return CodeGenerator::VarSize;
+    return size->GetBytes() + (3 * CodeGenerator::VarSize);
 }
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
-    return codeGen->GenBuiltInCall(Alloc, size->Emit(codeGen));
+    Location *s = size->Emit(codeGen);
+    
+    // Check that size is > 0
+    Location *test = codeGen->GenBinaryOp("<", s, codeGen->GenLoadConstant(1));
+    char label[80];
+    sprintf(label, "_L%d", labelNum);
+    labelNum++;
+    codeGen->GenIfZ(test, label);
+    codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_bad_size));
+    codeGen->GenBuiltInCall(Halt);
+    codeGen->GenLabel(label);
+
+    return codeGen->GenBuiltInCall(Alloc, s);
 }
 
 

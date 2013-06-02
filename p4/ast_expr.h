@@ -46,7 +46,7 @@ class IntConstant : public Expr
   
   public:
     IntConstant(yyltype loc, int val);
-    int GetBytes() { return 4; };
+    int GetBytes() { return CodeGenerator::VarSize; };
     Type* GetType() { return Type::intType; };
     Location* Emit(CodeGenerator *codeGen);
 };
@@ -58,7 +58,7 @@ class DoubleConstant : public Expr
     
   public:
     DoubleConstant(yyltype loc, double val);
-    int GetBytes() { return 4; };
+    int GetBytes() { return CodeGenerator::VarSize; };
     Type* GetType() { return Type::doubleType; };
     //Location* Emit(CodeGenerator *codeGen);
 };
@@ -70,7 +70,7 @@ class BoolConstant : public Expr
     
   public:
     BoolConstant(yyltype loc, bool val);
-    int GetBytes() { return 4; };
+    int GetBytes() { return CodeGenerator::VarSize; };
     Type* GetType() { return Type::boolType; };
     Location* Emit(CodeGenerator *codeGen);
 };
@@ -82,7 +82,7 @@ class StringConstant : public Expr
     
   public:
     StringConstant(yyltype loc, const char *val);
-    int GetBytes() { return 4; };
+    int GetBytes() { return CodeGenerator::VarSize; };
     Type* GetType() { return Type::stringType; };
     Location* Emit(CodeGenerator *codeGen);
 };
@@ -91,7 +91,7 @@ class NullConstant: public Expr
 {
   public: 
     NullConstant(yyltype loc) : Expr(loc) {}
-    int GetBytes() { return 4; }
+    int GetBytes() { return CodeGenerator::VarSize; };
     Type* GetType() { return Type::nullType; };
     Location* Emit(CodeGenerator *codeGen);
 };

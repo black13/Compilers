@@ -1,0 +1,6 @@
+void main() {
+  int[] b;
+  b = NewArray(10, int);
+
+  //b[3] = 5;
+}
