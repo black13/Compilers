@@ -8,6 +8,7 @@
 
 extern SymbolTable *symbols;
 int fn_offset;
+bool inClass = false;
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -43,7 +44,32 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
 }
 
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
-    cout << "Class:TODO" << endl;
+    int offset = CodeGenerator::OffsetToFirstLocal;
+    List<const char*> *functions = new List<const char*>();
+    inClass = true;
+    if (members) {
+        for (int i = 0; i < members->NumElements(); i++) {
+            Decl *decl = members->Nth(i);
+            if (dynamic_cast<VarDecl*>(decl)) {
+                decl->SetLoc(offset, true);
+                offset += decl->GetBytes();
+            }
+            else if (dynamic_cast<FnDecl*>(decl)) {
+                char label[80];
+                sprintf(label, "_%s.%s", id->GetName(), decl->GetName());
+                functions->Append(strdup(label));           
+
+                // Generate This pointer
+                //new Location(fpRelative, CodeGenerator::OffsetToFirstParam, "this");
+                //symbols->Add("this", this);
+
+                codeGen->GenLabel(label);
+                decl->Emit(codeGen);
+            }
+        }
+    }
+    codeGen->GenVTable(id->GetName(), functions);
+    inClass = false;
     return NULL;
 }
 
@@ -71,6 +97,11 @@ void FnDecl::SetFunctionBody(Stmt *b) {
 
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
     int offset = CodeGenerator::OffsetToFirstParam;
+    if (inClass) {
+        new Location(fpRelative, offset, "this");
+        symbols->Add("this", this);
+        offset += CodeGenerator::VarSize;
+    }
     symbols->Add(id->GetName(), this);
 
     //deal with formals
@@ -83,7 +114,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
 
     if (body) {
         fn_offset = CodeGenerator::OffsetToFirstLocal;
-        codeGen->GenLabel(id->GetName());
+        if (!inClass) codeGen->GenLabel(id->GetName());
         codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
         body->Emit(codeGen);
         codeGen->GenEndFunc();
