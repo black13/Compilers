@@ -232,6 +232,7 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
 
 Location* ArrayAccess::EmitStore(CodeGenerator* codeGen,Location* var) {
     Location *saveloc = GetOffsetLocation(codeGen);
+    Assert(var != NULL);
     codeGen->GenStore(saveloc,var);
     return codeGen->GenLoad(saveloc);
 }
@@ -463,6 +464,7 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
     Location * ret = codeGen->GenBuiltInCall(Alloc, t);
 
     //store the size as the first element
+    //Assert(s != NULL);
     codeGen->GenStore(ret,s);
 
     return ret;
