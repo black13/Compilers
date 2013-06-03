@@ -1,0 +1,10 @@
+class Animal {
+    int height;
+    void InitAnimal(int h) {
+        this.height = h;
+    }
+}
+
+void Binky(Animal betsy) {
+    betsy.InitAnimal(5);
+}

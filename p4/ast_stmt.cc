@@ -37,19 +37,26 @@ void Program::Emit() {
     labelNum = 0;
 
     symbols->Push();
+    for (int i = 0; i < n; ++i) {
+        decls->Nth(i)->AddSymbols();
+    }
     //set locations for all VarDecls
     for (int i = 0; i < n; ++i) {
-        VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
-        if (d) {
+        //VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
+        //if (d) {
+        Decl* d = decls->Nth(i);
+        d->Emit(codeGen);
           d->SetLoc(offset, false);
           offset += d->GetBytes();
-        }
+        //}
     }
 
+/*
     for (int i = 0; i < n; ++i) {
         Decl* d = decls->Nth(i);
         d->Emit(codeGen);
     }
+    */
 
     //final step
     codeGen->DoFinalCodeGen();
@@ -60,6 +67,17 @@ StmtBlock::StmtBlock(List<VarDecl*> *d, List<Stmt*> *s) {
     Assert(d != NULL && s != NULL);
     (decls=d)->SetParentAll(this);
     (stmts=s)->SetParentAll(this);
+}
+
+void StmtBlock::AddSymbols() {
+    scope = symbols->Push();
+    for (int i = 0; i < decls->NumElements(); ++i) {
+        decls->Nth(i)->AddSymbols();
+    }
+    for (int i = 0; i < stmts->NumElements(); ++i) {
+        stmts->Nth(i)->AddSymbols();
+    }
+    symbols->Pop();
 }
 
 int StmtBlock::GetBytes() {
@@ -78,23 +96,25 @@ int StmtBlock::GetBytes() {
 }
 
 Location* StmtBlock::Emit(CodeGenerator* codeGen) {
-  symbols->Push();
+    SymbolTable *temp = symbols;
+    symbols = scope;
 
-  // TODO: This sort of works, but should break with a function with args
-  int n = decls->NumElements();
-  for (int i=0; i<n; i++) {
-    VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
-    if (v) {
-      v->SetLoc(fn_offset, true);
-      fn_offset -= v->GetBytes();
+    // TODO: This sort of works, but should break with a function with args
+    int n = decls->NumElements();
+    for (int i=0; i<n; i++) {
+        VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
+        if (v) {
+            v->SetLoc(fn_offset, true);
+            fn_offset -= v->GetBytes();
+        }
     }
-  }
-  n = stmts->NumElements();
-  for (int i=0; i<n; i++) {
-    stmts->Nth(i)->Emit(codeGen);
-  }
-  symbols->Pop();
-  return NULL;
+    n = stmts->NumElements();
+    for (int i=0; i<n; i++) {
+        stmts->Nth(i)->Emit(codeGen);
+    }
+
+    symbols = temp;
+    return NULL;
 }
 
 ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) { 
@@ -115,6 +135,12 @@ ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) {
     (step=s)->SetParent(this);
 }
 
+void ForStmt::AddSymbols() {
+    scope = symbols->Push();
+    if (body) body->AddSymbols();
+    symbols->Pop();
+}
+
 int ForStmt::GetBytes(){
     int offset = LoopStmt::GetBytes();
     offset += init->GetBytes();
@@ -123,6 +149,8 @@ int ForStmt::GetBytes(){
 }
 
 Location* ForStmt::Emit(CodeGenerator* codeGen) {
+    SymbolTable *temp = symbols;
+    symbols = scope;
     char label0[80];
     char label1[80];
     sprintf(label0, "_L%d", labelNum);
@@ -139,10 +167,19 @@ Location* ForStmt::Emit(CodeGenerator* codeGen) {
     codeGen->GenGoto(label0);
     codeGen->GenLabel(label1);
 
+    symbols = temp;
     return NULL;
 }
 
+void WhileStmt::AddSymbols() {
+    scope = symbols->Push();
+    if (body) body->AddSymbols();
+    symbols->Pop();
+}
+
 Location* WhileStmt::Emit(CodeGenerator* codeGen) {
+    SymbolTable *temp = symbols;
+    symbols = scope;
     char label0[80];
     char label1[80];
     sprintf(label0, "_L%d", labelNum);
@@ -157,6 +194,7 @@ Location* WhileStmt::Emit(CodeGenerator* codeGen) {
     codeGen->GenGoto(label0);
     codeGen->GenLabel(label1);
 
+    symbols = temp;
     return NULL;
 }
 
@@ -166,6 +204,13 @@ IfStmt::IfStmt(Expr *t, Stmt *tb, Stmt *eb): ConditionalStmt(t, tb) {
     if (elseBody) elseBody->SetParent(this);
 }
 
+void IfStmt::AddSymbols() {
+    scope = symbols->Push();
+    if (body) body->AddSymbols();
+    if (elseBody) elseBody->AddSymbols();
+    symbols->Pop();
+}
+
 int IfStmt::GetBytes() {
     int offset = ConditionalStmt::GetBytes();
     if (elseBody) offset += elseBody->GetBytes();
@@ -173,6 +218,8 @@ int IfStmt::GetBytes() {
 }
 
 Location* IfStmt::Emit(CodeGenerator* codeGen) {
+    SymbolTable *temp = symbols;
+    symbols = scope;
     char label0[80];
     char label1[80];
     sprintf(label0, "_L%d", labelNum);
@@ -192,6 +239,8 @@ Location* IfStmt::Emit(CodeGenerator* codeGen) {
         elseBody->Emit(codeGen);
         codeGen->GenLabel(label1);
     }
+
+    symbols = temp;
     return NULL;
 }
 

@@ -25,13 +25,17 @@ Location* VarDecl::Emit(CodeGenerator* codeGen) {
     return NULL;
 }
 
+void VarDecl::AddSymbols() {
+    symbols->Add(id->GetName(), this);
+}
+
 void VarDecl::SetLoc(int location, bool func) {
     if (func) 
         this->loc = new Location(fpRelative, location, this->GetName());
     else 
         this->loc = new Location(gpRelative, location, this->GetName());
     
-    symbols->Add(id->GetName(), this);
+    //symbols->Add(id->GetName(), this);
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
@@ -43,8 +47,22 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
+void ClassDecl::AddSymbols() {
+    symbols->Add(id->GetName(), this);
+    scope = symbols->Push();
+    if (members) {
+        for (int i = 0; i < members->NumElements(); i++) {
+            members->Nth(i)->AddSymbols();
+        }
+    }
+    symbols->Pop();
+}
+
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
-    int offset = CodeGenerator::OffsetToFirstLocal;
+    SymbolTable *temp = symbols;
+    symbols = scope;
+    //symbols->Add(id->GetName(), this);
+    offset = CodeGenerator::OffsetToFirstParam;
     List<const char*> *functions = new List<const char*>();
     inClass = true;
     if (members) {
@@ -70,6 +88,8 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
     }
     codeGen->GenVTable(id->GetName(), functions);
     inClass = false;
+
+    symbols = temp;
     return NULL;
 }
 
@@ -95,14 +115,25 @@ void FnDecl::SetFunctionBody(Stmt *b) {
     (body=b)->SetParent(this);
 }
 
+void FnDecl::AddSymbols() {
+    symbols->Add(id->GetName(), this);
+    scope = symbols->Push();
+    for (int i = 0; i < formals->NumElements(); i++) {
+        formals->Nth(i)->AddSymbols();
+    }
+    if (body) body->AddSymbols();
+    symbols->Pop();
+}
+
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
+    SymbolTable *temp = symbols;
+    symbols = scope;
     int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
         new Location(fpRelative, offset, "this");
         symbols->Add("this", this);
         offset += CodeGenerator::VarSize;
     }
-    symbols->Add(id->GetName(), this);
 
     //deal with formals
     int n = formals->NumElements();
@@ -120,6 +151,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
         codeGen->GenEndFunc();
     }
   
+    symbols = temp;
     return NULL;
 }
 

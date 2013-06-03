@@ -47,6 +47,7 @@ class NamedType : public Type
     NamedType(Identifier *i);
     bool IsNamedType() { return true; }
     
+    char * GetName() { return id->GetName(); }
     void PrintToStream(ostream& out) { out << id; }
 };
 

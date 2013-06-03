@@ -162,6 +162,14 @@ Location* AssignExpr::Emit(CodeGenerator *codeGen) {
     if (lval) {
         return lval->EmitStore(codeGen,r);
     }
+    FieldAccess* fieldAccess = dynamic_cast<FieldAccess*>(left);
+    if (lval) {
+        codeGen->GenStore(left->Emit(codeGen),r,4);
+        return NULL;
+        //return fieldAccess->EmitStore(codeGen,r);
+    }
+        //codeGen->GenStore(left->Emit(codeGen),r,4);
+        //return NULL;
 
     //otherwise copy the data over
     codeGen->GenAssign(left->Emit(codeGen), r);
@@ -275,6 +283,13 @@ Type* FieldAccess::GetType() {
     return decl->GetType();
 }
 
+Location* FieldAccess::EmitStore(CodeGenerator* codeGen,Location* var) {
+    //Location *saveloc = GetOffsetLocation(codeGen);
+    //codeGen->GenStore(saveloc,var);
+    //return codeGen->GenLoad(saveloc);
+    return NULL;
+}
+
 Location* FieldAccess::Emit(CodeGenerator *codeGen) {
     if (!base) {
         Decl *decl = symbols->Search(field->GetName());
@@ -282,9 +297,14 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         return loc;
     }
     else if (dynamic_cast<This*>(base)) {
+        cout << "this." << field << endl;
         Decl *thiss = symbols->Search("this");
         Decl *decl = symbols->Search(field->GetName());
-        
+        //cout << thiss->GetLoc()->GetOffset() << "." << decl->GetLoc()->GetOffset() << endl;
+        Location *loc = decl->GetLoc();
+        Location *val = decl->GetLoc();
+        //return codeGen->GenStore(loc, val, 0);
+        return loc;
     }
 }
 
@@ -327,13 +347,14 @@ int Call::GetBytes(){
 Location* Call::Emit(CodeGenerator *codeGen) {
     Location *result = NULL;
     int bytes = 0;
+    Location *loc;
     // Tac instructions push params right to left.
-    for (int i = actuals->NumElements() - 1; i >= 0; i--) {
-        bytes += CodeGenerator::VarSize;
-        Location *loc = actuals->Nth(i)->Emit(codeGen);
-        codeGen->GenPushParam(loc);
-    }
     if (!base) {
+        for (int i = actuals->NumElements() - 1; i >= 0; i--) {
+            bytes += CodeGenerator::VarSize;
+            Location *param = actuals->Nth(i)->Emit(codeGen);
+            codeGen->GenPushParam(param);
+        }
         Decl *decl = symbols->Search(field->GetName());
         if (decl->GetType()->IsEquivalentTo(Type::voidType)) {
             result = codeGen->GenLCall(field->GetName(), false);
@@ -343,6 +364,11 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         }
     }
     else if (base->GetType()->IsArrayType()) {
+        for (int i = actuals->NumElements() - 1; i >= 0; i--) {
+            bytes += CodeGenerator::VarSize;
+            Location *param = actuals->Nth(i)->Emit(codeGen);
+            codeGen->GenPushParam(param);
+        }
         /*
         char label[80];
         sprintf(label, "_%s_length", base->GetName());
@@ -354,6 +380,21 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         //array length call
         result = codeGen->GenLoad(base->Emit(codeGen));
     }
+    else {
+        Location *param;
+        for (int i = actuals->NumElements() - 1; i >= 0; i--) {
+            bytes += CodeGenerator::VarSize;
+            param = actuals->Nth(i)->Emit(codeGen);
+            codeGen->GenPushParam(param);
+        }
+        loc = codeGen->GenLoad(base->Emit(codeGen));
+        bytes += CodeGenerator::VarSize;
+        Decl *klass = symbols->Search(base->GetName());
+        param = klass->GetLoc();
+        codeGen->GenPushParam(param);
+
+        result = codeGen->GenACall(loc, true);
+    }
     codeGen->GenPopParams(bytes);
     return result;
 }
@@ -364,14 +405,18 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 }
 
 Type* NewExpr::GetType() {
-    //TODO
-    cout << "NewExpr::Type:TODO" << endl;
-    return NULL;
+    return cType;
 }
 
 
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
-  return NULL;
+    Decl *klass = symbols->Search(cType->GetName());
+    int bytes = klass->GetBytes();
+    cout << bytes << endl;
+    Location *size = codeGen->GenLoadConstant(bytes);
+
+    Location * ret = codeGen->GenBuiltInCall(Alloc, size);
+    return ret;
 }
 
 

@@ -29,6 +29,7 @@ class Expr : public Stmt
     Expr() : Stmt() {}
     virtual int GetBytes() { return 0; }
     virtual Type* GetType() { return NULL; }
+    virtual char* GetName() { return NULL; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -214,7 +215,9 @@ class FieldAccess : public LValue
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
     Type* GetType();
+    char* GetName() { return field->GetName(); }
     Location* Emit(CodeGenerator *codeGen);
+    Location* EmitStore(CodeGenerator* codeGen, Location* loc);
 };
 
 /* Like field access, call is used both for qualified base.field()

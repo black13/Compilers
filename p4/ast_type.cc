@@ -37,6 +37,7 @@ NamedType::NamedType(Identifier *i) : Type(*i->GetLocation()) {
 } 
 
 
+
 ArrayType::ArrayType(yyltype loc, Type *et) : Type(loc) {
     Assert(et != NULL);
     (elemType=et)->SetParent(this);

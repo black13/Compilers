@@ -20,6 +20,7 @@
 class Decl;
 class VarDecl;
 class Expr;
+class SymbolTable;
   
 class Program : public Node
 {
@@ -35,11 +36,15 @@ class Program : public Node
 
 class Stmt : public Node
 {
+  protected:
+    SymbolTable *scope; 
+
   public:
     Stmt() : Node() {}
     Stmt(yyltype loc) : Node(loc) {}
     // returns the size in bytes of the object
     virtual int GetBytes() { return 0; }
+    virtual void AddSymbols() {}
 };
 
 class StmtBlock : public Stmt 
@@ -52,6 +57,7 @@ class StmtBlock : public Stmt
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
     int GetBytes();
     Location* Emit(CodeGenerator* codeGen);
+    void AddSymbols(); 
 
 };
 
@@ -88,6 +94,7 @@ class ForStmt : public LoopStmt
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
     int GetBytes();
+    void AddSymbols();
     Location* Emit(CodeGenerator* codeGen);
 };
 
@@ -97,6 +104,7 @@ class WhileStmt : public LoopStmt
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
     Location* Emit(CodeGenerator* codeGen);
     //int GetBytes();
+    void AddSymbols();
 };
 
 class IfStmt : public ConditionalStmt 
@@ -108,6 +116,7 @@ class IfStmt : public ConditionalStmt
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     Location* Emit(CodeGenerator* codeGen);
     int GetBytes();
+    void AddSymbols();
 };
 
 class BreakStmt : public Stmt 

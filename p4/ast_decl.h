@@ -19,11 +19,13 @@ class Type;
 class NamedType;
 class Identifier;
 class Stmt;
+class SymbolTable;
 
 class Decl : public Node 
 {
   protected:
     Identifier *id;
+    SymbolTable *scope;
   
   public:
     Decl(Identifier *name);
@@ -32,6 +34,7 @@ class Decl : public Node
     virtual Type* GetType() { return NULL; };
     virtual void SetLoc(int location, bool func) {};
     virtual int GetBytes() { return 0; }
+    virtual void AddSymbols() {};
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 
@@ -49,6 +52,7 @@ class VarDecl : public Decl
     // offset is the offset from the program start untill this variable is defined
     void SetLoc(int location, bool func);
     Location* GetLoc() { return loc; };
+    void AddSymbols();
 
     // returns the size in bytes of the object
     int GetBytes() { return CodeGenerator::VarSize; }
@@ -62,10 +66,14 @@ class ClassDecl : public Decl
     NamedType *extends;
     List<NamedType*> *implements;
     Location * loc;
+    Location * vTable;
+    int offset;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
+    int GetBytes() { return offset; }
+    void AddSymbols(); 
     Location* Emit(CodeGenerator* codeGen);
     Location* GetLoc() { return loc; };
 };
@@ -92,6 +100,7 @@ class FnDecl : public Decl
     void SetFunctionBody(Stmt *b);
     Type* GetType() { return returnType; };
     Location* Emit(CodeGenerator* codeGen);
+    void AddSymbols(); 
 };
 
 #endif
