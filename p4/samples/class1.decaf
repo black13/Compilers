@@ -9,7 +9,7 @@ void main() {
   Binky d;
    Binky a;
  
-  //d = new Binky;
-  //a = new Binky;
+  d = new Binky;
+  a = new Binky;
   a = d;
 }

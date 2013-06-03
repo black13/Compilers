@@ -79,7 +79,8 @@ void Load::EmitSpecific(Mips *mips) {
 
 Store::Store(Location *d, Location *s, int off)
   : dst(d), src(s), offset(off) {
-  Assert(dst != NULL && src != NULL);
+  Assert(dst != NULL);
+  Assert(src != NULL);
   if (offset)
     sprintf(printed, "*(%s + %d) = %s", dst->GetName(), offset, src->GetName());
   else
