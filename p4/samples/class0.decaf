@@ -3,8 +3,13 @@ class Animal {
     void InitAnimal(int h) {
         this.height = h;
     }
+    void Moo(int n) {
+        Print(n);
+    }
 }
 
-void Binky(Animal betsy) {
-    betsy.InitAnimal(5);
+void main() {
+    Animal betsy;
+    betsy = new Animal;
+    betsy.Moo(5);
 }

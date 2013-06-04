@@ -298,7 +298,7 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         return loc;
     }
     else if (dynamic_cast<This*>(base)) {
-        cout << "this." << field << endl;
+        //cout << "this." << field << endl;
         Decl *thiss = symbols->Search("this");
         Decl *decl = symbols->Search(field->GetName());
         //cout << thiss->GetLoc()->GetOffset() << "." << decl->GetLoc()->GetOffset() << endl;
@@ -388,12 +388,14 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             param = actuals->Nth(i)->Emit(codeGen);
             codeGen->GenPushParam(param);
         }
-        loc = codeGen->GenLoad(base->Emit(codeGen));
         bytes += CodeGenerator::VarSize;
         Decl *klass = symbols->Search(base->GetName());
         param = klass->GetLoc();
         codeGen->GenPushParam(param);
 
+        klass = symbols->Search(base->GetType()->GetName());
+        Decl *func = klass->SearchScope(field->GetName());
+        loc = codeGen->GenLoad(base->Emit(codeGen), func->GetOffset());
         result = codeGen->GenACall(loc, true);
     }
     codeGen->GenPopParams(bytes);
@@ -409,22 +411,20 @@ Type* NewExpr::GetType() {
     return cType;
 }
 
+int NewExpr::GetBytes() {
+    return 2 * CodeGenerator::VarSize;
+}
 
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
     Decl *klass = symbols->Search(cType->GetName());
     int bytes = klass->GetBytes();
     cout << bytes << endl;
-    Location *size = codeGen->GenLoadConstant(bytes);
 
+    Location *size = codeGen->GenLoadConstant(bytes);
     Location * ret = codeGen->GenBuiltInCall(Alloc, size);
     return ret;
 }
 
-
-//TODO not sure if this is right
-int NewExpr::GetBytes() {
-    return 5 * CodeGenerator::VarSize;
-}
 
 NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
     Assert(sz != NULL && et != NULL);

@@ -26,6 +26,7 @@ class Decl : public Node
   protected:
     Identifier *id;
     SymbolTable *scope;
+    int offset;
   
   public:
     Decl(Identifier *name);
@@ -35,6 +36,9 @@ class Decl : public Node
     virtual void SetLoc(int location, bool func) {};
     virtual int GetBytes() { return 0; }
     virtual void AddSymbols() {};
+    Decl * SearchScope(char * name); 
+    int GetOffset() { return offset; }
+    void SetOffset(int newOffset) { offset = newOffset; }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
 };
 

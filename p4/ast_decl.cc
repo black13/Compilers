@@ -15,6 +15,11 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     (id=n)->SetParent(this); 
 }
 
+Decl * Decl::SearchScope(char * name) {
+    if (scope) return scope->Search(name);
+    return NULL;
+}
+
 
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     Assert(n != NULL && t != NULL);
@@ -65,11 +70,15 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
     offset = CodeGenerator::OffsetToFirstParam;
     List<const char*> *functions = new List<const char*>();
     inClass = true;
+    int varOffset = 0;
+    int fnOffset = 0;
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
             Decl *decl = members->Nth(i);
             if (dynamic_cast<VarDecl*>(decl)) {
                 decl->SetLoc(offset, true);
+                decl->SetOffset(varOffset);
+                varOffset += CodeGenerator::VarSize;
                 offset += decl->GetBytes();
             }
             else if (dynamic_cast<FnDecl*>(decl)) {
@@ -80,6 +89,9 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
                 // Generate This pointer
                 //new Location(fpRelative, CodeGenerator::OffsetToFirstParam, "this");
                 //symbols->Add("this", this);
+
+                decl->SetOffset(fnOffset);
+                fnOffset += CodeGenerator::VarSize;
 
                 codeGen->GenLabel(label);
                 decl->Emit(codeGen);

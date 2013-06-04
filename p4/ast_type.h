@@ -34,6 +34,7 @@ class Type : public Node
     friend ostream& operator<<(ostream& out, Type *t) { t->PrintToStream(out); return out; }
     virtual bool IsEquivalentTo(Type *other) { return this == other; }
     virtual Type* GetType() { return NULL; }
+    virtual char* GetName() { return typeName; }
     virtual bool IsArrayType() { return false; }
     virtual bool IsNamedType() { return false; }
 };
