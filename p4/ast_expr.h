@@ -30,6 +30,8 @@ class Expr : public Stmt
     virtual int GetBytes() { return 0; }
     virtual Type* GetType() { return NULL; }
     virtual char* GetName() { return NULL; }
+    virtual bool IsMemAccess() { return false; }
+    virtual Location * EmitStore(CodeGenerator *codeGen, Location *right) { return NULL; } 
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -184,6 +186,7 @@ class This : public Expr
   public:
     This(yyltype loc) : Expr(loc) {}
     Type* GetType();
+    char * GetName() { return (char*)"this"; }
     Location* Emit(CodeGenerator *codeGen);
 };
 
@@ -199,6 +202,7 @@ class ArrayAccess : public LValue
     int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);
+    bool IsMemAccess() { if (base) return true; return false; }
 };
 
 /* Note that field access is used both for qualified names
@@ -214,10 +218,12 @@ class FieldAccess : public LValue
     
   public:
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
+    int GetOffset(CodeGenerator* codeGen);
     Type* GetType();
     char* GetName() { return field->GetName(); }
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);
+    bool IsMemAccess() { if (base) return true; return false; }
 };
 
 /* Like field access, call is used both for qualified base.field()

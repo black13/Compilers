@@ -11,6 +11,7 @@
 
 extern SymbolTable *symbols;
 extern int labelNum;
+extern Type* inClass;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -151,43 +152,32 @@ Type* AssignExpr::GetType() {
 }
 
 int AssignExpr::GetBytes() {
-    return left->GetBytes() + right->GetBytes() + CodeGenerator::VarSize;
+    return left->GetBytes() + right->GetBytes();
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
     Location *r = right->Emit(codeGen);
 
-    //check to see if we need to save a variable
-    ArrayAccess* lval = dynamic_cast<ArrayAccess*>(left);
-    if (lval) {
-        return lval->EmitStore(codeGen,r);
-    }
-    FieldAccess* fieldAccess = dynamic_cast<FieldAccess*>(left);
-    if (lval) {
-        codeGen->GenStore(left->Emit(codeGen),r,4);
-        return NULL;
-        //return fieldAccess->EmitStore(codeGen,r);
-    }
-        //codeGen->GenStore(left->Emit(codeGen),r,4);
-        //return NULL;
+    // If we are assigning to a memory location, call EmitStore
+    if (left->IsMemAccess()) left->EmitStore(codeGen, r);
 
-    //otherwise copy the data over
-    codeGen->GenAssign(left->Emit(codeGen), r);
+    // Otherwise, just assign right to the left
+    else codeGen->GenAssign(left->Emit(codeGen), r);
+
     return r;
 }
 
 
 Type* This::GetType() {
-    //TODO
-    cout << "This::GetType:TODO" << endl;
-    return NULL;
+    return inClass;
 }
 
 Location* This::Emit(CodeGenerator *codeGen) {
-    Decl *decl = symbols->Search("this");
+    Decl *decl = symbols->Search((char*)"this");
     if (decl) {
         return codeGen->GenLoad(decl->GetLoc(), 0);
     }
+    cout << "This::Emit: Returning NULL" << endl;
     return NULL;
 }
 
@@ -230,10 +220,10 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
-Location* ArrayAccess::EmitStore(CodeGenerator* codeGen,Location* var) {
+Location* ArrayAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
     Location *saveloc = GetOffsetLocation(codeGen);
-    Assert(var != NULL);
-    codeGen->GenStore(saveloc,var);
+    Assert(val != NULL);
+    codeGen->GenStore(saveloc,val);
     return codeGen->GenLoad(saveloc);
 }
 
@@ -284,11 +274,14 @@ Type* FieldAccess::GetType() {
     return decl->GetType();
 }
 
-Location* FieldAccess::EmitStore(CodeGenerator* codeGen,Location* var) {
-    //Location *saveloc = GetOffsetLocation(codeGen);
-    //codeGen->GenStore(saveloc,var);
-    //return codeGen->GenLoad(saveloc);
+Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
+    Decl *b = symbols->Search(base->GetName());
+
+    Decl *klass = symbols->Search(base->GetType()->GetName());
+    Decl *var = klass->SearchScope(field->GetName());
+    codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
     return NULL;
+    //return codeGen->GenLoad(b->GetLoc());
 }
 
 Location* FieldAccess::Emit(CodeGenerator *codeGen) {
@@ -297,6 +290,7 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         Location *loc = decl->GetLoc();
         return loc;
     }
+    /*
     else if (dynamic_cast<This*>(base)) {
         //cout << "this." << field << endl;
         Decl *thiss = symbols->Search("this");
@@ -307,6 +301,21 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         //return codeGen->GenStore(loc, val, 0);
         return loc;
     }
+    */
+    else {
+        //cout << base->GetName() << endl;
+        Decl *b = symbols->Search(base->GetType()->GetName());
+        //cout << b->GetType() << endl;
+        Decl *decl = b->SearchScope(field->GetName());
+        if (decl) {
+            //cout << thiss->GetLoc()->GetOffset() << "." << decl->GetLoc()->GetOffset() << endl;
+            Location *loc = decl->GetLoc();
+            Location *val = decl->GetLoc();
+            return loc;
+        }
+    }
+    cout << "FieldAccess::Emit: Returning NULL" << endl;
+    return NULL;
 }
 
 
@@ -348,7 +357,6 @@ int Call::GetBytes(){
 Location* Call::Emit(CodeGenerator *codeGen) {
     Location *result = NULL;
     int bytes = 0;
-    Location *loc;
     // Tac instructions push params right to left.
     if (!base) {
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
@@ -382,22 +390,24 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         result = codeGen->GenLoad(base->Emit(codeGen));
     }
     else {
-        Location *param;
-        for (int i = actuals->NumElements() - 1; i >= 0; i--) {
-            bytes += CodeGenerator::VarSize;
-            param = actuals->Nth(i)->Emit(codeGen);
-            codeGen->GenPushParam(param);
-        }
-        bytes += CodeGenerator::VarSize;
         Decl *klass = symbols->Search(base->GetName());
-        param = klass->GetLoc();
-        codeGen->GenPushParam(param);
-
+        Location *param = klass->GetLoc();
         klass = symbols->Search(base->GetType()->GetName());
         Decl *func = klass->SearchScope(field->GetName());
-        loc = codeGen->GenLoad(base->Emit(codeGen), func->GetOffset());
-        result = codeGen->GenACall(loc, true);
+        Location *loc = codeGen->GenLoad(base->Emit(codeGen));
+        Location *load = codeGen->GenLoad(loc, func->GetOffset());
+
+        for (int i = actuals->NumElements() - 1; i >= 0; i--) {
+            bytes += CodeGenerator::VarSize;
+            Location *p = actuals->Nth(i)->Emit(codeGen);
+            codeGen->GenPushParam(p);
+        }
+        codeGen->GenPushParam(param);
+        bytes += CodeGenerator::VarSize;
+
+        result = codeGen->GenACall(load, true);
     }
+
     codeGen->GenPopParams(bytes);
     return result;
 }
@@ -412,16 +422,18 @@ Type* NewExpr::GetType() {
 }
 
 int NewExpr::GetBytes() {
-    return 2 * CodeGenerator::VarSize;
+    return 3 * CodeGenerator::VarSize;
 }
 
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
     Decl *klass = symbols->Search(cType->GetName());
     int bytes = klass->GetBytes();
-    cout << bytes << endl;
+    //cout << bytes << endl;
 
     Location *size = codeGen->GenLoadConstant(bytes);
-    Location * ret = codeGen->GenBuiltInCall(Alloc, size);
+    Location *ret = codeGen->GenBuiltInCall(Alloc, size);
+    Location *label = codeGen->GenLoadLabel(cType->GetName());
+    codeGen->GenStore(ret, label);
     return ret;
 }
 

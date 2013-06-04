@@ -201,7 +201,7 @@ void CodeGenerator::DoFinalCodeGen()
 {
    //final error checking
    //is main defined?
-    FnDecl* main = dynamic_cast<FnDecl*>(symbols->Search("main"));
+    FnDecl* main = dynamic_cast<FnDecl*>(symbols->Search((char*)"main"));
     if (!main) {
         ReportError::NoMainFound();
     }

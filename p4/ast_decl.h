@@ -27,11 +27,12 @@ class Decl : public Node
     Identifier *id;
     SymbolTable *scope;
     int offset;
+    Location * loc;
   
   public:
     Decl(Identifier *name);
     const char * GetName() { return id->GetName(); }
-    virtual Location* GetLoc() { return NULL; };
+    virtual Location* GetLoc() { return loc; };
     virtual Type* GetType() { return NULL; };
     virtual void SetLoc(int location, bool func) {};
     virtual int GetBytes() { return 0; }
@@ -46,7 +47,6 @@ class VarDecl : public Decl
 {
   protected:
     Type *type;
-    Location * loc;
     
   public:
     //returns the type of the ident
@@ -55,7 +55,6 @@ class VarDecl : public Decl
     //Used to set the location of this variable in memeory to a new Location object
     // offset is the offset from the program start untill this variable is defined
     void SetLoc(int location, bool func);
-    Location* GetLoc() { return loc; };
     void AddSymbols();
 
     // returns the size in bytes of the object

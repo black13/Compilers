@@ -8,7 +8,7 @@
 
 extern SymbolTable *symbols;
 int fn_offset;
-bool inClass = false;
+Type *inClass = NULL;
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -16,7 +16,9 @@ Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
 }
 
 Decl * Decl::SearchScope(char * name) {
-    if (scope) return scope->Search(name);
+    if (scope) {
+        return scope->Search(name);
+    }
     return NULL;
 }
 
@@ -69,7 +71,7 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
     //symbols->Add(id->GetName(), this);
     offset = CodeGenerator::OffsetToFirstParam;
     List<const char*> *functions = new List<const char*>();
-    inClass = true;
+    inClass = new NamedType(id);
     int varOffset = 0;
     int fnOffset = 0;
     if (members) {
@@ -77,7 +79,7 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
             Decl *decl = members->Nth(i);
             if (dynamic_cast<VarDecl*>(decl)) {
                 decl->SetLoc(offset, true);
-                decl->SetOffset(varOffset);
+                decl->SetOffset(varOffset + CodeGenerator::VarSize);
                 varOffset += CodeGenerator::VarSize;
                 offset += decl->GetBytes();
             }
@@ -99,7 +101,7 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
         }
     }
     codeGen->GenVTable(id->GetName(), functions);
-    inClass = false;
+    inClass = NULL;
 
     symbols = temp;
     return NULL;
@@ -142,8 +144,8 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     symbols = scope;
     int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
-        new Location(fpRelative, offset, "this");
-        symbols->Add("this", this);
+        this->loc = new Location(fpRelative, offset, "this");
+        symbols->Add((char*)"this", this);
         offset += CodeGenerator::VarSize;
     }
 
