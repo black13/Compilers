@@ -13,6 +13,7 @@ extern SymbolTable *symbols;
 extern int labelNum;
 extern Type* inClass;
 extern SymbolTable *function;
+extern bool error;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -272,8 +273,10 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 
 Type* FieldAccess::GetType() {
     if (!base) {
-        Decl *func = symbols->Search(field->GetName());
-        if (func) return func->GetType();
+        if (error) cout << "FieldAccess::GetType" << endl;
+        Decl *decl = symbols->Search(field->GetName());
+        if (decl) return decl->GetType();
+        if (!decl) cout << "field not found" << endl;
         return NULL;
     }
     else {
@@ -303,40 +306,73 @@ int FieldAccess::GetBytes() {
     }
 }
 
-Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
-    Decl *b = symbols->Search(base->GetName());
-
-    Decl *klass = symbols->Search(base->GetType()->GetName());
-    Decl *var = klass->SearchScope(field->GetName());
-    codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
-    return NULL;
-    //return codeGen->GenLoad(b->GetLoc());
+bool FieldAccess::IsMemAccess() {
+    if (base || inClass) return true;
+    return false;
 }
 
-Location* FieldAccess::Emit(CodeGenerator *codeGen) {
-    if (!base) {
-        //Decl *decl = symbols->Search(field->GetName());
+Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
+    if (base) {
+        Decl *b = symbols->Search(base->GetName());
+
+        Decl *klass = symbols->Search(base->GetType()->GetName());
+        Decl *var = klass->SearchScope(field->GetName());
+        codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
+    }
+    else {
         Decl *decl = function->SearchHead(field->GetName());
         if (!decl && inClass) {
             decl = symbols->Search(field->GetName());
             Decl *klass = symbols->Search((char*)"this");
-            Location *thiss = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
-            return thiss;
+            Location *offset = codeGen->GenLoadConstant(decl->GetOffset());
+            Location *loc = codeGen->GenBinaryOp("+", klass->GetLoc(), offset);
+            //Location *thiss = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
+            codeGen->GenStore(loc, val);
+
+            if (error) cout << "FieldAccess::Emit(): Exit 1" << endl;
         }
         decl = symbols->Search(field->GetName());
         Location *loc = decl->GetLoc();
+        if (error) cout << "FieldAccess::Emit(): Exit 2" << endl;
+    }
+    return NULL;
+}
+
+Location* FieldAccess::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "FieldAccess::Emit()" << endl;
+
+    if (!base) {
+        if (error) cout << "FieldAccess::Emit(): No Base" << endl;
+
+        Decl *decl = function->SearchHead(field->GetName());
+        if (!decl && inClass) {
+            decl = symbols->Search(field->GetName());
+            Decl *klass = symbols->Search((char*)"this");
+            Location *loc = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
+            
+            if (error) cout << "FieldAccess::Emit(): Exit 1" << endl;
+            return loc;
+        }
+        decl = symbols->Search(field->GetName());
+        Location *loc = decl->GetLoc();
+        if (error) cout << "FieldAccess::Emit(): Exit 2" << endl;
         return loc;
     }
     else {
+        if (error) cout << "FieldAccess::Emit(): With Base" << endl;
+
         Decl *b = symbols->Search(base->GetType()->GetName());
         Decl *decl = b->SearchScope(field->GetName());
         if (decl) {
             Decl *param = symbols->Search(base->GetName());
-            //Location *loc = codeGen->GenLoad(base->Emit(codeGen), decl->GetOffset());
             Location *loc = codeGen->GenLoad(param->GetLoc(), decl->GetOffset());
+
+            if (error) cout << "FieldAccess::Emit(): Exit" << endl;
             return loc;
         }
     }
+
+    if (error) cout << "FieldAccess::Emit(): Return NULL" << endl;
     return NULL;
 }
 
@@ -395,26 +431,27 @@ int Call::GetBytes(){
     }
     */
     else {
-    /*
-        Decl *klass = symbols->Search(base->GetType()->GetName());
-        if (klass) cout << "hit1" << endl;
-        Decl *func = klass->SearchScope(field->GetName());
-        if (func) cout << "hit2" << endl;
-        if (!func->GetType()->IsEquivalentTo(Type::voidType)) {
-            n += CodeGenerator::VarSize;
-        }
-        */
+        Decl *klass = NULL;
+        if (base->GetName()) klass = symbols->Search(base->GetName());
 
-        n += (3 * CodeGenerator::VarSize);
+        Decl *func = NULL;
+        if (klass) func = klass->SearchScope(field->GetName());
+
+        if (func && !func->GetType()->IsEquivalentTo(Type::voidType))
+            n += CodeGenerator::VarSize;
+
+        n += (4 * CodeGenerator::VarSize);
     }
     return n;
 }
 
 Location* Call::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "Call::Emit()" << endl;
     Location *result = NULL;
     int bytes = 0;
     // Tac instructions push params right to left.
     if (!base && !inClass) {
+        if (error) cout << "Call::Emit(): !base && !inClass" << endl;
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *param = actuals->Nth(i)->Emit(codeGen);
@@ -429,6 +466,7 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         }
     }
     else if (!base && inClass) {
+        if (error) cout << "Call::Emit(): !base && inClass" << endl;
         Decl *thiss = symbols->Search((char*)"this");
         Location *param = thiss->GetLoc();
 
@@ -449,6 +487,7 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             result = codeGen->GenACall(load, true);
     }
     else if (base->GetType()->IsArrayType()) {
+        if (error) cout << "Call::Emit(): ArrayType" << endl;
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *param = actuals->Nth(i)->Emit(codeGen);
@@ -457,39 +496,31 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         result = codeGen->GenLoad(base->Emit(codeGen));
     }
     else {
-        Decl *klass = symbols->Search(base->GetName());
-        Location *param = klass->GetLoc();
+        if (error) cout << "Call::Emit(): has base" << endl;
+
+        Decl *klass = NULL;
+        if (base->GetName()) klass = symbols->Search(base->GetName());
+
+        Location *param = NULL;
+        if (klass) param = klass->GetLoc();
+
         klass = symbols->Search(base->GetType()->GetName());
         Decl *func = klass->SearchScope(field->GetName());
-        Location *loc = codeGen->GenLoad(base->Emit(codeGen));
+
+        Location *b = base->Emit(codeGen);
+        Location *loc = codeGen->GenLoad(b);
         Location *load = codeGen->GenLoad(loc, func->GetOffset());
-
-/*
-        if (func) {
-            Decl *param = symbols->Search(base->GetName());
-            Location *loc = codeGen->GenLoad(param->GetLoc(), decl->GetOffset());
-            return loc;
-        }
-        */
-        /*
-        else {
-            Decl *thiss = symbols->Search("this");
-            param = thiss->GetLoc();
-
-            func = symbols->Search(field->GetName());
-            Location *load = codeGen->GenLoad(param, func->GetOffset());
-
-        }
-        */
 
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *p = actuals->Nth(i)->Emit(codeGen);
             codeGen->GenPushParam(p);
         }
-        codeGen->GenPushParam(param);
+        if (param) codeGen->GenPushParam(param);
+        else codeGen->GenPushParam(b);
         bytes += CodeGenerator::VarSize;
 
+        if (error) cout << "Call::Emit(): has base: Gen ACall" << endl;
         if (func->GetType()->IsEquivalentTo(Type::voidType))
             result = codeGen->GenACall(load, false);
         else
@@ -498,6 +529,7 @@ Location* Call::Emit(CodeGenerator *codeGen) {
     }
 
     codeGen->GenPopParams(bytes);
+    if (error) cout << "Call::Emit(): Exit" << endl;
     return result;
 }
 
@@ -508,6 +540,11 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 
 Type* NewExpr::GetType() {
     return cType;
+}
+
+char* NewExpr::GetName() {
+    //return cType->GetName();
+    return NULL;
 }
 
 int NewExpr::GetBytes() {
@@ -542,6 +579,7 @@ int NewArrayExpr::GetBytes() {//TODO this may not be correct
 }
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "NewArrayExpr::Emit()" << endl;
     Location *s = size->Emit(codeGen);
     
     // Check that size is > 0

@@ -9,6 +9,7 @@
 #include <stdio.h>  // printf
 
 extern SymbolTable *symbols;
+bool error = false;
 
 Node::Node(yyltype loc) {
     location = new yyltype(loc);

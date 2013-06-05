@@ -224,7 +224,7 @@ class FieldAccess : public LValue
     char* GetName() { return field->GetName(); }
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);
-    bool IsMemAccess() { if (base) return true; return false; }
+    bool IsMemAccess(); 
 };
 
 /* Like field access, call is used both for qualified base.field()
@@ -254,6 +254,7 @@ class NewExpr : public Expr
     NewExpr(yyltype loc, NamedType *clsType);
     Type* GetType();
     int GetBytes();
+    char* GetName();
     Location* Emit(CodeGenerator *codeGen);
 };
 
