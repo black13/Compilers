@@ -59,6 +59,7 @@ int ArithmeticExpr::GetBytes() {
 }
 
 Location* ArithmeticExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "ArithmeticExpr::Emit()" << endl;
     if (left && right)
         return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
 
@@ -83,6 +84,7 @@ int RelationalExpr::GetBytes() {
 }
 
 Location* RelationalExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "RelationalExpr::Emit()" << endl;
     Location *l     = left->Emit(codeGen);
     Location *r     = right->Emit(codeGen);
     if (op->EqualTo("<"))
@@ -118,6 +120,7 @@ int EqualityExpr::GetBytes() {
 }
 
 Location* EqualityExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "EqualityExpr::Emit()" << endl;
     Location *loc = NULL;
     if (left->GetType()->IsEquivalentTo(Type::stringType) && right->GetType()->IsEquivalentTo(Type::stringType)) {
         loc = codeGen->GenBuiltInCall(StringEqual, left->Emit(codeGen), right->Emit(codeGen));
@@ -142,6 +145,7 @@ int LogicalExpr::GetBytes() {
 }
 
 Location* LogicalExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "LogicalExpr::Emit()" << endl;
     if (left && right)
         return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
 
@@ -150,6 +154,7 @@ Location* LogicalExpr::Emit(CodeGenerator *codeGen) {
 }
 
 Type* AssignExpr::GetType() {
+    if (error) cout << "AssignExpr::GetType()" << endl;
     return left->GetType();
 }
 
@@ -158,6 +163,7 @@ int AssignExpr::GetBytes() {
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "AssignExpr::Emit()" << endl;
     Location *r = right->Emit(codeGen);
 
     // If we are assigning to a memory location, call EmitStore
@@ -211,6 +217,7 @@ int CompoundExpr::GetBytes() {
 }
 
 Location* CompoundExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "Compound::Emit()" << endl;
     if (left && right)
         return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
 
@@ -259,6 +266,7 @@ Location* ArrayAccess::GetOffsetLocation(CodeGenerator* codeGen) {
 }
 
 Location* ArrayAccess::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "ArrayAccess::Emit()" << endl;
     return codeGen->GenLoad(GetOffsetLocation(codeGen));
 }
 
@@ -272,11 +280,10 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 }
 
 Type* FieldAccess::GetType() {
+    if (error) cout << "FieldAccess::GetType" << endl;
     if (!base) {
-        if (error) cout << "FieldAccess::GetType" << endl;
         Decl *decl = symbols->Search(field->GetName());
         if (decl) return decl->GetType();
-        if (!decl) cout << "field not found" << endl;
         return NULL;
     }
     else {
@@ -312,6 +319,7 @@ bool FieldAccess::IsMemAccess() {
 }
 
 Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
+    if (error) cout << "FieldAccess::EmitStore()" << endl;
     if (base) {
         Decl *b = symbols->Search(base->GetName());
 
@@ -403,6 +411,7 @@ Type* Call::GetType() {
 }
 
 int Call::GetBytes(){
+    if (error) cout << "Call::GetBytes()" << endl;
     int n = 0;
     for (int i = 0; i < actuals->NumElements(); i++) {
         n += actuals->Nth(i)->GetBytes();
@@ -424,12 +433,10 @@ int Call::GetBytes(){
 
         n += (1 * CodeGenerator::VarSize);
     }
-    /*
     else if (base->GetType()->IsArrayType()) {
-        n += 0;//base->GetBytes() + CodeGenerator::VarSize;
+        n += base->GetBytes() + CodeGenerator::VarSize;
         return n;
     }
-    */
     else {
         Decl *klass = NULL;
         if (base->GetName()) klass = symbols->Search(base->GetName());
@@ -440,7 +447,7 @@ int Call::GetBytes(){
         if (func && !func->GetType()->IsEquivalentTo(Type::voidType))
             n += CodeGenerator::VarSize;
 
-        n += (4 * CodeGenerator::VarSize);
+        n += (3 * CodeGenerator::VarSize);
     }
     return n;
 }
@@ -552,6 +559,7 @@ int NewExpr::GetBytes() {
 }
 
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
+    if (error) cout << "NewExpr::Emit()" << endl;
     Decl *klass = symbols->Search(cType->GetName());
     int bytes = klass->GetBytes();
     //cout << bytes << endl;

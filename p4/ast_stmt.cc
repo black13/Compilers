@@ -81,18 +81,23 @@ void StmtBlock::AddSymbols() {
 }
 
 int StmtBlock::GetBytes() {
-  int bytes = 0;
-  int n = decls->NumElements();
+    SymbolTable *temp = symbols;
+    symbols = scope;
 
-  for (int i = 0; i < n; i++){
-    bytes += decls->Nth(i)->GetBytes();
-  }
-  
-  n = stmts->NumElements();
-  for (int i = 0; i < n; i++){
-    bytes += stmts->Nth(i)->GetBytes();
-  }
-  return bytes;
+    int bytes = 0;
+    int n = decls->NumElements();
+
+    for (int i = 0; i < n; i++){
+        bytes += decls->Nth(i)->GetBytes();
+    }
+
+    n = stmts->NumElements();
+    for (int i = 0; i < n; i++){
+        bytes += stmts->Nth(i)->GetBytes();
+    }
+
+    symbols = temp;
+    return bytes;
 }
 
 Location* StmtBlock::Emit(CodeGenerator* codeGen) {
@@ -124,9 +129,14 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
 }
 
 int ConditionalStmt::GetBytes() {
-  int offset = test->GetBytes();
-  offset += body->GetBytes();
-  return offset;
+    SymbolTable *temp = symbols;
+    symbols = scope;
+
+    int offset = test->GetBytes();
+    offset += body->GetBytes();
+
+    symbols = temp;
+    return offset;
 }
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
@@ -142,15 +152,21 @@ void ForStmt::AddSymbols() {
 }
 
 int ForStmt::GetBytes(){
+    SymbolTable *temp = symbols;
+    symbols = scope;
+
     int offset = LoopStmt::GetBytes();
     offset += init->GetBytes();
     offset += step->GetBytes();
+
+    symbols = temp;
     return offset;
 }
 
 Location* ForStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
+
     char label0[80];
     char label1[80];
     sprintf(label0, "_L%d", labelNum);
@@ -180,6 +196,7 @@ void WhileStmt::AddSymbols() {
 Location* WhileStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
+
     char label0[80];
     char label1[80];
     sprintf(label0, "_L%d", labelNum);
@@ -212,14 +229,20 @@ void IfStmt::AddSymbols() {
 }
 
 int IfStmt::GetBytes() {
+    SymbolTable *temp = symbols;
+    symbols = scope;
+
     int offset = ConditionalStmt::GetBytes();
     if (elseBody) offset += elseBody->GetBytes();
+
+    symbols = temp;
     return offset;
 }
 
 Location* IfStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
+
     char label0[80];
     char label1[80];
     sprintf(label0, "_L%d", labelNum);

@@ -102,7 +102,6 @@ class Error : public Node
 #include "hashtable.h"
 #include "ast_decl.h"
 
-/*
 struct Table {
     Hashtable<Decl*> *table;
     Table *parent;
@@ -118,13 +117,14 @@ struct Table {
       return out;
     }
 };
-    */
 
 class SymbolTable {
+/*
    struct Table {
        Hashtable<Decl*> *table;
        Table *parent;
    };
+   */
 
    Table *branch;
    int level;
@@ -208,7 +208,6 @@ class SymbolTable {
       if (branch && branch->table) branch->table->Enter(id, decl, false);
     }
 
-/*
     friend ostream& operator<<(ostream& out, SymbolTable *sym) {
       if (sym->branch) {
         out << "Level: " << sym->level;
@@ -222,7 +221,6 @@ class SymbolTable {
       }
       return out;
     }
-    */
 };
 
 #endif
