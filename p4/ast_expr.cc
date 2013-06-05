@@ -161,6 +161,7 @@ Type* AssignExpr::GetType() {
 int AssignExpr::GetBytes() {
     if (left->IsMemAccess())
         return left->GetStoreBytes() + right->GetBytes();
+        //return (2 * CodeGenerator::VarSize) + right->GetBytes();
     else
         return left->GetBytes() + right->GetBytes();
 }
@@ -305,6 +306,7 @@ Type* FieldAccess::GetType() {
 
 int FieldAccess::GetBytes() {
     int n = 0;
+
     if (!base) {
         Decl *decl = function->SearchHead(field->GetName());
         if (!decl && inClass) {
@@ -338,7 +340,14 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
 
         Decl *klass = symbols->Search(base->GetType()->GetName());
         Decl *var = klass->SearchScope(field->GetName());
-        codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
+        
+        klass = symbols->Search(base->GetName());
+
+        Location *offset = codeGen->GenLoadConstant(var->GetOffset());
+        Location *loc = codeGen->GenBinaryOp("+", klass->GetLoc(), offset);
+        codeGen->GenStore(loc, val);
+
+        //codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
     }
     else {
         Decl *decl = function->SearchHead(field->GetName());
@@ -347,8 +356,9 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
             Decl *klass = symbols->Search((char*)"this");
             Location *offset = codeGen->GenLoadConstant(decl->GetOffset());
             Location *loc = codeGen->GenBinaryOp("+", klass->GetLoc(), offset);
-            //Location *thiss = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
             codeGen->GenStore(loc, val);
+            //Location *loc = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
+            //codeGen->GenStore(klass->GetLoc(), val, decl->GetOffset());
 
             if (error) cout << "FieldAccess::Emit(): Exit 1" << endl;
         }
@@ -444,7 +454,7 @@ int Call::GetBytes(){
             n += CodeGenerator::VarSize;
         }
 
-        n += (1 * CodeGenerator::VarSize);
+        n += (2 * CodeGenerator::VarSize);
     }
     else if (base->GetType()->IsArrayType()) {
         n += base->GetBytes() + CodeGenerator::VarSize;
@@ -455,12 +465,13 @@ int Call::GetBytes(){
         if (base->GetName()) klass = symbols->Search(base->GetName());
 
         Decl *func = NULL;
-        if (klass) func = klass->SearchScope(field->GetName());
+        klass = symbols->Search(base->GetType()->GetName());
+        func = klass->SearchScope(field->GetName());
 
-        if (func && !func->GetType()->IsEquivalentTo(Type::voidType))
+        if (!func->GetType()->IsEquivalentTo(Type::voidType))
             n += CodeGenerator::VarSize;
 
-        n += (3 * CodeGenerator::VarSize);
+        n += (2 * CodeGenerator::VarSize) + base->GetBytes();
     }
     return n;
 }
@@ -560,11 +571,6 @@ NewExpr::NewExpr(yyltype loc, NamedType *c) : Expr(loc) {
 
 Type* NewExpr::GetType() {
     return cType;
-}
-
-char* NewExpr::GetName() {
-    //return cType->GetName();
-    return NULL;
 }
 
 int NewExpr::GetBytes() {
