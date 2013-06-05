@@ -1,5 +1,6 @@
 #! /bin/sh
-clean=false
+clean=true
+enable_diff=false
 
 if $clean ; then
     make clean
@@ -20,7 +21,6 @@ fi
 total_tests=0
 pass_tests=0
 fail_tests=0
-enable_diff=false
 
 for file in $LIST; do
   base=`echo $file | sed 's/\(.*\)\.out/\1/'`
