@@ -74,7 +74,7 @@ Type* RelationalExpr::GetType() {
 int RelationalExpr::GetBytes() {
     int size = CodeGenerator::VarSize + left->GetBytes() + right->GetBytes(); 
     if (op->EqualTo("<="))
-        return (2 * CodeGenerator::VarSize) + size;
+        return (3 * CodeGenerator::VarSize) + size;
     else if (op->EqualTo(">"))
         return (4 * CodeGenerator::VarSize) + size;
     else if (op->EqualTo(">="))
@@ -159,7 +159,10 @@ Type* AssignExpr::GetType() {
 }
 
 int AssignExpr::GetBytes() {
-    return left->GetBytes() + right->GetBytes();
+    if (left->IsMemAccess())
+        return left->GetStoreBytes() + right->GetBytes();
+    else
+        return left->GetBytes() + right->GetBytes();
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
@@ -228,6 +231,11 @@ Location* CompoundExpr::Emit(CodeGenerator *codeGen) {
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
+}
+
+int ArrayAccess::GetStoreBytes() {
+    //TODO I'n not 100% on this (Ian)
+    return GetBytes()+CodeGenerator::VarSize;
 }
 
 Location* ArrayAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
@@ -312,6 +320,10 @@ int FieldAccess::GetBytes() {
         }
         return n;
     }
+}
+
+int FieldAccess::GetStoreBytes() {
+    return (2*CodeGenerator::VarSize);
 }
 
 bool FieldAccess::IsMemAccess() {
@@ -584,7 +596,7 @@ Type* NewArrayExpr::GetType() {
 }
 
 int NewArrayExpr::GetBytes() {//TODO this may not be correct
-    return size->GetBytes() + (5 * CodeGenerator::VarSize);
+    return size->GetBytes() + (7 * CodeGenerator::VarSize);
 }
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {

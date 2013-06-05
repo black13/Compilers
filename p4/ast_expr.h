@@ -32,6 +32,7 @@ class Expr : public Stmt
     virtual char* GetName() { return NULL; }
     virtual bool IsMemAccess() { return false; }
     virtual Location * EmitStore(CodeGenerator *codeGen, Location *right) { return NULL; } 
+    virtual int  GetStoreBytes() { return 0; }
 };
 
 /* This node type is used for those places where an expression is optional.
@@ -203,6 +204,7 @@ class ArrayAccess : public LValue
     int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);
+    int GetStoreBytes();
     bool IsMemAccess() { if (base) return true; return false; }
 };
 
@@ -225,6 +227,7 @@ class FieldAccess : public LValue
     char* GetName() { return field->GetName(); }
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);
+    int GetStoreBytes();
     bool IsMemAccess(); 
 };
 
