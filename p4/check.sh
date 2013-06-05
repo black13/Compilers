@@ -1,5 +1,10 @@
 #! /bin/sh
-make clean
+clean=true
+enable_diff=false
+
+if $clean ; then
+    make clean
+fi
 make
 
 [ -x dcc ] || { echo "Error: dcc not executable"; exit 1; }
@@ -16,7 +21,6 @@ fi
 total_tests=0
 pass_tests=0
 fail_tests=0
-enable_diff=false
 
 for file in $LIST; do
   base=`echo $file | sed 's/\(.*\)\.out/\1/'`
@@ -42,9 +46,9 @@ for file in $LIST; do
   #tail -n +$trim_offset $file > $file.trim
   tmp=${TMP:-"./samples/"}/check.tmp
   if [ ! -r $base.in ]; then
-    ./_run $base.$ext 2>&1 | tail -n +$cut_offset > $tmp
+    ./timeout4 ./_run $base.$ext 2>&1 | tail -n +$cut_offset > $tmp
   else
-    ./_run $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
+    ./timeout4 ./_run $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
   fi
 
   printf "Checking %-27s: " $file
