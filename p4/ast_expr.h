@@ -255,7 +255,6 @@ class NewExpr : public Expr
     NewExpr(yyltype loc, NamedType *clsType);
     Type* GetType();
     int GetBytes();
-    char* GetName();
     Location* Emit(CodeGenerator *codeGen);
 };
 
