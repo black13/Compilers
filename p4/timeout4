@@ -76,7 +76,7 @@ fi
     ((t = timeout))
 
     while ((t > 0)); do
-        sleep 0.2
+        sleep 0.1
         kill -0 $$ || exit 0
         ((t -= interval))
     done
