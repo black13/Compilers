@@ -220,6 +220,7 @@ class FieldAccess : public LValue
     FieldAccess(Expr *base, Identifier *field); //ok to pass NULL base
     int GetOffset(CodeGenerator* codeGen);
     Type* GetType();
+    int GetBytes();
     char* GetName() { return field->GetName(); }
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);

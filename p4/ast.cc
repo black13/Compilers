@@ -24,6 +24,11 @@ Identifier::Identifier(yyltype loc, const char *n) : Node(loc) {
     name = strdup(n);
 } 
 
+Identifier::Identifier(const char *n) {
+    name = strdup(n);
+} 
+
+
 Type * Identifier::GetType() {
     Decl *decl = symbols->Search(name);
     if (decl) return decl->GetType();

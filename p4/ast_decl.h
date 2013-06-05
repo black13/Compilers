@@ -31,6 +31,7 @@ class Decl : public Node
   
   public:
     Decl(Identifier *name);
+    Decl() {};
     const char * GetName() { return id->GetName(); }
     virtual Location* GetLoc() { return loc; };
     virtual Type* GetType() { return NULL; };
@@ -52,6 +53,7 @@ class VarDecl : public Decl
     //returns the type of the ident
     Type * GetType() { return type; }
     VarDecl(Identifier *name, Type *type);
+    VarDecl(const char *name, Type *type);
     //Used to set the location of this variable in memeory to a new Location object
     // offset is the offset from the program start untill this variable is defined
     void SetLoc(int location, bool func);
@@ -68,9 +70,6 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
-    Location * loc;
-    Location * vTable;
-    int offset;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 

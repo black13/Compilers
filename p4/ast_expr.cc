@@ -12,6 +12,7 @@
 extern SymbolTable *symbols;
 extern int labelNum;
 extern Type* inClass;
+extern SymbolTable *function;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
     value = val;
@@ -175,7 +176,8 @@ Type* This::GetType() {
 Location* This::Emit(CodeGenerator *codeGen) {
     Decl *decl = symbols->Search((char*)"this");
     if (decl) {
-        return codeGen->GenLoad(decl->GetLoc(), 0);
+        return decl->GetLoc();
+        //return codeGen->GenLoad(decl->GetLoc());
     }
     cout << "This::Emit: Returning NULL" << endl;
     return NULL;
@@ -269,9 +271,36 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 }
 
 Type* FieldAccess::GetType() {
-    Decl *decl = symbols->Search(field->GetName());
-    
-    return decl->GetType();
+    if (!base) {
+        Decl *func = symbols->Search(field->GetName());
+        if (func) return func->GetType();
+        return NULL;
+    }
+    else {
+        Decl *decl = symbols->Search(base->GetType()->GetName());
+        Decl *func = decl->SearchScope(field->GetName());
+        if (func) return func->GetType();
+        return NULL;
+    }
+}
+
+int FieldAccess::GetBytes() {
+    int n = 0;
+    if (!base) {
+        Decl *decl = function->SearchHead(field->GetName());
+        if (!decl && inClass) {
+            n += CodeGenerator::VarSize;
+        }
+        return n;
+    }
+    else {
+        Decl *b = symbols->Search(base->GetType()->GetName());
+        Decl *decl = b->SearchScope(field->GetName());
+        if (decl) {
+            n += CodeGenerator::VarSize;
+        }
+        return n;
+    }
 }
 
 Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
@@ -286,35 +315,28 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
 
 Location* FieldAccess::Emit(CodeGenerator *codeGen) {
     if (!base) {
-        Decl *decl = symbols->Search(field->GetName());
+        //Decl *decl = symbols->Search(field->GetName());
+        Decl *decl = function->SearchHead(field->GetName());
+        if (!decl && inClass) {
+            decl = symbols->Search(field->GetName());
+            Decl *klass = symbols->Search((char*)"this");
+            Location *thiss = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
+            return thiss;
+        }
+        decl = symbols->Search(field->GetName());
         Location *loc = decl->GetLoc();
         return loc;
     }
-    /*
-    else if (dynamic_cast<This*>(base)) {
-        //cout << "this." << field << endl;
-        Decl *thiss = symbols->Search("this");
-        Decl *decl = symbols->Search(field->GetName());
-        //cout << thiss->GetLoc()->GetOffset() << "." << decl->GetLoc()->GetOffset() << endl;
-        Location *loc = decl->GetLoc();
-        Location *val = decl->GetLoc();
-        //return codeGen->GenStore(loc, val, 0);
-        return loc;
-    }
-    */
     else {
-        //cout << base->GetName() << endl;
         Decl *b = symbols->Search(base->GetType()->GetName());
-        //cout << b->GetType() << endl;
         Decl *decl = b->SearchScope(field->GetName());
         if (decl) {
-            //cout << thiss->GetLoc()->GetOffset() << "." << decl->GetLoc()->GetOffset() << endl;
-            Location *loc = decl->GetLoc();
-            Location *val = decl->GetLoc();
+            Decl *param = symbols->Search(base->GetName());
+            //Location *loc = codeGen->GenLoad(base->Emit(codeGen), decl->GetOffset());
+            Location *loc = codeGen->GenLoad(param->GetLoc(), decl->GetOffset());
             return loc;
         }
     }
-    cout << "FieldAccess::Emit: Returning NULL" << endl;
     return NULL;
 }
 
@@ -336,6 +358,11 @@ Type* Call::GetType() {
         if (strcmp(field->GetName(), "length") == 0)
             return Type::intType;
     }
+    else {
+        Decl *klass = symbols->Search(base->GetType()->GetName());
+        Decl *func = klass->SearchScope(field->GetName());
+        return func->GetType();
+    }
     return NULL;
 }
 
@@ -345,11 +372,40 @@ int Call::GetBytes(){
         n += actuals->Nth(i)->GetBytes();
     }
 
-    if (!base) {
+    //if (base) cout << base->GetType() << endl;
+    if (!base && !inClass) {
         Decl *decl = symbols->Search(field->GetName());
         if (!decl->GetType()->IsEquivalentTo(Type::voidType)) {
             n += CodeGenerator::VarSize;
         }
+        return n;
+    }   
+    else if (!base && inClass) {
+        Decl *func = symbols->Search(field->GetName());
+        if (!func->GetType()->IsEquivalentTo(Type::voidType)) {
+            n += CodeGenerator::VarSize;
+        }
+
+        n += (1 * CodeGenerator::VarSize);
+    }
+    /*
+    else if (base->GetType()->IsArrayType()) {
+        n += 0;//base->GetBytes() + CodeGenerator::VarSize;
+        return n;
+    }
+    */
+    else {
+    /*
+        Decl *klass = symbols->Search(base->GetType()->GetName());
+        if (klass) cout << "hit1" << endl;
+        Decl *func = klass->SearchScope(field->GetName());
+        if (func) cout << "hit2" << endl;
+        if (!func->GetType()->IsEquivalentTo(Type::voidType)) {
+            n += CodeGenerator::VarSize;
+        }
+        */
+
+        n += (3 * CodeGenerator::VarSize);
     }
     return n;
 }
@@ -358,7 +414,7 @@ Location* Call::Emit(CodeGenerator *codeGen) {
     Location *result = NULL;
     int bytes = 0;
     // Tac instructions push params right to left.
-    if (!base) {
+    if (!base && !inClass) {
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *param = actuals->Nth(i)->Emit(codeGen);
@@ -372,21 +428,32 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             result = codeGen->GenLCall(field->GetName(), true);
         }
     }
+    else if (!base && inClass) {
+        Decl *thiss = symbols->Search((char*)"this");
+        Location *param = thiss->GetLoc();
+
+        Decl *func = symbols->Search(field->GetName());
+        Location *load = codeGen->GenLoad(codeGen->GenLoad(param), func->GetOffset());
+
+        for (int i = actuals->NumElements() - 1; i >= 0; i--) {
+            bytes += CodeGenerator::VarSize;
+            Location *p = actuals->Nth(i)->Emit(codeGen);
+            codeGen->GenPushParam(p);
+        }
+        codeGen->GenPushParam(param);
+        bytes += CodeGenerator::VarSize;
+
+        if (func->GetType()->IsEquivalentTo(Type::voidType))
+            result = codeGen->GenACall(load, false);
+        else
+            result = codeGen->GenACall(load, true);
+    }
     else if (base->GetType()->IsArrayType()) {
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *param = actuals->Nth(i)->Emit(codeGen);
             codeGen->GenPushParam(param);
         }
-        /*
-        char label[80];
-        sprintf(label, "_%s_length", base->GetName());
-        if (strcmp(field->GetName(), "length") == 0) {
-            result = codeGen->GenLCall(label, true);
-        }
-        */
-        //result = codeGen->GenLoadConstant(0);
-        //array length call
         result = codeGen->GenLoad(base->Emit(codeGen));
     }
     else {
@@ -397,6 +464,24 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         Location *loc = codeGen->GenLoad(base->Emit(codeGen));
         Location *load = codeGen->GenLoad(loc, func->GetOffset());
 
+/*
+        if (func) {
+            Decl *param = symbols->Search(base->GetName());
+            Location *loc = codeGen->GenLoad(param->GetLoc(), decl->GetOffset());
+            return loc;
+        }
+        */
+        /*
+        else {
+            Decl *thiss = symbols->Search("this");
+            param = thiss->GetLoc();
+
+            func = symbols->Search(field->GetName());
+            Location *load = codeGen->GenLoad(param, func->GetOffset());
+
+        }
+        */
+
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *p = actuals->Nth(i)->Emit(codeGen);
@@ -405,7 +490,11 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         codeGen->GenPushParam(param);
         bytes += CodeGenerator::VarSize;
 
-        result = codeGen->GenACall(load, true);
+        if (func->GetType()->IsEquivalentTo(Type::voidType))
+            result = codeGen->GenACall(load, false);
+        else
+            result = codeGen->GenACall(load, true);
+
     }
 
     codeGen->GenPopParams(bytes);

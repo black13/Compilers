@@ -9,6 +9,7 @@
 extern SymbolTable *symbols;
 int fn_offset;
 Type *inClass = NULL;
+SymbolTable *function = NULL;
          
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -28,6 +29,13 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     (type=t)->SetParent(this);
 }
 
+VarDecl::VarDecl(const char *n, Type *t) {
+    Assert(n != NULL && t != NULL);
+    (id=new Identifier(n))->SetParent(this); 
+    (type=t)->SetParent(this);
+}
+
+
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
     return NULL;
 }
@@ -41,8 +49,6 @@ void VarDecl::SetLoc(int location, bool func) {
         this->loc = new Location(fpRelative, location, this->GetName());
     else 
         this->loc = new Location(gpRelative, location, this->GetName());
-    
-    //symbols->Add(id->GetName(), this);
 }
 
 ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<Decl*> *m) : Decl(n) {
@@ -142,10 +148,14 @@ void FnDecl::AddSymbols() {
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
+    function = scope;
     int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
-        this->loc = new Location(fpRelative, offset, "this");
-        symbols->Add((char*)"this", this);
+        //this->loc = new Location(fpRelative, offset, "this");
+        VarDecl *thiss = new VarDecl("this", inClass);
+        thiss->SetLoc(offset, true);
+        symbols->Add((char*)"this", thiss);
+        //symbols->Add((char*)"this", this);
         offset += CodeGenerator::VarSize;
     }
 
@@ -166,6 +176,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     }
   
     symbols = temp;
+    function = NULL;
     return NULL;
 }
 

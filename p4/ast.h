@@ -66,6 +66,7 @@ class Identifier : public Node
     
   public:
     Identifier(yyltype loc, const char *name);
+    Identifier(const char *name);
     char * GetName() { return name; }
     Type * GetType(); 
     //void AddSymbol(Decl* parent);
