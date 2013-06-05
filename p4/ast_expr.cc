@@ -244,7 +244,8 @@ Type* ArrayAccess::GetType() {
 }
 
 int ArrayAccess::GetBytes() {
-    return subscript->GetBytes() + base->GetBytes() + (6 * CodeGenerator::VarSize);
+    int someNumber = 9;
+    return subscript->GetBytes() + base->GetBytes() + (someNumber * CodeGenerator::VarSize);
 }
 
 Location* ArrayAccess::GetOffsetLocation(CodeGenerator* codeGen) {
