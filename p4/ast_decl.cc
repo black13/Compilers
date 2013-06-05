@@ -149,6 +149,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
     function = scope;
+    
     int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
         //this->loc = new Location(fpRelative, offset, "this");
