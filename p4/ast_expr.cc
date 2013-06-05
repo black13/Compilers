@@ -457,6 +457,9 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         result = codeGen->GenLoad(base->Emit(codeGen));
     }
     else {
+        Assert(base != NULL);
+        Assert(base->GetName() != NULL);
+        Assert(symbols != NULL);
         Decl *klass = symbols->Search(base->GetName());
         Location *param = klass->GetLoc();
         klass = symbols->Search(base->GetType()->GetName());

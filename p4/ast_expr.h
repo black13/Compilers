@@ -199,6 +199,7 @@ class ArrayAccess : public LValue
   public:
     ArrayAccess(yyltype loc, Expr *base, Expr *subscript);
     Type* GetType();
+    char* GetName() { return base->GetName(); }
     int GetBytes();
     Location* Emit(CodeGenerator *codeGen);
     Location* EmitStore(CodeGenerator* codeGen, Location* loc);
