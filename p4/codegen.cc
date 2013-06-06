@@ -199,13 +199,6 @@ void CodeGenerator::GenVTable(const char *className, List<const char *> *methodL
 
 void CodeGenerator::DoFinalCodeGen()
 {
-   //final error checking
-   //is main defined?
-    FnDecl* main = dynamic_cast<FnDecl*>(symbols->Search((char*)"main"));
-    if (!main) {
-        ReportError::NoMainFound();
-    }
-
 
   if (IsDebugOn("tac")) { // if debug don't translate to mips, just print Tac
     for (int i = 0; i < code->NumElements(); i++)
@@ -226,6 +219,13 @@ void CodeGenerator::DoFinalCodeGen()
      for (int i = 0; i < code->NumElements(); i++) {
       code->Nth(i)->Emit(&mips);
      }
+
+    //is main defined?
+    FnDecl* main = dynamic_cast<FnDecl*>(symbols->Search((char*)"main"));
+    if (!main) {
+        ReportError::NoMainFound();
+    }
+
   }
 }
 

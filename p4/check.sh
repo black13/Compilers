@@ -39,7 +39,7 @@ for file in $LIST; do
   trim_offset=6
 
   if [ "$base" == "samples/link1" -o "$base" == "samples/link3" ]; then
-      cut_offset=3
+      cut_offset=4
       trim_offset=0
   fi
 
@@ -51,7 +51,7 @@ for file in $LIST; do
     ./timeout4 ./_run $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
   fi
 
-  printf "Checking %-27s: " $file
+  printf "Checking %-27s: " $base.$ext
   if ! cmp -s $tmp $file.trim; then
     let fail_tests++
     echo "FAIL <--"
