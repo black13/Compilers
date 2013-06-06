@@ -8,7 +8,6 @@
 #include "ast_expr.h"
 
 extern SymbolTable *symbols;
-int labelNum;
 
 Program::Program(List<Decl*> *d) {
     codeGen = new CodeGenerator;
@@ -33,12 +32,12 @@ void Program::Emit() {
     
     //offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
-    labelNum = 0;
 
     symbols->Push();
     for (int i = 0; i < n; ++i) {
         decls->Nth(i)->AddSymbols();
     }
+
     // Emit all decls
     for (int i = 0; i < n; ++i) {
         decls->Nth(i)->Emit(codeGen);
@@ -90,18 +89,11 @@ Location* StmtBlock::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
 
-    // TODO: This sort of works, but should break with a function with args
-    int n = decls->NumElements();
-    for (int i=0; i<n; i++) {
-        VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
-        if (v) {
-            v->SetLoc(codeGen->GetOffset(), true);
-            codeGen->IncOffset();
-            //fn_offset -= v->GetBytes();
-        }
+    for (int i = 0; i < decls->NumElements(); i++) {
+        decls->Nth(i)->Emit(codeGen);
     }
-    n = stmts->NumElements();
-    for (int i=0; i<n; i++) {
+
+    for (int i = 0; i < stmts->NumElements(); i++) {
         stmts->Nth(i)->Emit(codeGen);
     }
 
@@ -154,12 +146,8 @@ Location* ForStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
 
-    char label0[80];
-    char label1[80];
-    sprintf(label0, "_L%d", labelNum);
-    labelNum++;
-    sprintf(label1, "_L%d", labelNum);
-    labelNum++;
+    char *label0 = codeGen->NewLabel();
+    char *label1 = codeGen->NewLabel();
     breakLabel = label1;
 
     init->Emit(codeGen);
@@ -184,12 +172,8 @@ Location* WhileStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
 
-    char label0[80];
-    char label1[80];
-    sprintf(label0, "_L%d", labelNum);
-    labelNum++;
-    sprintf(label1, "_L%d", labelNum);
-    labelNum++;
+    char *label0 = codeGen->NewLabel();
+    char *label1 = codeGen->NewLabel();
     breakLabel = label1;
 
     codeGen->GenLabel(label0);
@@ -230,15 +214,9 @@ Location* IfStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
 
-    char label0[80];
-    char label1[80];
-    sprintf(label0, "_L%d", labelNum);
-    labelNum++;
-    
-    if (elseBody) {
-        sprintf(label1, "_L%d", labelNum);
-        labelNum++;
-    }
+    char *label0 = codeGen->NewLabel();
+    char *label1; 
+    if (elseBody) label1 = codeGen->NewLabel();
     
     codeGen->GenIfZ(test->Emit(codeGen), label0);
     body->Emit(codeGen);

@@ -8,8 +8,10 @@
 
 extern SymbolTable *symbols;
 int gp_offset = CodeGenerator::OffsetToFirstGlobal;
-Type *inClass = NULL;
-SymbolTable *function = NULL;
+//Type *inClass = NULL;
+ClassDecl *inClass = NULL;
+//SymbolTable *function = NULL;
+FnDecl *function = NULL;
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
@@ -38,6 +40,8 @@ VarDecl::VarDecl(const char *n, Type *t) {
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
     if (function) {
+        // TODO: switch these to eliminate changes in codegen.h
+        //this->loc = codeGen->GenTempVar();
         this->loc = new Location(fpRelative, codeGen->GetOffset(), this->GetName());
         codeGen->IncOffset();
     }
@@ -53,6 +57,7 @@ void VarDecl::AddSymbols() {
 }
 
 void VarDecl::SetLoc(int location, bool func) {
+    //cout << id << ": " << location << endl;
     if (func) 
         this->loc = new Location(fpRelative, location, this->GetName());
     else 
@@ -68,6 +73,10 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (members=m)->SetParentAll(this);
 }
 
+Type* ClassDecl::GetType() {
+    return new NamedType(id);
+}
+
 void ClassDecl::AddSymbols() {
     symbols->Add(id->GetName(), this);
     scope = symbols->Push();
@@ -79,32 +88,38 @@ void ClassDecl::AddSymbols() {
     symbols->Pop();
 }
 
+Decl* ClassDecl::SearchMembers(char *name) {
+    for (int i = 0; i < members->NumElements(); i++) {
+        if (strcmp(members->Nth(i)->GetName(), name) == 0) 
+            return members->Nth(i);
+    }
+    return NULL;
+}
+
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
     //symbols->Add(id->GetName(), this);
     offset = CodeGenerator::OffsetToFirstParam;
     List<const char*> *functions = new List<const char*>();
-    inClass = new NamedType(id);
-    int varOffset = 0;
+    //inClass = new NamedType(id);
+    inClass = this;
+    int varOffset = CodeGenerator::VarSize;
     int fnOffset = 0;
+    list<Decl*> *memberVars;
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
             Decl *decl = members->Nth(i);
             if (dynamic_cast<VarDecl*>(decl)) {
-                decl->SetLoc(offset, true);
-                decl->SetOffset(varOffset + CodeGenerator::VarSize);
+                decl->SetOffset(varOffset);
                 varOffset += CodeGenerator::VarSize;
-                offset += decl->GetBytes();
+                //decl->SetLoc(offset, true);
+                //offset += decl->GetBytes();
             }
             else if (dynamic_cast<FnDecl*>(decl)) {
                 char label[80];
                 sprintf(label, "_%s.%s", id->GetName(), decl->GetName());
                 functions->Append(strdup(label));           
-
-                // Generate This pointer
-                //new Location(fpRelative, CodeGenerator::OffsetToFirstParam, "this");
-                //symbols->Add("this", this);
 
                 decl->SetOffset(fnOffset);
                 fnOffset += CodeGenerator::VarSize;
@@ -153,14 +168,25 @@ void FnDecl::AddSymbols() {
     symbols->Pop();
 }
 
+Decl* FnDecl::SearchFormals(char *name) {
+    for (int i = 0; i < formals->NumElements(); i++) {
+        if (strcmp(formals->Nth(i)->GetName(), name) == 0) 
+            return formals->Nth(i);
+    }
+    return NULL;
+}
+
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
+    int fn_offset = codeGen->GetOffset();
     symbols = scope;
-    function = scope;
+    //function = scope;
+    function = this;
     
     int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
-        VarDecl *thiss = new VarDecl("this", inClass);
+        VarDecl *thiss = new VarDecl("this", inClass->GetType());
+        formals->InsertAt(thiss, 0);
         // Set the location of "this" to fp+4 
         thiss->SetLoc(offset, true);
         symbols->Add((char*)"this", thiss);
@@ -172,14 +198,17 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     for (int i = 0; i < n; i++) {
         VarDecl* v = formals->Nth(i);
         v->SetLoc(offset, true);
-        offset += v->GetBytes();
+        offset += CodeGenerator::VarSize;
     }
 
     if (body) {
         //fn_offset = CodeGenerator::OffsetToFirstLocal;
         if (!inClass) codeGen->GenLabel(id->GetName());
-        codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
+        //codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
+        BeginFunc *beginFunc = codeGen->GenBeginFunc();
         body->Emit(codeGen);
+        //beginFunc->SetFrameSize(body->GetBytes());
+        beginFunc->SetFrameSize(fn_offset - codeGen->GetOffset());
         codeGen->GenEndFunc();
     }
   

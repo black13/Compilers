@@ -10,9 +10,10 @@
 #include "errors.h"
 
 extern SymbolTable *symbols;
-extern int labelNum;
-extern Type* inClass;
-extern SymbolTable *function;
+//extern Type* inClass;
+extern ClassDecl* inClass;
+//extern SymbolTable *function;
+extern FnDecl *function;
 extern bool error;
 
 IntConstant::IntConstant(yyltype loc, int val) : Expr(loc) {
@@ -163,7 +164,7 @@ int AssignExpr::GetBytes() {
         return left->GetStoreBytes() + right->GetBytes();
         //return (2 * CodeGenerator::VarSize) + right->GetBytes();
     else
-        return left->GetBytes() + right->GetBytes();// + 4;
+        return left->GetBytes() + right->GetBytes() + 4;
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
@@ -181,7 +182,7 @@ Location* AssignExpr::Emit(CodeGenerator *codeGen) {
 
 
 Type* This::GetType() {
-    return inClass;
+    return inClass->GetType();
 }
 
 Location* This::Emit(CodeGenerator *codeGen) {
@@ -215,20 +216,6 @@ CompoundExpr::CompoundExpr(Operator *o, Expr *r)
     (right=r)->SetParent(this);
 }
    
-int CompoundExpr::GetBytes() {
-    if (left && right) return CodeGenerator::VarSize + left->GetBytes() + right->GetBytes();
-    return CodeGenerator::VarSize + right->GetBytes();
-}
-
-Location* CompoundExpr::Emit(CodeGenerator *codeGen) {
-    if (error) cout << "Compound::Emit()" << endl;
-    if (left && right)
-        return codeGen->GenBinaryOp(op->GetName(), left->Emit(codeGen), right->Emit(codeGen));
-
-    // TODO: Handle case of one operand.
-    return NULL;
-}
-
 ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (base=b)->SetParent(this); 
     (subscript=s)->SetParent(this);
@@ -261,26 +248,23 @@ Location* ArrayAccess::GetOffsetLocation(CodeGenerator* codeGen) {
     Location *b = base->Emit(codeGen);
 
     // Check that index is >= 0 
+    char *label0 = codeGen->NewLabel();
+    char *label1 = codeGen->NewLabel();
+
     Location *test = codeGen->GenBinaryOp("<", offset, codeGen->GenLoadConstant(0));
-    char label1[80];
-    char label2[80];
-    sprintf(label1, "_L%d", labelNum);
-    labelNum++;
-    sprintf(label2, "_L%d", labelNum);
-    labelNum++;
-    codeGen->GenIfZ(test, label1);
+    codeGen->GenIfZ(test, label0);
     codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_out_of_bounds));
     codeGen->GenBuiltInCall(Halt);
     
     // Check that index is below max bound
-    codeGen->GenLabel(label1);
+    codeGen->GenLabel(label0);
     Location *size = codeGen->GenBinaryOp("*", codeGen->GenLoad(b), varSize);
     test = codeGen->GenBinaryOp("||", codeGen->GenBinaryOp("<", size, offset), codeGen->GenBinaryOp("==", size, offset));
-    codeGen->GenIfZ(test, label2);
+    codeGen->GenIfZ(test, label1);
 
     codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_out_of_bounds));
     codeGen->GenBuiltInCall(Halt);
-    codeGen->GenLabel(label2);
+    codeGen->GenLabel(label1);
 
     Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
 
@@ -321,7 +305,8 @@ int FieldAccess::GetBytes() {
     int n = 0;
 
     if (!base) {
-        Decl *decl = function->SearchHead(field->GetName());
+        //Decl *decl = function->SearchHead(field->GetName());
+        Decl *decl = function->SearchFormals(field->GetName());
         if (!decl && inClass) {
             n += CodeGenerator::VarSize;
         }
@@ -341,6 +326,7 @@ int FieldAccess::GetStoreBytes() {
     return (2*CodeGenerator::VarSize);
 }
 
+// TODO: This may not be right...
 bool FieldAccess::IsMemAccess() {
     if (base || inClass) return true;
     return false;
@@ -349,6 +335,7 @@ bool FieldAccess::IsMemAccess() {
 Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
     if (error) cout << "FieldAccess::EmitStore()" << endl;
     if (base) {
+        if (error) cout << "FieldAccess::EmitStore(): Base" << endl;
         Decl *b = symbols->Search(base->GetName());
 
         Decl *klass = symbols->Search(base->GetType()->GetName());
@@ -363,10 +350,14 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
         //codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
     }
     else {
-        Decl *decl = function->SearchHead(field->GetName());
+        if (error) cout << "FieldAccess::EmitStore(): No Base" << endl;
+        //Decl *decl = function->SearchHead(field->GetName());
+        Decl *decl = function->SearchFormals(field->GetName());
         if (!decl && inClass) {
-            decl = symbols->Search(field->GetName());
-            Decl *klass = symbols->Search((char*)"this");
+            decl = inClass->SearchMembers(field->GetName());
+            if (!decl) decl = symbols->Search(field->GetName());
+            //Decl *klass = symbols->Search((char*)"this");
+            Decl *klass = function->SearchFormals((char*)"this");
             Location *offset = codeGen->GenLoadConstant(decl->GetOffset());
             Location *loc = codeGen->GenBinaryOp("+", klass->GetLoc(), offset);
             codeGen->GenStore(loc, val);
@@ -388,15 +379,21 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
     if (!base) {
         if (error) cout << "FieldAccess::Emit(): No Base" << endl;
 
-        Decl *decl = function->SearchHead(field->GetName());
+        //Decl *decl = function->SearchHead(field->GetName());
+        Decl *decl = function->SearchFormals(field->GetName());
+        //if (!decl && inClass) {
         if (!decl && inClass) {
+            if (error) cout << "FieldAccess::Emit(): No Base in Class" << endl;
             decl = symbols->Search(field->GetName());
-            Decl *klass = symbols->Search((char*)"this");
+            //Decl *klass = symbols->Search((char*)"this");
+            Decl *klass = function->SearchFormals((char*)"this");
             Location *loc = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
             
             if (error) cout << "FieldAccess::Emit(): Exit 1" << endl;
             return loc;
         }
+
+        if (error) cout << "FieldAccess::Emit(): No Base out of Class" << endl;
         decl = symbols->Search(field->GetName());
         Location *loc = decl->GetLoc();
         if (error) cout << "FieldAccess::Emit(): Exit 2" << endl;
@@ -407,6 +404,7 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
 
         Decl *b = symbols->Search(base->GetType()->GetName());
         Decl *decl = b->SearchScope(field->GetName());
+        //Decl *decl = b->SearchMembers(field->GetName());
         if (decl) {
             Decl *param = symbols->Search(base->GetName());
             Location *loc = codeGen->GenLoad(param->GetLoc(), decl->GetOffset());
@@ -514,9 +512,11 @@ Location* Call::Emit(CodeGenerator *codeGen) {
         Decl *thiss = symbols->Search((char*)"this");
         Location *param = thiss->GetLoc();
 
+        if (error) cout << "Call::Emit(): !base && inClass" << endl;
         Decl *func = symbols->Search(field->GetName());
         Location *load = codeGen->GenLoad(codeGen->GenLoad(param), func->GetOffset());
 
+        if (error) cout << "Call::Emit(): !base && inClass" << endl;
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *p = actuals->Nth(i)->Emit(codeGen);
@@ -594,7 +594,6 @@ Location* NewExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "NewExpr::Emit()" << endl;
     Decl *klass = symbols->Search(cType->GetName());
     int bytes = klass->GetBytes();
-    //cout << bytes << endl;
 
     Location *size = codeGen->GenLoadConstant(bytes);
     Location *ret = codeGen->GenBuiltInCall(Alloc, size);
@@ -623,10 +622,9 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
     Location *s = size->Emit(codeGen);
     
     // Check that size is > 0
+    char *label = codeGen->NewLabel();
+
     Location *test = codeGen->GenBinaryOp("<", s, codeGen->GenLoadConstant(1));
-    char label[80];
-    sprintf(label, "_L%d", labelNum);
-    labelNum++;
     codeGen->GenIfZ(test, label);
     codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_bad_size));
     codeGen->GenBuiltInCall(Halt);

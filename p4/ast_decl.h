@@ -75,9 +75,11 @@ class ClassDecl : public Decl
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     int GetBytes() { return offset; }
+    Type* GetType();
     void AddSymbols(); 
     Location* Emit(CodeGenerator* codeGen);
     Location* GetLoc() { return loc; };
+    Decl* SearchMembers(char *name);
 };
 
 class InterfaceDecl : public Decl 
@@ -103,6 +105,7 @@ class FnDecl : public Decl
     Type* GetType() { return returnType; };
     Location* Emit(CodeGenerator* codeGen);
     void AddSymbols(); 
+    Decl* SearchFormals(char *name);
 };
 
 #endif
