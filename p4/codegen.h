@@ -29,6 +29,8 @@ class CodeGenerator {
     int offset;
 
   public:
+    int GetOffset() { return offset; }
+    void IncOffset() { offset -= VarSize; }
            // Here are some class constants to remind you of the offsets
            // used for globals, locals, and parameters. You will be
            // responsible for using these when assigning Locations.

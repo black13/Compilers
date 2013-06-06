@@ -7,10 +7,10 @@
 #include "ast_stmt.h"
 
 extern SymbolTable *symbols;
-int fn_offset;
+int gp_offset = CodeGenerator::OffsetToFirstGlobal;
 Type *inClass = NULL;
 SymbolTable *function = NULL;
-         
+
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
     Assert(n != NULL);
     (id=n)->SetParent(this); 
@@ -37,6 +37,14 @@ VarDecl::VarDecl(const char *n, Type *t) {
 
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
+    if (function) {
+        this->loc = new Location(fpRelative, codeGen->GetOffset(), this->GetName());
+        codeGen->IncOffset();
+    }
+    else {
+        this->loc = new Location(gpRelative, gp_offset, this->GetName());
+        gp_offset += CodeGenerator::VarSize; 
+    }
     return NULL;
 }
 
@@ -152,11 +160,10 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     
     int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
-        //this->loc = new Location(fpRelative, offset, "this");
         VarDecl *thiss = new VarDecl("this", inClass);
+        // Set the location of "this" to fp+4 
         thiss->SetLoc(offset, true);
         symbols->Add((char*)"this", thiss);
-        //symbols->Add((char*)"this", this);
         offset += CodeGenerator::VarSize;
     }
 
@@ -169,7 +176,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     }
 
     if (body) {
-        fn_offset = CodeGenerator::OffsetToFirstLocal;
+        //fn_offset = CodeGenerator::OffsetToFirstLocal;
         if (!inClass) codeGen->GenLabel(id->GetName());
         codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
         body->Emit(codeGen);

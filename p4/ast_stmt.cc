@@ -8,7 +8,6 @@
 #include "ast_expr.h"
 
 extern SymbolTable *symbols;
-extern int fn_offset;
 int labelNum;
 
 Program::Program(List<Decl*> *d) {
@@ -32,7 +31,7 @@ void Program::Emit() {
      *      polymorphism in the node classes.
      */
     
-    int offset = CodeGenerator::OffsetToFirstGlobal;
+    //offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
     labelNum = 0;
 
@@ -40,23 +39,10 @@ void Program::Emit() {
     for (int i = 0; i < n; ++i) {
         decls->Nth(i)->AddSymbols();
     }
-    //set locations for all VarDecls
+    // Emit all decls
     for (int i = 0; i < n; ++i) {
-        //VarDecl *d = dynamic_cast<VarDecl*>(decls->Nth(i));
-        //if (d) {
-        Decl* d = decls->Nth(i);
-        d->Emit(codeGen);
-          d->SetLoc(offset, false);
-          offset += d->GetBytes();
-        //}
+        decls->Nth(i)->Emit(codeGen);
     }
-
-/*
-    for (int i = 0; i < n; ++i) {
-        Decl* d = decls->Nth(i);
-        d->Emit(codeGen);
-    }
-    */
 
     //final step
     codeGen->DoFinalCodeGen();
@@ -109,8 +95,9 @@ Location* StmtBlock::Emit(CodeGenerator* codeGen) {
     for (int i=0; i<n; i++) {
         VarDecl *v = dynamic_cast<VarDecl*>(decls->Nth(i));
         if (v) {
-            v->SetLoc(fn_offset, true);
-            fn_offset -= v->GetBytes();
+            v->SetLoc(codeGen->GetOffset(), true);
+            codeGen->IncOffset();
+            //fn_offset -= v->GetBytes();
         }
     }
     n = stmts->NumElements();

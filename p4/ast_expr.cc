@@ -163,7 +163,7 @@ int AssignExpr::GetBytes() {
         return left->GetStoreBytes() + right->GetBytes();
         //return (2 * CodeGenerator::VarSize) + right->GetBytes();
     else
-        return left->GetBytes() + right->GetBytes();
+        return left->GetBytes() + right->GetBytes();// + 4;
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
