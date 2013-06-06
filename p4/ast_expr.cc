@@ -258,16 +258,29 @@ int ArrayAccess::GetBytes() {
 Location* ArrayAccess::GetOffsetLocation(CodeGenerator* codeGen) {
     Location *varSize = codeGen->GenLoadConstant(CodeGenerator::VarSize);
     Location *offset = codeGen->GenBinaryOp("*", subscript->Emit(codeGen), varSize);
+    Location *b = base->Emit(codeGen);
 
-    // Check that index is in bounds
+    // Check that index is >= 0 
     Location *test = codeGen->GenBinaryOp("<", offset, codeGen->GenLoadConstant(0));
-    char label[80];
-    sprintf(label, "_L%d", labelNum);
+    char label1[80];
+    char label2[80];
+    sprintf(label1, "_L%d", labelNum);
     labelNum++;
-    codeGen->GenIfZ(test, label);
+    sprintf(label2, "_L%d", labelNum);
+    labelNum++;
+    codeGen->GenIfZ(test, label1);
     codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_out_of_bounds));
     codeGen->GenBuiltInCall(Halt);
-    codeGen->GenLabel(label);
+    
+    // Check that index is below max bound
+    codeGen->GenLabel(label1);
+    Location *size = codeGen->GenBinaryOp("*", codeGen->GenLoad(b), varSize);
+    test = codeGen->GenBinaryOp("||", codeGen->GenBinaryOp("<", size, offset), codeGen->GenBinaryOp("==", size, offset));
+    codeGen->GenIfZ(test, label2);
+
+    codeGen->GenBuiltInCall(PrintString, codeGen->GenLoadConstant(err_arr_out_of_bounds));
+    codeGen->GenBuiltInCall(Halt);
+    codeGen->GenLabel(label2);
 
     Location *location = codeGen->GenBinaryOp("+", base->Emit(codeGen), offset);
 
