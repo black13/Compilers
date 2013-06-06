@@ -57,7 +57,7 @@ for file in $LIST; do
     let fail_tests++
     echo "FAIL <--"
     if $enable_diff ; then
-        diff $tmp $file.trim
+        vimdiff $tmp $file.trim
     fi
   else
     let pass_tests++
