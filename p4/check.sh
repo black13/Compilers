@@ -15,6 +15,7 @@ if [ "$#" = "0" ]; then
 else
   for test in "$@"; do
     LIST="$LIST samples/$test.out"
+    enable_diff=true
   done
 fi
 
