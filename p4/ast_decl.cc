@@ -8,6 +8,7 @@
 
 extern SymbolTable *symbols;
 int gp_offset = CodeGenerator::OffsetToFirstGlobal;
+int fn_offset;
 //Type *inClass = NULL;
 ClassDecl *inClass = NULL;
 //SymbolTable *function = NULL;
@@ -42,8 +43,9 @@ Location* VarDecl::Emit(CodeGenerator* codeGen) {
     if (function) {
         // TODO: switch these to eliminate changes in codegen.h
         //this->loc = codeGen->GenTempVar();
-        this->loc = new Location(fpRelative, codeGen->GetOffset(), this->GetName());
-        codeGen->IncOffset();
+        this->loc = new Location(fpRelative, fn_offset, this->GetName());
+        fn_offset -= CodeGenerator::VarSize;
+        //codeGen->IncOffset();
     }
     else {
         this->loc = new Location(gpRelative, gp_offset, this->GetName());
@@ -177,17 +179,17 @@ Decl* FnDecl::SearchFormals(char *name) {
 
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
-    int fn_offset = codeGen->GetOffset();
+    fn_offset = CodeGenerator::OffsetToFirstLocal;
+    int offset = CodeGenerator::OffsetToFirstParam;
     symbols = scope;
     //function = scope;
     function = this;
     
-    int offset = CodeGenerator::OffsetToFirstParam;
     if (inClass) {
         VarDecl *thiss = new VarDecl("this", inClass->GetType());
-        formals->InsertAt(thiss, 0);
         // Set the location of "this" to fp+4 
         thiss->SetLoc(offset, true);
+        formals->InsertAt(thiss, 0);
         symbols->Add((char*)"this", thiss);
         offset += CodeGenerator::VarSize;
     }
@@ -205,7 +207,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
         if (!inClass) codeGen->GenLabel(id->GetName());
         BeginFunc *beginFunc = codeGen->GenBeginFunc();
         body->Emit(codeGen);
-        beginFunc->SetFrameSize(fn_offset - codeGen->GetOffset());
+        beginFunc->SetFrameSize(CodeGenerator::OffsetToFirstLocal - fn_offset);
         codeGen->GenEndFunc();
     }
   
