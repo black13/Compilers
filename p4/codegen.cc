@@ -13,11 +13,11 @@
 #include "errors.h"
   
 extern SymbolTable *symbols;
+extern int fn_offset;
 
 CodeGenerator::CodeGenerator()
 {
   code = new List<Instruction*>();
-  offset = OffsetToFirstLocal;
 }
 
 char *CodeGenerator::NewLabel()
@@ -40,8 +40,8 @@ Location *CodeGenerator::GenTempVar()
      do that, the assert below will always fail to remind
      you this needs to be implemented  */
 
-  result = new Location(fpRelative, offset, temp);
-  offset -= VarSize;
+  result = new Location(fpRelative, fn_offset, temp);
+  fn_offset -= VarSize;
 
   Assert(result != NULL);
   return result;
