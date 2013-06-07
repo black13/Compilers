@@ -479,7 +479,7 @@ Type* NewExpr::GetType() {
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "NewExpr::Emit()" << endl;
     Decl *klass = symbols->Search(cType->GetName());
-    int bytes = codeGen->GetOffset(); //TODO I'm not sure if this is correct (Ian)
+    int bytes = klass->GetOffset();
 
     Location *size = codeGen->GenLoadConstant(bytes);
     Location *ret = codeGen->GenBuiltInCall(Alloc, size);

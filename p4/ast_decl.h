@@ -37,7 +37,7 @@ class Decl : public Node
     virtual Type* GetType() { return NULL; };
     virtual void SetLoc(int location, bool func) {};
     virtual void AddSymbols() {};
-    Decl * SearchScope(char * name); 
+    Decl * SearchScope(char * name);
     int GetOffset() { return offset; }
     void SetOffset(int newOffset) { offset = newOffset; }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
@@ -73,7 +73,7 @@ class ClassDecl : public Decl
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     Type* GetType();
-    void AddSymbols(); 
+    void AddSymbols();
     Location* Emit(CodeGenerator* codeGen);
     Location* GetLoc() { return loc; };
     Decl* SearchMembers(char *name);
