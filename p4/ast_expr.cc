@@ -164,7 +164,7 @@ int AssignExpr::GetBytes() {
         return left->GetStoreBytes() + right->GetBytes();
         //return (2 * CodeGenerator::VarSize) + right->GetBytes();
     else
-        return left->GetBytes() + right->GetBytes() + 4;
+        return left->GetBytes() + right->GetBytes();// + 4;
 }
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
@@ -186,7 +186,7 @@ Type* This::GetType() {
 }
 
 Location* This::Emit(CodeGenerator *codeGen) {
-    Decl *decl = symbols->Search((char*)"this");
+    Decl *decl = function->SearchFormals((char*)"this");
     if (decl) {
         return decl->GetLoc();
         //return codeGen->GenLoad(decl->GetLoc());
@@ -328,7 +328,22 @@ int FieldAccess::GetStoreBytes() {
 
 // TODO: This may not be right...
 bool FieldAccess::IsMemAccess() {
-    if (base || inClass) return true;
+    //if (base || inClass) return true;
+    if (base) {
+        return true;
+    }
+        if (inClass) {
+            if (inClass->SearchMembers(field->GetName())) return true;
+        }
+    /*
+    if (inClass) {
+        Decl *decl = inClass->SearchMembers(field->GetName());
+        if (!decl) {
+            decl = symbols->Search(field->GetName());
+            if (!decl) return true;
+        }
+    }
+    */
     return false;
 }
 
@@ -339,7 +354,7 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
         Decl *b = symbols->Search(base->GetName());
 
         Decl *klass = symbols->Search(base->GetType()->GetName());
-        Decl *var = klass->SearchScope(field->GetName());
+        Decl *var = klass->SearchMembers(field->GetName());
         
         klass = symbols->Search(base->GetName());
 
@@ -352,10 +367,11 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
     else {
         if (error) cout << "FieldAccess::EmitStore(): No Base" << endl;
         //Decl *decl = function->SearchHead(field->GetName());
-        Decl *decl = function->SearchFormals(field->GetName());
-        if (!decl && inClass) {
-            decl = inClass->SearchMembers(field->GetName());
-            if (!decl) decl = symbols->Search(field->GetName());
+        //Decl *decl = function->SearchFormals(field->GetName());
+        Decl *decl = NULL;
+        if (inClass) decl = inClass->SearchMembers(field->GetName());
+        if (decl) {
+            //if (!decl) decl = symbols->Search(field->GetName());
             //Decl *klass = symbols->Search((char*)"this");
             Decl *klass = function->SearchFormals((char*)"this");
             Location *offset = codeGen->GenLoadConstant(decl->GetOffset());
@@ -380,11 +396,13 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         if (error) cout << "FieldAccess::Emit(): No Base" << endl;
 
         //Decl *decl = function->SearchHead(field->GetName());
-        Decl *decl = function->SearchFormals(field->GetName());
-        //if (!decl && inClass) {
-        if (!decl && inClass) {
+        //Decl *decl = function->SearchFormals(field->GetName());
+        Decl *decl = NULL;
+        if (inClass) decl = inClass->SearchMembers(field->GetName());
+        if (decl) {
             if (error) cout << "FieldAccess::Emit(): No Base in Class" << endl;
-            decl = symbols->Search(field->GetName());
+            //if (!decl) decl = symbols->Search(field->GetName());
+            //decl = symbols->Search(field->GetName());
             //Decl *klass = symbols->Search((char*)"this");
             Decl *klass = function->SearchFormals((char*)"this");
             Location *loc = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
@@ -509,7 +527,8 @@ Location* Call::Emit(CodeGenerator *codeGen) {
     }
     else if (!base && inClass) {
         if (error) cout << "Call::Emit(): !base && inClass" << endl;
-        Decl *thiss = symbols->Search((char*)"this");
+        //Decl *thiss = symbols->Search((char*)"this");
+        Decl *thiss = function->SearchFormals((char*)"this");
         Location *param = thiss->GetLoc();
 
         if (error) cout << "Call::Emit(): !base && inClass" << endl;

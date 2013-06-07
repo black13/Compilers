@@ -38,6 +38,7 @@ class Decl : public Node
     virtual void SetLoc(int location, bool func) {};
     virtual int GetBytes() { return 0; }
     virtual void AddSymbols() {};
+    virtual Decl* SearchMembers(char *name) { return NULL; };
     Decl * SearchScope(char * name); 
     int GetOffset() { return offset; }
     void SetOffset(int newOffset) { offset = newOffset; }
