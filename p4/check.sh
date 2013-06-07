@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-clean=false
+clean=true
 enable_diff=false
+SPIM=./spim
+COMPILER=dcc
 
 if $clean ; then
     make clean
@@ -9,9 +11,21 @@ make
 
 [ -x dcc ] || { echo "Error: dcc not executable"; exit 1; }
 
+#run code
+function run {
+    ./$COMPILER < $1 > tmp.asm 2>tmp.errors
+    if [ $? -ne 0 -o -s tmp.errors ]; then
+        echo "Run script error: errors reported from $COMPILER compiling '$1'."
+        echo " "
+        cat tmp.errors
+        exit 1;
+    fi
+
+    $SPIM -file tmp.asm
+}
 
 #timeout code
-function timeout {
+function run_timeout {
     declare -i timeout=10
     declare -i interval=1
     declare -i delay=1
@@ -24,18 +38,11 @@ function timeout {
             #killall -0 dcc || exit 0
             ((t -= interval))
         done
-
-        # Be nice, post SIGTERM first.
-        # The 'exit 0' below will be executed if any preceeding command fails.
-        #echo "Timeout Detected!"
-        #kill -s SIGTERM $$ && kill -0 $$ || exit 0
-        #sleep $delay
-        #kill -s SIGKILL $$
         killall dcc
         killall spim
     ) 2> /dev/null &
 
-    exec "$@"
+    run $@
 }
 
 
@@ -66,23 +73,26 @@ for file in $LIST; do
     exit 1
   fi
 
-  cut_offset=7
+  cut_offset=6
   trim_offset=6
 
   if [ "$base" == "samples/link1" -o "$base" == "samples/link3" ]; then
-      cut_offset=4
+      cut_offset=3
       trim_offset=0
   fi
 
-  #tail -n +$trim_offset $file > $file.trim
+  #this can be commented out after the first run
+  tail -n +$trim_offset $file > $file.trim
+
   tmp=${TMP:-"./samples/"}/check.tmp
   if [ ! -r $base.in ]; then
-    timeout ./_run $base.$ext 2>&1 | tail -n +$cut_offset > $tmp
+    run_timeout $base.$ext 2>&1 | tail -n +$cut_offset > $tmp
   else
-    timeout ./_run $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
+    run_timeout $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
   fi
 
   printf "Checking %-27s: " $base.$ext
+
   if ! cmp -s $tmp $file.trim; then
     let fail_tests++
     echo "FAIL <--"
@@ -99,3 +109,28 @@ rm ./samples/check.tmp
 
 echo "Fail: $fail_tests/$total_tests"
 echo "Pass: $pass_tests/$total_tests"
+
+if [ "$pass_tests" -eq "$total_tests" ]; then
+printf "
+   .-'\"'-.
+  / #     \\
+  : #       :   .-'\"'-.
+   \\       /   / #     \\
+    \\     /   : #       :
+     \`'q'\`     \\       /
+       (        \\     /
+        ) .-'\"'-.\`'q'\`
+       ( / #     \\ (  
+        ) #       : ) .-'\"'-.
+       ( \\       / ( / #     \\
+          \\     /   ) #       :
+           \`'q'\`   ( \\       /
+             (        \\     /
+              )        \`'p'\`
+             (           )
+              )         (
+                        )
+"
+echo "------==[ PARTY TIME! ]==------"
+echo ""
+fi
