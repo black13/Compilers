@@ -33,8 +33,8 @@ class Decl : public Node
     Decl(Identifier *name);
     Decl() {};
     const char * GetName() { return id->GetName(); }
-    virtual Location* GetLoc() { return loc; };
     virtual Type* GetType() { return NULL; };
+    virtual Location* GetLoc() { return loc; };
     virtual void SetLoc(int location, bool func) {};
     virtual void AddSymbols() {};
     virtual Decl* SearchMembers(char *name) { return NULL; };

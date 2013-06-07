@@ -157,7 +157,7 @@ Location* This::Emit(CodeGenerator *codeGen) {
         return decl->GetLoc();
         //return codeGen->GenLoad(decl->GetLoc());
     }
-    cout << "This::Emit: Returning NULL" << endl;
+    if (error) cout << "This::Emit: Returning NULL" << endl;
     return NULL;
 }
 
@@ -245,13 +245,19 @@ FieldAccess::FieldAccess(Expr *b, Identifier *f)
 Type* FieldAccess::GetType() {
     if (error) cout << "FieldAccess::GetType" << endl;
     if (!base) {
+        if (error) cout << "FieldAccess::GetType: No Base" << endl;
         Decl *decl = symbols->Search(field->GetName());
         if (decl) return decl->GetType();
+        else if (inClass) {
+            decl = inClass->SearchMembers(field->GetName());
+            return decl->GetType();
+        }
         return NULL;
     }
     else {
+        if (error) cout << "FieldAccess::GetType: Base" << endl;
         Decl *decl = symbols->Search(base->GetType()->GetName());
-        Decl *func = decl->SearchScope(field->GetName());
+        Decl *func = decl->SearchMembers(field->GetName());
         if (func) return func->GetType();
         return NULL;
     }
@@ -264,18 +270,10 @@ bool FieldAccess::IsMemAccess() {
     if (base) {
         return true;
     }
-        if (inClass) {
-            if (inClass->SearchMembers(field->GetName())) return true;
-        }
-    /*
     if (inClass) {
-        Decl *decl = inClass->SearchMembers(field->GetName());
-        if (!decl) {
-            decl = symbols->Search(field->GetName());
-            if (!decl) return true;
-        }
+        if (symbols->Search(field->GetName())) return false;
+        if (inClass->SearchMembers(field->GetName())) return true;
     }
-    */
     return false;
 }
 
@@ -283,40 +281,30 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
     if (error) cout << "FieldAccess::EmitStore()" << endl;
     if (base) {
         if (error) cout << "FieldAccess::EmitStore(): Base" << endl;
-        Decl *b = symbols->Search(base->GetName());
-
         Decl *klass = symbols->Search(base->GetType()->GetName());
         Decl *var = klass->SearchMembers(field->GetName());
         
         klass = symbols->Search(base->GetName());
 
-        Location *offset = codeGen->GenLoadConstant(var->GetOffset());
-        Location *loc = codeGen->GenBinaryOp("+", klass->GetLoc(), offset);
-        codeGen->GenStore(loc, val);
-
-        //codeGen->GenStore(b->GetLoc(), val, var->GetOffset());
+        codeGen->GenStore(klass->GetLoc(), val, var->GetOffset());
     }
     else {
         if (error) cout << "FieldAccess::EmitStore(): No Base" << endl;
-        //Decl *decl = function->SearchHead(field->GetName());
-        //Decl *decl = function->SearchFormals(field->GetName());
-        Decl *decl = NULL;
-        if (inClass) decl = inClass->SearchMembers(field->GetName());
-        if (decl) {
-            //if (!decl) decl = symbols->Search(field->GetName());
-            //Decl *klass = symbols->Search((char*)"this");
-            Decl *klass = function->SearchFormals((char*)"this");
-            Location *offset = codeGen->GenLoadConstant(decl->GetOffset());
-            Location *loc = codeGen->GenBinaryOp("+", klass->GetLoc(), offset);
-            codeGen->GenStore(loc, val);
-            //Location *loc = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
-            //codeGen->GenStore(klass->GetLoc(), val, decl->GetOffset());
 
-            if (error) cout << "FieldAccess::Emit(): Exit 1" << endl;
-        }
+        Decl *decl = NULL;
         decl = symbols->Search(field->GetName());
+        if (!decl && inClass) {
+            if (inClass) decl = inClass->SearchMembers(field->GetName());
+            Decl *klass = function->SearchFormals((char*)"this");
+            codeGen->GenStore(klass->GetLoc(), val, decl->GetOffset());
+
+            if (error) cout << "FieldAccess::EmitStore(): Exit 1" << endl;
+            return NULL;
+        }
+
         Location *loc = decl->GetLoc();
-        if (error) cout << "FieldAccess::Emit(): Exit 2" << endl;
+        codeGen->GenStore(loc, val);
+        if (error) cout << "FieldAccess::EmitStore(): Exit 2" << endl;
     }
     return NULL;
 }
@@ -324,18 +312,25 @@ Location* FieldAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
 Location* FieldAccess::Emit(CodeGenerator *codeGen) {
     if (error) cout << "FieldAccess::Emit()" << endl;
 
-    if (!base) {
+    if (base) {
+        if (error) cout << "FieldAccess::Emit(): Base" << endl;
+        Decl *klass = symbols->Search(base->GetType()->GetName());
+        Decl *var = klass->SearchMembers(field->GetName());
+        
+        klass = symbols->Search(base->GetName());
+
+        Location *loc = codeGen->GenLoad(klass->GetLoc(), var->GetOffset());
+
+        if (error) cout << "FieldAccess::Emit(): Exit" << endl;
+        return loc;
+    }
+    else {
         if (error) cout << "FieldAccess::Emit(): No Base" << endl;
 
-        //Decl *decl = function->SearchHead(field->GetName());
-        //Decl *decl = function->SearchFormals(field->GetName());
         Decl *decl = NULL;
-        if (inClass) decl = inClass->SearchMembers(field->GetName());
-        if (decl) {
-            if (error) cout << "FieldAccess::Emit(): No Base in Class" << endl;
-            //if (!decl) decl = symbols->Search(field->GetName());
-            //decl = symbols->Search(field->GetName());
-            //Decl *klass = symbols->Search((char*)"this");
+        decl = symbols->Search(field->GetName());
+        if (!decl && inClass) {
+            decl = inClass->SearchMembers(field->GetName());
             Decl *klass = function->SearchFormals((char*)"this");
             Location *loc = codeGen->GenLoad(klass->GetLoc(), decl->GetOffset());
             
@@ -348,20 +343,6 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         Location *loc = decl->GetLoc();
         if (error) cout << "FieldAccess::Emit(): Exit 2" << endl;
         return loc;
-    }
-    else {
-        if (error) cout << "FieldAccess::Emit(): With Base" << endl;
-
-        Decl *b = symbols->Search(base->GetType()->GetName());
-        Decl *decl = b->SearchScope(field->GetName());
-        //Decl *decl = b->SearchMembers(field->GetName());
-        if (decl) {
-            Decl *param = symbols->Search(base->GetName());
-            Location *loc = codeGen->GenLoad(param->GetLoc(), decl->GetOffset());
-
-            if (error) cout << "FieldAccess::Emit(): Exit" << endl;
-            return loc;
-        }
     }
 
     if (error) cout << "FieldAccess::Emit(): Return NULL" << endl;

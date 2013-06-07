@@ -9,9 +9,8 @@
 extern SymbolTable *symbols;
 int gp_offset = CodeGenerator::OffsetToFirstGlobal;
 int fn_offset;
-//Type *inClass = NULL;
+extern bool error;
 ClassDecl *inClass = NULL;
-//SymbolTable *function = NULL;
 FnDecl *function = NULL;
 
 Decl::Decl(Identifier *n) : Node(*n->GetLocation()) {
@@ -29,12 +28,6 @@ Decl * Decl::SearchScope(char * name) {
 
 VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
     Assert(n != NULL && t != NULL);
-    (type=t)->SetParent(this);
-}
-
-VarDecl::VarDecl(const char *n, Type *t) {
-    Assert(n != NULL && t != NULL);
-    (id=new Identifier(n))->SetParent(this); 
     (type=t)->SetParent(this);
 }
 
@@ -59,7 +52,6 @@ void VarDecl::AddSymbols() {
 }
 
 void VarDecl::SetLoc(int location, bool func) {
-    //cout << id << ": " << location << endl;
     if (func) 
         this->loc = new Location(fpRelative, location, this->GetName());
     else 
@@ -84,7 +76,8 @@ void ClassDecl::AddSymbols() {
     scope = symbols->Push();
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
-            members->Nth(i)->AddSymbols();
+            if (!dynamic_cast<VarDecl*>(members->Nth(i)))
+                members->Nth(i)->AddSymbols();
         }
     }
     symbols->Pop();
@@ -115,7 +108,7 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
             if (dynamic_cast<VarDecl*>(decl)) {
                 decl->SetOffset(varOffset);
                 varOffset += CodeGenerator::VarSize;
-                //decl->SetLoc(offset, true);
+                offset += CodeGenerator::VarSize;
             }
             else if (dynamic_cast<FnDecl*>(decl)) {
                 char label[80];
@@ -178,28 +171,27 @@ Decl* FnDecl::SearchFormals(char *name) {
 }
 
 Location* FnDecl::Emit(CodeGenerator* codeGen) {
+    if (error) cout << id << endl;
     SymbolTable *temp = symbols;
     fn_offset = CodeGenerator::OffsetToFirstLocal;
-    int offset = CodeGenerator::OffsetToFirstParam;
+    int offsetParam = CodeGenerator::OffsetToFirstParam;
     symbols = scope;
     //function = scope;
     function = this;
-    
+
+    VarDecl *thiss;
     if (inClass) {
-        VarDecl *thiss = new VarDecl("this", inClass->GetType());
-        // Set the location of "this" to fp+4 
-        thiss->SetLoc(offset, true);
+        VarDecl *thiss = new VarDecl(new Identifier(*this->GetLocation(), "this"), inClass->GetType());
         formals->InsertAt(thiss, 0);
-        //symbols->Add((char*)"this", thiss);
-        offset += CodeGenerator::VarSize;
+        symbols->Add((char*)"this", thiss);
     }
 
     //deal with formals
     int n = formals->NumElements();
     for (int i = 0; i < n; i++) {
         VarDecl* v = formals->Nth(i);
-        v->SetLoc(offset, true);
-        offset += CodeGenerator::VarSize;
+        v->SetLoc(offsetParam, true);
+        offsetParam += CodeGenerator::VarSize;
     }
 
     if (body) {
