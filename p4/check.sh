@@ -1,5 +1,5 @@
-#! /bin/sh
-clean=true
+#!/usr/bin/env bash
+clean=false
 enable_diff=false
 
 if $clean ; then
@@ -8,6 +8,36 @@ fi
 make
 
 [ -x dcc ] || { echo "Error: dcc not executable"; exit 1; }
+
+
+#timeout code
+function timeout {
+    declare -i timeout=10
+    declare -i interval=1
+    declare -i delay=1
+    (
+        ((t = timeout))
+
+        while ((t > 0)); do
+            sleep 0.1
+            killall -0 spim || exit 0
+            #killall -0 dcc || exit 0
+            ((t -= interval))
+        done
+
+        # Be nice, post SIGTERM first.
+        # The 'exit 0' below will be executed if any preceeding command fails.
+        #echo "Timeout Detected!"
+        #kill -s SIGTERM $$ && kill -0 $$ || exit 0
+        #sleep $delay
+        #kill -s SIGKILL $$
+        killall dcc
+        killall spim
+    ) 2> /dev/null &
+
+    exec "$@"
+}
+
 
 LIST=
 if [ "$#" = "0" ]; then
@@ -47,9 +77,9 @@ for file in $LIST; do
   #tail -n +$trim_offset $file > $file.trim
   tmp=${TMP:-"./samples/"}/check.tmp
   if [ ! -r $base.in ]; then
-    ./timeout4 ./_run $base.$ext 2>&1 | tail -n +$cut_offset > $tmp
+    timeout ./_run $base.$ext 2>&1 | tail -n +$cut_offset > $tmp
   else
-    ./timeout4 ./_run $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
+    timeout ./_run $base.$ext < $base.in 2>&1 | tail -n +$cut_offset > $tmp
   fi
 
   printf "Checking %-27s: " $base.$ext
