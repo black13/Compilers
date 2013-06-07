@@ -18,10 +18,11 @@ function run {
         echo "Run script error: errors reported from $COMPILER compiling '$1'."
         echo " "
         cat tmp.errors
-        exit 1;
+        #exit 1;
+    else
+        $SPIM -file tmp.asm
     fi
 
-    $SPIM -file tmp.asm
 }
 
 #timeout code
