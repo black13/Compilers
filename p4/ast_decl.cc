@@ -114,7 +114,6 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
                 decl->SetOffset(varOffset);
                 varOffset += CodeGenerator::VarSize;
                 //decl->SetLoc(offset, true);
-                //offset += decl->GetBytes();
             }
             else if (dynamic_cast<FnDecl*>(decl)) {
                 char label[80];
@@ -204,10 +203,8 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     if (body) {
         //fn_offset = CodeGenerator::OffsetToFirstLocal;
         if (!inClass) codeGen->GenLabel(id->GetName());
-        //codeGen->GenBeginFunc()->SetFrameSize(body->GetBytes());
         BeginFunc *beginFunc = codeGen->GenBeginFunc();
         body->Emit(codeGen);
-        //beginFunc->SetFrameSize(body->GetBytes());
         beginFunc->SetFrameSize(fn_offset - codeGen->GetOffset());
         codeGen->GenEndFunc();
     }

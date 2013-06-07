@@ -43,7 +43,6 @@ class Stmt : public Node
     Stmt() : Node() {}
     Stmt(yyltype loc) : Node(loc) {}
     // returns the size in bytes of the object
-    virtual int GetBytes() { return 0; }
     virtual void AddSymbols() {}
 };
 
@@ -55,7 +54,6 @@ class StmtBlock : public Stmt
     
   public:
     StmtBlock(List<VarDecl*> *variableDeclarations, List<Stmt*> *statements);
-    int GetBytes();
     Location* Emit(CodeGenerator* codeGen);
     void AddSymbols(); 
 
@@ -70,7 +68,6 @@ class ConditionalStmt : public Stmt
   
   public:
     ConditionalStmt(Expr *testExpr, Stmt *body);
-    virtual int GetBytes();
 };
 
 class LoopStmt : public ConditionalStmt 
@@ -83,7 +80,6 @@ class LoopStmt : public ConditionalStmt
             : ConditionalStmt(testExpr, body) {}
     bool IsLoop() { return true; }
     char * GetBreakLabel() { return breakLabel; }
-    //virtual int GetBytes();
 };
 
 class ForStmt : public LoopStmt 
@@ -93,7 +89,6 @@ class ForStmt : public LoopStmt
   
   public:
     ForStmt(Expr *init, Expr *test, Expr *step, Stmt *body);
-    int GetBytes();
     void AddSymbols();
     Location* Emit(CodeGenerator* codeGen);
 };
@@ -103,7 +98,6 @@ class WhileStmt : public LoopStmt
   public:
     WhileStmt(Expr *test, Stmt *body) : LoopStmt(test, body) {}
     Location* Emit(CodeGenerator* codeGen);
-    //int GetBytes();
     void AddSymbols();
 };
 
@@ -115,7 +109,6 @@ class IfStmt : public ConditionalStmt
   public:
     IfStmt(Expr *test, Stmt *thenBody, Stmt *elseBody);
     Location* Emit(CodeGenerator* codeGen);
-    int GetBytes();
     void AddSymbols();
 };
 
@@ -124,7 +117,6 @@ class BreakStmt : public Stmt
   public:
     BreakStmt(yyltype loc) : Stmt(loc) {}
     Location* Emit(CodeGenerator* codeGen);
-    //int GetBytes();
 };
 
 class ReturnStmt : public Stmt  
@@ -135,7 +127,6 @@ class ReturnStmt : public Stmt
   public:
     ReturnStmt(yyltype loc, Expr *expr);
     Location* Emit(CodeGenerator* codeGen);
-    int GetBytes();
 };
 
 class PrintStmt : public Stmt
@@ -146,7 +137,6 @@ class PrintStmt : public Stmt
   public:
     PrintStmt(List<Expr*> *arguments);
     Location* Emit(CodeGenerator* codeGen);
-    int GetBytes();
 };
 
 

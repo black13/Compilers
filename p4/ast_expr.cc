@@ -54,10 +54,6 @@ Type* ArithmeticExpr::GetType() {
     return right->GetType();
 }
 
-int ArithmeticExpr::GetBytes() {
-    if (left && right) return CodeGenerator::VarSize + left->GetBytes() + right->GetBytes();
-    return (2 * CodeGenerator::VarSize) + right->GetBytes();
-}
 
 Location* ArithmeticExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "ArithmeticExpr::Emit()" << endl;
@@ -72,17 +68,6 @@ Type* RelationalExpr::GetType() {
     return Type::boolType;
 }
 
-int RelationalExpr::GetBytes() {
-    int size = CodeGenerator::VarSize + left->GetBytes() + right->GetBytes(); 
-    if (op->EqualTo("<="))
-        return (3 * CodeGenerator::VarSize) + size;
-    else if (op->EqualTo(">"))
-        return (4 * CodeGenerator::VarSize) + size;
-    else if (op->EqualTo(">="))
-        return (2 * CodeGenerator::VarSize) + size;
-    else
-        return size;
-}
 
 Location* RelationalExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "RelationalExpr::Emit()" << endl;
@@ -113,13 +98,6 @@ Type* EqualityExpr::GetType() {
     return Type::boolType;
 }
 
-int EqualityExpr::GetBytes() {
-    int size = CodeGenerator::VarSize + left->GetBytes() + right->GetBytes(); 
-    if (op->EqualTo("=="))
-        return size;
-    return size + (2 * CodeGenerator::VarSize);
-}
-
 Location* EqualityExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "EqualityExpr::Emit()" << endl;
     Location *loc = NULL;
@@ -140,10 +118,6 @@ Type* LogicalExpr::GetType() {
     return Type::boolType;
 }
 
-int LogicalExpr::GetBytes() {
-    if (left && right) return CodeGenerator::VarSize + left->GetBytes() + right->GetBytes();
-    return (2 * CodeGenerator::VarSize) + right->GetBytes();
-}
 
 Location* LogicalExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "LogicalExpr::Emit()" << endl;
@@ -159,13 +133,6 @@ Type* AssignExpr::GetType() {
     return left->GetType();
 }
 
-int AssignExpr::GetBytes() {
-    if (left->IsMemAccess())
-        return left->GetStoreBytes() + right->GetBytes();
-        //return (2 * CodeGenerator::VarSize) + right->GetBytes();
-    else
-        return left->GetBytes() + right->GetBytes() + 4;
-}
 
 Location* AssignExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "AssignExpr::Emit()" << endl;
@@ -221,11 +188,6 @@ ArrayAccess::ArrayAccess(yyltype loc, Expr *b, Expr *s) : LValue(loc) {
     (subscript=s)->SetParent(this);
 }
 
-int ArrayAccess::GetStoreBytes() {
-    //TODO I'n not 100% on this (Ian)
-    return GetBytes()+CodeGenerator::VarSize;
-}
-
 Location* ArrayAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
     Location *saveloc = GetOffsetLocation(codeGen);
     Assert(val != NULL);
@@ -235,11 +197,6 @@ Location* ArrayAccess::EmitStore(CodeGenerator* codeGen, Location* val) {
 
 Type* ArrayAccess::GetType() {
     return base->GetType()->GetType();
-}
-
-int ArrayAccess::GetBytes() {
-    int someNumber = 9;
-    return subscript->GetBytes() + base->GetBytes() + (someNumber * CodeGenerator::VarSize);
 }
 
 Location* ArrayAccess::GetOffsetLocation(CodeGenerator* codeGen) {
@@ -301,30 +258,6 @@ Type* FieldAccess::GetType() {
     }
 }
 
-int FieldAccess::GetBytes() {
-    int n = 0;
-
-    if (!base) {
-        //Decl *decl = function->SearchHead(field->GetName());
-        Decl *decl = function->SearchFormals(field->GetName());
-        if (!decl && inClass) {
-            n += CodeGenerator::VarSize;
-        }
-        return n;
-    }
-    else {
-        Decl *b = symbols->Search(base->GetType()->GetName());
-        Decl *decl = b->SearchScope(field->GetName());
-        if (decl) {
-            n += CodeGenerator::VarSize;
-        }
-        return n;
-    }
-}
-
-int FieldAccess::GetStoreBytes() {
-    return (2*CodeGenerator::VarSize);
-}
 
 // TODO: This may not be right...
 bool FieldAccess::IsMemAccess() {
@@ -444,49 +377,6 @@ Type* Call::GetType() {
     return NULL;
 }
 
-int Call::GetBytes(){
-    if (error) cout << "Call::GetBytes()" << endl;
-    int n = 0;
-    for (int i = 0; i < actuals->NumElements(); i++) {
-        n += actuals->Nth(i)->GetBytes();
-    }
-
-    //if (base) cout << base->GetType() << endl;
-    if (!base && !inClass) {
-        Decl *decl = symbols->Search(field->GetName());
-        if (!decl->GetType()->IsEquivalentTo(Type::voidType)) {
-            n += CodeGenerator::VarSize;
-        }
-        return n;
-    }   
-    else if (!base && inClass) {
-        Decl *func = symbols->Search(field->GetName());
-        if (!func->GetType()->IsEquivalentTo(Type::voidType)) {
-            n += CodeGenerator::VarSize;
-        }
-
-        n += (2 * CodeGenerator::VarSize);
-    }
-    else if (base->GetType()->IsArrayType()) {
-        n += base->GetBytes() + CodeGenerator::VarSize;
-        return n;
-    }
-    else {
-        Decl *klass = NULL;
-        if (base->GetName()) klass = symbols->Search(base->GetName());
-
-        Decl *func = NULL;
-        klass = symbols->Search(base->GetType()->GetName());
-        func = klass->SearchScope(field->GetName());
-
-        if (!func->GetType()->IsEquivalentTo(Type::voidType))
-            n += CodeGenerator::VarSize;
-
-        n += (2 * CodeGenerator::VarSize) + base->GetBytes();
-    }
-    return n;
-}
-
 Location* Call::Emit(CodeGenerator *codeGen) {
     if (error) cout << "Call::Emit()" << endl;
     Location *result = NULL;
@@ -586,14 +476,10 @@ Type* NewExpr::GetType() {
     return cType;
 }
 
-int NewExpr::GetBytes() {
-    return 3 * CodeGenerator::VarSize;
-}
-
 Location* NewExpr::Emit(CodeGenerator *codeGen) {
     if (error) cout << "NewExpr::Emit()" << endl;
     Decl *klass = symbols->Search(cType->GetName());
-    int bytes = klass->GetBytes();
+    int bytes = codeGen->GetOffset(); //TODO I'm not sure if this is correct (Ian)
 
     Location *size = codeGen->GenLoadConstant(bytes);
     Location *ret = codeGen->GenBuiltInCall(Alloc, size);
@@ -611,10 +497,6 @@ NewArrayExpr::NewArrayExpr(yyltype loc, Expr *sz, Type *et) : Expr(loc) {
 
 Type* NewArrayExpr::GetType() {
     return elemType;
-}
-
-int NewArrayExpr::GetBytes() {//TODO this may not be correct
-    return size->GetBytes() + (7 * CodeGenerator::VarSize);
 }
 
 Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
@@ -647,13 +529,10 @@ Location* NewArrayExpr::Emit(CodeGenerator *codeGen) {
     return ret;
 }
 
-
 Type* ReadIntegerExpr::GetType() {
     return Type::intType;
 }
-int ReadIntegerExpr::GetBytes() {
-    return CodeGenerator::VarSize;
-}
+
 Location* ReadIntegerExpr::Emit(CodeGenerator *codeGen) {
     return codeGen->GenBuiltInCall(ReadInteger);
 }
@@ -661,9 +540,7 @@ Location* ReadIntegerExpr::Emit(CodeGenerator *codeGen) {
 Type* ReadLineExpr::GetType() {
     return Type::stringType;
 }
-int ReadLineExpr::GetBytes() {
-    return CodeGenerator::VarSize;
-}
+
 Location* ReadLineExpr::Emit(CodeGenerator *codeGen) {
     return codeGen->GenBuiltInCall(ReadLine);
 }

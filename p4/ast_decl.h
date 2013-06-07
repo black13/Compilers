@@ -36,7 +36,6 @@ class Decl : public Node
     virtual Location* GetLoc() { return loc; };
     virtual Type* GetType() { return NULL; };
     virtual void SetLoc(int location, bool func) {};
-    virtual int GetBytes() { return 0; }
     virtual void AddSymbols() {};
     Decl * SearchScope(char * name); 
     int GetOffset() { return offset; }
@@ -60,7 +59,6 @@ class VarDecl : public Decl
     void AddSymbols();
 
     // returns the size in bytes of the object
-    int GetBytes() { return CodeGenerator::VarSize; }
     Location* Emit(CodeGenerator* codeGen);
 };
 
@@ -74,7 +72,6 @@ class ClassDecl : public Decl
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
-    int GetBytes() { return offset; }
     Type* GetType();
     void AddSymbols(); 
     Location* Emit(CodeGenerator* codeGen);
