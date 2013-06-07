@@ -65,26 +65,6 @@ void StmtBlock::AddSymbols() {
     symbols->Pop();
 }
 
-int StmtBlock::GetBytes() {
-    SymbolTable *temp = symbols;
-    symbols = scope;
-
-    int bytes = 0;
-    int n = decls->NumElements();
-
-    for (int i = 0; i < n; i++){
-        bytes += decls->Nth(i)->GetBytes();
-    }
-
-    n = stmts->NumElements();
-    for (int i = 0; i < n; i++){
-        bytes += stmts->Nth(i)->GetBytes();
-    }
-
-    symbols = temp;
-    return bytes;
-}
-
 Location* StmtBlock::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
@@ -107,16 +87,6 @@ ConditionalStmt::ConditionalStmt(Expr *t, Stmt *b) {
     (body=b)->SetParent(this);
 }
 
-int ConditionalStmt::GetBytes() {
-    SymbolTable *temp = symbols;
-    symbols = scope;
-
-    int offset = test->GetBytes();
-    offset += body->GetBytes();
-
-    symbols = temp;
-    return offset;
-}
 
 ForStmt::ForStmt(Expr *i, Expr *t, Expr *s, Stmt *b): LoopStmt(t, b) { 
     Assert(i != NULL && t != NULL && s != NULL && b != NULL);
@@ -130,17 +100,6 @@ void ForStmt::AddSymbols() {
     symbols->Pop();
 }
 
-int ForStmt::GetBytes(){
-    SymbolTable *temp = symbols;
-    symbols = scope;
-
-    int offset = LoopStmt::GetBytes();
-    offset += init->GetBytes();
-    offset += step->GetBytes();
-
-    symbols = temp;
-    return offset;
-}
 
 Location* ForStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
@@ -199,17 +158,6 @@ void IfStmt::AddSymbols() {
     symbols->Pop();
 }
 
-int IfStmt::GetBytes() {
-    SymbolTable *temp = symbols;
-    symbols = scope;
-
-    int offset = ConditionalStmt::GetBytes();
-    if (elseBody) offset += elseBody->GetBytes();
-
-    symbols = temp;
-    return offset;
-}
-
 Location* IfStmt::Emit(CodeGenerator* codeGen) {
     SymbolTable *temp = symbols;
     symbols = scope;
@@ -244,12 +192,6 @@ ReturnStmt::ReturnStmt(yyltype loc, Expr *e) : Stmt(loc) {
     (expr=e)->SetParent(this);
 }
 
-int ReturnStmt::GetBytes() {
-    if (expr){
-      return expr->GetBytes();
-    }
-    return 0;
-}
 
 Location* ReturnStmt::Emit(CodeGenerator* codeGen) {
     if (expr) codeGen->GenReturn(expr->Emit(codeGen));
@@ -261,15 +203,6 @@ Location* ReturnStmt::Emit(CodeGenerator* codeGen) {
 PrintStmt::PrintStmt(List<Expr*> *a) {    
     Assert(a != NULL);
     (args=a)->SetParentAll(this);
-}
-
-int PrintStmt::GetBytes() {
-  int bytes = 0;
-  int n = args->NumElements();
-  for (int i = 0; i<n; i++) {
-    bytes += args->Nth(i)->GetBytes();
-  }
-  return bytes;
 }
 
 Location* PrintStmt::Emit(CodeGenerator* codeGen) {
@@ -293,5 +226,4 @@ Location* PrintStmt::Emit(CodeGenerator* codeGen) {
 
   return NULL;
 }
-
 
