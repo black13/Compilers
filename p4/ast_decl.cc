@@ -190,7 +190,7 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
         // Set the location of "this" to fp+4 
         thiss->SetLoc(offset, true);
         formals->InsertAt(thiss, 0);
-        symbols->Add((char*)"this", thiss);
+        //symbols->Add((char*)"this", thiss);
         offset += CodeGenerator::VarSize;
     }
 

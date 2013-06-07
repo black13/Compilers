@@ -37,7 +37,8 @@ class Decl : public Node
     virtual Type* GetType() { return NULL; };
     virtual void SetLoc(int location, bool func) {};
     virtual void AddSymbols() {};
-    Decl * SearchScope(char * name);
+    virtual Decl* SearchMembers(char *name) { return NULL; };
+    Decl * SearchScope(char * name); 
     int GetOffset() { return offset; }
     void SetOffset(int newOffset) { offset = newOffset; }
     friend ostream& operator<<(ostream& out, Decl *d) { return out << d->id; }
