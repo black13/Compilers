@@ -123,6 +123,7 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
 
     if (extends) {
         Decl *decl = symbols->Search(extends->GetName());
+        decl->Emit(codeGen);
         // Add extends vars to the list of vars to search
         List<Decl*> *baseVars = decl->GetMemberVars();
         for (int i = 0; i < baseVars->NumElements(); i++) {

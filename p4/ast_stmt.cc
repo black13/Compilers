@@ -39,6 +39,12 @@ void Program::Emit() {
         decls->Nth(i)->AddSymbols();
     }
 
+    // Emit all classes
+    for (int i = 0; i < n; ++i) {
+        if (dynamic_cast<ClassDecl*>(decls->Nth(i)))
+            decls->Nth(i)->Emit(codeGen);
+    }
+
     // Emit all decls
     for (int i = 0; i < n; ++i) {
         decls->Nth(i)->Emit(codeGen);

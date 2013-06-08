@@ -1,0 +1,132 @@
+__Animal.Method:
+	BeginFunc 4 ;
+	_tmp0 = "Hello from Animal\n" ;
+	PushParam _tmp0 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Animal.Method1:
+	BeginFunc 4 ;
+	_tmp1 = "Animal" ;
+	PushParam _tmp1 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Animal.AMethod:
+	BeginFunc 4 ;
+	_tmp2 = "not overridden\n" ;
+	PushParam _tmp2 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+VTable Animal =
+	__Animal.AMethod,
+	__Animal.Method,
+	__Animal.Method1,
+; 
+__Cow.Method:
+	BeginFunc 4 ;
+	_tmp3 = "Hello from Cow" ;
+	PushParam _tmp3 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Cow.Method2:
+	BeginFunc 12 ;
+	_tmp4 = "Cow2" ;
+	PushParam _tmp4 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp5 = *(this) ;
+	_tmp6 = *(_tmp5 + 8) ;
+	PushParam this ;
+	ACall _tmp6 ;
+	PopParams 4 ;
+	EndFunc ;
+__Cow.Method1:
+	BeginFunc 4 ;
+	_tmp7 = "Cow" ;
+	PushParam _tmp7 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Cow.AMethod:
+	BeginFunc 0 ;
+	EndFunc ;
+VTable Cow =
+	__Cow.AMethod,
+	__Cow.Method,
+	__Cow.Method1,
+	__Cow.Method2,
+; 
+__Jersey.Method:
+	BeginFunc 4 ;
+	_tmp8 = "Hello from Jersey." ;
+	PushParam _tmp8 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+__Jersey.Method3:
+	BeginFunc 12 ;
+	_tmp9 = "Jersey3" ;
+	PushParam _tmp9 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	_tmp10 = *(this) ;
+	_tmp11 = *(_tmp10 + 12) ;
+	PushParam this ;
+	ACall _tmp11 ;
+	PopParams 4 ;
+	EndFunc ;
+__Jersey.Method1:
+	BeginFunc 4 ;
+	_tmp12 = "Jersey" ;
+	PushParam _tmp12 ;
+	LCall _PrintString ;
+	PopParams 4 ;
+	EndFunc ;
+VTable Jersey =
+	__Cow.AMethod,
+	__Jersey.Method,
+	__Jersey.Method1,
+	__Cow.Method2,
+	__Jersey.Method3,
+; 
+main:
+	BeginFunc 64 ;
+	_tmp13 = 4 ;
+	PushParam _tmp13 ;
+	_tmp14 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp15 = Cow ;
+	*(_tmp14) = _tmp15 ;
+	a = _tmp14 ;
+	_tmp16 = *(a) ;
+	_tmp17 = *(_tmp16 + 12) ;
+	PushParam a ;
+	ACall _tmp17 ;
+	PopParams 4 ;
+	_tmp18 = 4 ;
+	PushParam _tmp18 ;
+	_tmp19 = LCall _Alloc ;
+	PopParams 4 ;
+	_tmp20 = Jersey ;
+	*(_tmp19) = _tmp20 ;
+	j = _tmp19 ;
+	a = j ;
+	_tmp21 = *(a) ;
+	_tmp22 = *(_tmp21 + 12) ;
+	PushParam a ;
+	ACall _tmp22 ;
+	PopParams 4 ;
+	_tmp23 = *(j) ;
+	_tmp24 = *(_tmp23 + 16) ;
+	PushParam j ;
+	ACall _tmp24 ;
+	PopParams 4 ;
+	_tmp25 = *(a) ;
+	_tmp26 = *(_tmp25 + 4) ;
+	PushParam a ;
+	ACall _tmp26 ;
+	PopParams 4 ;
+	EndFunc ;
