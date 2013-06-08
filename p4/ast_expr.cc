@@ -413,8 +413,9 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             Location *param = thiss->GetLoc();
 
             //func = symbols->Search(field->GetName());
+            int fnOffset = inClass->GetFunctionOffset(field->GetName());
             func = inClass->SearchMembers(field->GetName());
-            Location *load = codeGen->GenLoad(codeGen->GenLoad(param), func->GetOffset());
+            Location *load = codeGen->GenLoad(codeGen->GenLoad(param), fnOffset);
 
             codeGen->GenPushParam(param);
             bytes += CodeGenerator::VarSize;
@@ -446,19 +447,17 @@ Location* Call::Emit(CodeGenerator *codeGen) {
 
         Decl *klass = NULL;
         if (base->GetName()) klass = symbols->Search(base->GetName());
-        //klass = symbols->Search(base->GetName());
 
         Location *param = NULL;
         if (klass) param = klass->GetLoc();
-        //Location *param = klass->GetLoc();
 
         klass = symbols->Search(base->GetType()->GetName());
-        //Decl *func = klass->SearchScope(field->GetName());
+        int fnOffset = klass->GetFunctionOffset(field->GetName());
         Decl *func = klass->SearchMembers(field->GetName());
 
         Location *b = base->Emit(codeGen);
         Location *loc = codeGen->GenLoad(b);
-        Location *load = codeGen->GenLoad(loc, func->GetOffset());
+        Location *load = codeGen->GenLoad(loc, fnOffset);
 
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;

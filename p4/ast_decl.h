@@ -41,8 +41,7 @@ class Decl : public Node
     virtual Decl* SearchMembers(char *name) { return NULL; };
     virtual List<Decl*>* GetMemberVars() { return NULL; }
     virtual List<Decl*>* GetMemberFunc() { return NULL; }
-    //virtual char* GetLabel() { return NULL; }
-    //virtual void SetLabel(char[] l) { }
+    virtual int GetFunctionOffset(char*) { return -1; }
     void SetLabel(char* newLabel) { label = strdup(newLabel); }
     char* GetLabel() { return label; }
     Decl * SearchScope(char * name); 
@@ -78,6 +77,7 @@ class ClassDecl : public Decl
     List<NamedType*> *implements;
     List<Decl*> *memberVars;
     List<Decl*> *memberFuncs;
+    Hashtable<int> *funcOffsets;
     bool emitted;
 
   public:
@@ -91,6 +91,7 @@ class ClassDecl : public Decl
     Location* Emit(CodeGenerator* codeGen);
     Location* GetLoc() { return loc; };
     Decl* SearchMembers(char *name);
+    int GetFunctionOffset(char *name) { return funcOffsets->Lookup(name); }
 };
 
 class InterfaceDecl : public Decl 
