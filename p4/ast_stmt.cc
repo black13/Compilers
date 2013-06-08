@@ -31,18 +31,18 @@ void Program::Emit() {
      *      polymorphism in the node classes.
      */
     
-    //offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
 
     global = symbols->Push();
+
+    // Add all symbols to symbol table
     for (int i = 0; i < n; ++i) {
         decls->Nth(i)->AddSymbols();
     }
 
-    // Emit all classes
+    // Build clsses to have offsets for pointers to instance vars and methods
     for (int i = 0; i < n; ++i) {
-        if (dynamic_cast<ClassDecl*>(decls->Nth(i)))
-            decls->Nth(i)->Emit(codeGen);
+        decls->Nth(i)->BuildClass();
     }
 
     // Emit all decls

@@ -33,14 +33,14 @@ VarDecl::VarDecl(Identifier *n, Type *t) : Decl(n) {
 
 
 Location* VarDecl::Emit(CodeGenerator* codeGen) {
+    if (error) cout << "VarDecl::Emit(): " << id << endl;
     if (function) {
-        // TODO: switch these to eliminate changes in codegen.h
-        //this->loc = codeGen->GenTempVar();
+        if (error) cout << "VarDecl::Emit(): local" << endl;
         this->loc = new Location(fpRelative, fn_offset, this->GetName());
         fn_offset -= CodeGenerator::VarSize;
-        //codeGen->IncOffset();
     }
     else {
+        if (error) cout << "VarDecl::Emit(): global" << endl;
         this->loc = new Location(gpRelative, gp_offset, this->GetName());
         gp_offset += CodeGenerator::VarSize; 
     }
@@ -68,7 +68,9 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     memberVars = new List<Decl*>;
     memberFuncs = new List<Decl*>;
     funcOffsets = new Hashtable<int>();
+    functions = new List<const char*>();
     emitted = false;
+    built = false;
 }
 
 Type* ClassDecl::GetType() {
@@ -87,18 +89,74 @@ void ClassDecl::AddSymbols() {
     symbols->Pop();
 }
 
+void ClassDecl::BuildClass() {
+    if (built) return;
+    SymbolTable *temp = symbols;
+    symbols = scope;
+
+    this->offset = CodeGenerator::VarSize;
+    int fnOffset = 0;
+
+    if (extends) {
+        Decl *decl = symbols->Search(extends->GetName());
+        decl->BuildClass();
+
+        // Add extends vars to the list of vars to search
+        List<Decl*> *baseVars = decl->GetMemberVars();
+        for (int i = 0; i < baseVars->NumElements(); i++) {
+            memberVars->Append(baseVars->Nth(i));
+            this->offset += CodeGenerator::VarSize;
+        }
+
+        // Add functions to the list 
+        List<Decl*> *baseFunc = decl->GetMemberFunc();
+        for (int i = 0; i < baseFunc->NumElements(); i++) {
+            memberFuncs->Append(baseFunc->Nth(i));
+            fnOffset += CodeGenerator::VarSize;
+        }
+    }
+    if (members) {
+        for (int i = 0; i < members->NumElements(); i++) {
+            Decl *decl = members->Nth(i);
+            if (dynamic_cast<VarDecl*>(decl)) {
+                decl->SetOffset(this->offset);
+                this->offset += CodeGenerator::VarSize;
+                memberVars->Append(decl);
+            }
+            else if (dynamic_cast<FnDecl*>(decl)) {
+                char label[80];
+                sprintf(label, "_%s.%s", id->GetName(), decl->GetName());
+                decl->SetLabel((char*)label);
+
+                // Look for duplicates and replace
+                // Important for assigning inherited class var 
+                //   to base class var
+                int index = memberFuncs->NumElements();
+                for (int j = 0; j < memberFuncs->NumElements(); j++) {
+                    if (strcmp(decl->GetName(), memberFuncs->Nth(j)->GetName()) == 0) {
+                        memberFuncs->RemoveAt(j);
+                        index = j;
+                    }
+                }
+                memberFuncs->InsertAt(decl, index);
+            }
+        }
+    }
+
+    fnOffset = 0;
+    for (int i = 0; i < memberFuncs->NumElements(); i++) {
+        functions->Append(memberFuncs->Nth(i)->GetLabel());
+        funcOffsets->Enter(memberFuncs->Nth(i)->GetName(), fnOffset);
+        fnOffset += CodeGenerator::VarSize;
+    }
+
+    symbols = temp;
+    built = true;
+}
+
 Decl* ClassDecl::SearchMembers(char *name) {
     if (error) cout << "ClassDecl::SearchMembers" << endl;
-    /*
-    if (extends) {
-        Decl *decl = symbols->Search(extends->GetName())->SearchMembers(name);
-        if (decl) return decl;
-    }   
-    for (int i = 0; i < members->NumElements(); i++) {
-        if (strcmp(members->Nth(i)->GetName(), name) == 0) 
-            return members->Nth(i);
-    }
-    */
+
     for (int i = 0; i < memberVars->NumElements(); i++) {
         if (strcmp(memberVars->Nth(i)->GetName(), name) == 0) 
             return memberVars->Nth(i);
@@ -112,68 +170,12 @@ Decl* ClassDecl::SearchMembers(char *name) {
 
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
     if (emitted) return NULL;
-
-    if (error) cout << "ClassDecl::Emit" << endl;
+    if (error) cout << "ClassDecl::Emit " << id << endl;
+    
     SymbolTable *temp = symbols;
     symbols = scope;
-    offset = CodeGenerator::OffsetToFirstParam;
     inClass = this;
-    int fnOffset = 0;
-    List<const char*> *functions = new List<const char*>();
 
-    if (extends) {
-        Decl *decl = symbols->Search(extends->GetName());
-        decl->Emit(codeGen);
-        // Add extends vars to the list of vars to search
-        List<Decl*> *baseVars = decl->GetMemberVars();
-        for (int i = 0; i < baseVars->NumElements(); i++) {
-            memberVars->Append(baseVars->Nth(i));
-            offset += CodeGenerator::VarSize;
-        }
-
-        // Add functions to the list 
-        List<Decl*> *baseFunc = decl->GetMemberFunc();
-        for (int i = 0; i < baseFunc->NumElements(); i++) {
-            memberFuncs->Append(baseFunc->Nth(i));
-            //functions->Append(baseFunc->Nth(i));
-            fnOffset += CodeGenerator::VarSize;
-        }
-    }
-    if (members) {
-        for (int i = 0; i < members->NumElements(); i++) {
-            Decl *decl = members->Nth(i);
-            if (dynamic_cast<VarDecl*>(decl)) {
-                decl->SetOffset(offset);
-                offset += CodeGenerator::VarSize;
-                memberVars->Append(decl);
-            }
-            else if (dynamic_cast<FnDecl*>(decl)) {
-                char label[80];
-                sprintf(label, "_%s.%s", id->GetName(), decl->GetName());
-                decl->SetLabel((char*)label);
-
-                for (int j = 0; j < memberFuncs->NumElements(); j++) {
-                    if (strcmp(decl->GetName(), memberFuncs->Nth(j)->GetName()) == 0) {
-                        memberFuncs->RemoveAt(j);
-                    }
-                }
-                memberFuncs->Append(decl);
-
-                decl->SetOffset(fnOffset);
-                fnOffset += CodeGenerator::VarSize;
-
-                //codeGen->GenLabel(label);
-                //decl->Emit(codeGen);
-            }
-        }
-    }
-    // Build VTable and offsets
-    fnOffset = 0;
-    for (int i = 0; i < memberFuncs->NumElements(); i++) {
-        functions->Append(memberFuncs->Nth(i)->GetLabel());
-        funcOffsets->Enter(memberFuncs->Nth(i)->GetName(), fnOffset);
-        fnOffset += CodeGenerator::VarSize;
-    }
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
             Decl *decl = members->Nth(i);
@@ -183,11 +185,10 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
             }
         }
     }
-
     codeGen->GenVTable(id->GetName(), functions);
+
     inClass = NULL;
     emitted = true;
-
     symbols = temp;
     return NULL;
 }
@@ -257,7 +258,6 @@ Location* FnDecl::Emit(CodeGenerator* codeGen) {
     }
 
     if (body) {
-        //fn_offset = CodeGenerator::OffsetToFirstLocal;
         if (!inClass) codeGen->GenLabel(id->GetName());
         BeginFunc *beginFunc = codeGen->GenBeginFunc();
         body->Emit(codeGen);

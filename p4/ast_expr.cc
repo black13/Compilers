@@ -154,7 +154,6 @@ Location* This::Emit(CodeGenerator *codeGen) {
     Decl *decl = function->SearchFormals((char*)"this");
     if (decl) {
         return decl->GetLoc();
-        //return codeGen->GenLoad(decl->GetLoc());
     }
     if (error) cout << "This::Emit: Returning NULL" << endl;
     return NULL;
@@ -263,9 +262,7 @@ Type* FieldAccess::GetType() {
 }
 
 
-// TODO: This may not be right...
 bool FieldAccess::IsMemAccess() {
-    //if (base || inClass) return true;
     if (base) {
         return true;
     }
@@ -341,6 +338,7 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
         }
 
         if (error) cout << "FieldAccess::Emit(): No Base out of Class" << endl;
+        
         decl = symbols->Search(field->GetName());
         Location *loc = decl->GetLoc();
         if (error) cout << "FieldAccess::Emit(): Exit 2" << endl;
@@ -412,7 +410,6 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             Decl *thiss = function->SearchFormals((char*)"this");
             Location *param = thiss->GetLoc();
 
-            //func = symbols->Search(field->GetName());
             int fnOffset = inClass->GetFunctionOffset(field->GetName());
             func = inClass->SearchMembers(field->GetName());
             Location *load = codeGen->GenLoad(codeGen->GenLoad(param), fnOffset);
@@ -429,7 +426,7 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             if (func->GetType()->IsEquivalentTo(Type::voidType))
                 result = codeGen->GenLCall(field->GetName(), false);
             else
-                result = codeGen->GenLCall(field->GetName(), false);
+                result = codeGen->GenLCall(field->GetName(), true);
         }
     }
     else if (base->GetType()->IsArrayType()) {

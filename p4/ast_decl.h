@@ -33,6 +33,7 @@ class Decl : public Node
   public:
     Decl(Identifier *name);
     Decl() {};
+    virtual void BuildClass() {}
     const char * GetName() { return id->GetName(); }
     virtual Type* GetType() { return NULL; };
     virtual Location* GetLoc() { return loc; };
@@ -77,12 +78,15 @@ class ClassDecl : public Decl
     List<NamedType*> *implements;
     List<Decl*> *memberVars;
     List<Decl*> *memberFuncs;
+    List<const char*> *functions;
     Hashtable<int> *funcOffsets;
     bool emitted;
+    bool built;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
+    void BuildClass(); 
     Type* GetType();
     void AddSymbols();
     List<Decl*>* GetMemberVars() { return memberVars; }
