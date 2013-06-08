@@ -38,6 +38,8 @@ class Decl : public Node
     virtual void SetLoc(int location, bool func) {};
     virtual void AddSymbols() {};
     virtual Decl* SearchMembers(char *name) { return NULL; };
+    virtual List<Decl*>* GetMemberVars() { return NULL; }
+    virtual List<const char*>* GetMemberFunc() { return NULL; }
     Decl * SearchScope(char * name); 
     int GetOffset() { return offset; }
     void SetOffset(int newOffset) { offset = newOffset; }
@@ -69,12 +71,16 @@ class ClassDecl : public Decl
     List<Decl*> *members;
     NamedType *extends;
     List<NamedType*> *implements;
+    List<Decl*> *memberVars;
+    List<const char*> *functions;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
               List<NamedType*> *implements, List<Decl*> *members);
     Type* GetType();
     void AddSymbols();
+    List<Decl*>* GetMemberVars() { return memberVars; }
+    List<const char*>* GetMemberFunc() { return functions; }
     Location* Emit(CodeGenerator* codeGen);
     Location* GetLoc() { return loc; };
     Decl* SearchMembers(char *name);

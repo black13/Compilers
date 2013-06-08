@@ -10,9 +10,8 @@
 #include "errors.h"
 
 extern SymbolTable *symbols;
-//extern Type* inClass;
+extern SymbolTable *global;
 extern ClassDecl* inClass;
-//extern SymbolTable *function;
 extern FnDecl *function;
 extern bool error;
 
@@ -314,6 +313,8 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
 
     if (base) {
         if (error) cout << "FieldAccess::Emit(): Base" << endl;
+        if (error) cout << base->GetName() << "." << field << endl;
+
         Decl *klass = symbols->Search(base->GetType()->GetName());
         Decl *var = klass->SearchMembers(field->GetName());
         
@@ -326,6 +327,7 @@ Location* FieldAccess::Emit(CodeGenerator *codeGen) {
     }
     else {
         if (error) cout << "FieldAccess::Emit(): No Base" << endl;
+        if (error) cout << field << endl;
 
         Decl *decl = NULL;
         decl = symbols->Search(field->GetName());
@@ -397,27 +399,35 @@ Location* Call::Emit(CodeGenerator *codeGen) {
     }
     else if (!base && inClass) {
         if (error) cout << "Call::Emit(): !base && inClass" << endl;
-        //Decl *thiss = symbols->Search((char*)"this");
-        Decl *thiss = function->SearchFormals((char*)"this");
-        Location *param = thiss->GetLoc();
 
-        if (error) cout << "Call::Emit(): !base && inClass" << endl;
-        Decl *func = symbols->Search(field->GetName());
-        Location *load = codeGen->GenLoad(codeGen->GenLoad(param), func->GetOffset());
-
-        if (error) cout << "Call::Emit(): !base && inClass" << endl;
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
             Location *p = actuals->Nth(i)->Emit(codeGen);
             codeGen->GenPushParam(p);
         }
-        codeGen->GenPushParam(param);
-        bytes += CodeGenerator::VarSize;
 
-        if (func->GetType()->IsEquivalentTo(Type::voidType))
-            result = codeGen->GenACall(load, false);
-        else
-            result = codeGen->GenACall(load, true);
+        Decl *func = global->Search(field->GetName());
+        if (!func) {
+            Decl *thiss = function->SearchFormals((char*)"this");
+            Location *param = thiss->GetLoc();
+
+            func = symbols->Search(field->GetName());
+            Location *load = codeGen->GenLoad(codeGen->GenLoad(param), func->GetOffset());
+
+            codeGen->GenPushParam(param);
+            bytes += CodeGenerator::VarSize;
+
+            if (func->GetType()->IsEquivalentTo(Type::voidType))
+                result = codeGen->GenACall(load, false);
+            else
+                result = codeGen->GenACall(load, true);
+        }
+        else {
+            if (func->GetType()->IsEquivalentTo(Type::voidType))
+                result = codeGen->GenLCall(field->GetName(), false);
+            else
+                result = codeGen->GenLCall(field->GetName(), false);
+        }
     }
     else if (base->GetType()->IsArrayType()) {
         if (error) cout << "Call::Emit(): ArrayType" << endl;

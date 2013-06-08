@@ -65,6 +65,7 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     if (extends) extends->SetParent(this);
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
+    memberVars = new List<Decl*>;
 }
 
 Type* ClassDecl::GetType() {
@@ -84,31 +85,53 @@ void ClassDecl::AddSymbols() {
 }
 
 Decl* ClassDecl::SearchMembers(char *name) {
+    if (error) cout << "ClassDecl::SearchMembers" << endl;
+/*
     for (int i = 0; i < members->NumElements(); i++) {
         if (strcmp(members->Nth(i)->GetName(), name) == 0) 
             return members->Nth(i);
+    }
+    */
+    for (int i = 0; i < memberVars->NumElements(); i++) {
+        if (strcmp(memberVars->Nth(i)->GetName(), name) == 0) 
+            return memberVars->Nth(i);
     }
     return NULL;
 }
 
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
+    if (error) cout << "ClassDecl::Emit" << endl;
     SymbolTable *temp = symbols;
     symbols = scope;
-    //symbols->Add(id->GetName(), this);
     offset = CodeGenerator::OffsetToFirstParam;
-    List<const char*> *functions = new List<const char*>();
-    //inClass = new NamedType(id);
     inClass = this;
-    int varOffset = CodeGenerator::VarSize;
     int fnOffset = 0;
-    list<Decl*> *memberVars;
+    functions = new List<const char*>();
+
+    if (extends) {
+        Decl *decl = symbols->Search(extends->GetName());
+        // Add extends vars to the list of vars to search
+        List<Decl*> *baseVars = decl->GetMemberVars();
+        for (int i = 0; i < baseVars->NumElements(); i++) {
+            memberVars->Append(baseVars->Nth(i));
+            offset += CodeGenerator::VarSize;
+        }
+
+        // Add functions to the list 
+        List<const char*> *baseFunc = decl->GetMemberFunc();
+        for (int i = 0; i < baseFunc->NumElements(); i++) {
+            functions->Append(baseFunc->Nth(i));
+            fnOffset += CodeGenerator::VarSize;
+        }
+
+    }
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
             Decl *decl = members->Nth(i);
             if (dynamic_cast<VarDecl*>(decl)) {
-                decl->SetOffset(varOffset);
-                varOffset += CodeGenerator::VarSize;
+                decl->SetOffset(offset);
                 offset += CodeGenerator::VarSize;
+                memberVars->Append(decl);
             }
             else if (dynamic_cast<FnDecl*>(decl)) {
                 char label[80];

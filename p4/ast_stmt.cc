@@ -8,6 +8,7 @@
 #include "ast_expr.h"
 
 extern SymbolTable *symbols;
+SymbolTable *global;
 
 Program::Program(List<Decl*> *d) {
     codeGen = new CodeGenerator;
@@ -33,7 +34,7 @@ void Program::Emit() {
     //offset = CodeGenerator::OffsetToFirstGlobal;
     int n = decls->NumElements();
 
-    symbols->Push();
+    global = symbols->Push();
     for (int i = 0; i < n; ++i) {
         decls->Nth(i)->AddSymbols();
     }
