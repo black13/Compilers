@@ -66,6 +66,8 @@ ClassDecl::ClassDecl(Identifier *n, NamedType *ex, List<NamedType*> *imp, List<D
     (implements=imp)->SetParentAll(this);
     (members=m)->SetParentAll(this);
     memberVars = new List<Decl*>;
+    memberFuncs = new List<Decl*>;
+    emitted = false;
 }
 
 Type* ClassDecl::GetType() {
@@ -86,7 +88,11 @@ void ClassDecl::AddSymbols() {
 
 Decl* ClassDecl::SearchMembers(char *name) {
     if (error) cout << "ClassDecl::SearchMembers" << endl;
-/*
+    /*
+    if (extends) {
+        Decl *decl = symbols->Search(extends->GetName())->SearchMembers(name);
+        if (decl) return decl;
+    }   
     for (int i = 0; i < members->NumElements(); i++) {
         if (strcmp(members->Nth(i)->GetName(), name) == 0) 
             return members->Nth(i);
@@ -96,17 +102,23 @@ Decl* ClassDecl::SearchMembers(char *name) {
         if (strcmp(memberVars->Nth(i)->GetName(), name) == 0) 
             return memberVars->Nth(i);
     }
+    for (int i = 0; i < memberFuncs->NumElements(); i++) {
+        if (strcmp(memberFuncs->Nth(i)->GetName(), name) == 0) 
+            return memberFuncs->Nth(i);
+    }
     return NULL;
 }
 
 Location* ClassDecl::Emit(CodeGenerator* codeGen) {
+    if (emitted) return NULL;
+
     if (error) cout << "ClassDecl::Emit" << endl;
     SymbolTable *temp = symbols;
     symbols = scope;
     offset = CodeGenerator::OffsetToFirstParam;
     inClass = this;
     int fnOffset = 0;
-    functions = new List<const char*>();
+    List<const char*> *functions = new List<const char*>();
 
     if (extends) {
         Decl *decl = symbols->Search(extends->GetName());
@@ -118,12 +130,12 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
         }
 
         // Add functions to the list 
-        List<const char*> *baseFunc = decl->GetMemberFunc();
+        List<Decl*> *baseFunc = decl->GetMemberFunc();
         for (int i = 0; i < baseFunc->NumElements(); i++) {
-            functions->Append(baseFunc->Nth(i));
+            memberFuncs->Append(baseFunc->Nth(i));
+            //functions->Append(baseFunc->Nth(i));
             fnOffset += CodeGenerator::VarSize;
         }
-
     }
     if (members) {
         for (int i = 0; i < members->NumElements(); i++) {
@@ -134,9 +146,20 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
                 memberVars->Append(decl);
             }
             else if (dynamic_cast<FnDecl*>(decl)) {
+    if (error) cout << "ClassDecl::Emit: Function" << endl;
                 char label[80];
                 sprintf(label, "_%s.%s", id->GetName(), decl->GetName());
-                functions->Append(strdup(label));           
+                decl->SetLabel((char*)label);
+
+    if (error) cout << "ClassDecl::Emit: Add Functions" << endl;
+                //bool replace = false;
+                //cout << label << endl;
+                for (int j = 0; j < memberFuncs->NumElements(); j++) {
+                    if (strcmp(decl->GetName(), memberFuncs->Nth(j)->GetName()) == 0) {
+                        memberFuncs->RemoveAt(j);
+                    }
+                }
+                memberFuncs->Append(decl);
 
                 decl->SetOffset(fnOffset);
                 fnOffset += CodeGenerator::VarSize;
@@ -146,8 +169,33 @@ Location* ClassDecl::Emit(CodeGenerator* codeGen) {
             }
         }
     }
+    if (error) cout << "ClassDecl::Emit: Building VTable" << endl;
+    for (int i = 0; i < memberFuncs->NumElements(); i++) {
+        functions->Append(memberFuncs->Nth(i)->GetLabel());
+    }
+    /*
+    if (extends) {
+        Decl *decl = symbols->Search(extends->GetName());
+        // Add functions to the list 
+        List<const char*> *baseFunc = decl->GetMemberFunc();
+        for (int i = 0; i < baseFunc->NumElements(); i++) {
+            bool add = true;
+            for (int j = 0; j < functions->NumElements(); j++) {
+                if (strcmp(functions->Nth(j), baseFunc->Nth(i)) == 0)
+                    add = false;
+            }
+            if (add) {
+                //memberFuncs->Append(baseFunc->Nth(i));
+                functions->Append(baseFunc->Nth(i));
+                fnOffset += CodeGenerator::VarSize;
+            }
+        }
+    }
+    */
+
     codeGen->GenVTable(id->GetName(), functions);
     inClass = NULL;
+    emitted = true;
 
     symbols = temp;
     return NULL;

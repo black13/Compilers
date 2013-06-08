@@ -399,6 +399,7 @@ Location* Call::Emit(CodeGenerator *codeGen) {
     }
     else if (!base && inClass) {
         if (error) cout << "Call::Emit(): !base && inClass" << endl;
+        if (error) cout << field << endl;
 
         for (int i = actuals->NumElements() - 1; i >= 0; i--) {
             bytes += CodeGenerator::VarSize;
@@ -411,7 +412,8 @@ Location* Call::Emit(CodeGenerator *codeGen) {
             Decl *thiss = function->SearchFormals((char*)"this");
             Location *param = thiss->GetLoc();
 
-            func = symbols->Search(field->GetName());
+            //func = symbols->Search(field->GetName());
+            func = inClass->SearchMembers(field->GetName());
             Location *load = codeGen->GenLoad(codeGen->GenLoad(param), func->GetOffset());
 
             codeGen->GenPushParam(param);
@@ -440,15 +442,19 @@ Location* Call::Emit(CodeGenerator *codeGen) {
     }
     else {
         if (error) cout << "Call::Emit(): has base" << endl;
+        if (error) cout << base->GetName() << "." << field << endl;
 
         Decl *klass = NULL;
         if (base->GetName()) klass = symbols->Search(base->GetName());
+        //klass = symbols->Search(base->GetName());
 
         Location *param = NULL;
         if (klass) param = klass->GetLoc();
+        //Location *param = klass->GetLoc();
 
         klass = symbols->Search(base->GetType()->GetName());
-        Decl *func = klass->SearchScope(field->GetName());
+        //Decl *func = klass->SearchScope(field->GetName());
+        Decl *func = klass->SearchMembers(field->GetName());
 
         Location *b = base->Emit(codeGen);
         Location *loc = codeGen->GenLoad(b);

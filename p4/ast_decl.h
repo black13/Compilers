@@ -28,6 +28,7 @@ class Decl : public Node
     SymbolTable *scope;
     int offset;
     Location * loc;
+    char *label;
   
   public:
     Decl(Identifier *name);
@@ -39,7 +40,11 @@ class Decl : public Node
     virtual void AddSymbols() {};
     virtual Decl* SearchMembers(char *name) { return NULL; };
     virtual List<Decl*>* GetMemberVars() { return NULL; }
-    virtual List<const char*>* GetMemberFunc() { return NULL; }
+    virtual List<Decl*>* GetMemberFunc() { return NULL; }
+    //virtual char* GetLabel() { return NULL; }
+    //virtual void SetLabel(char[] l) { }
+    void SetLabel(char* newLabel) { label = strdup(newLabel); }
+    char* GetLabel() { return label; }
     Decl * SearchScope(char * name); 
     int GetOffset() { return offset; }
     void SetOffset(int newOffset) { offset = newOffset; }
@@ -72,7 +77,8 @@ class ClassDecl : public Decl
     NamedType *extends;
     List<NamedType*> *implements;
     List<Decl*> *memberVars;
-    List<const char*> *functions;
+    List<Decl*> *memberFuncs;
+    bool emitted;
 
   public:
     ClassDecl(Identifier *name, NamedType *extends, 
@@ -80,7 +86,8 @@ class ClassDecl : public Decl
     Type* GetType();
     void AddSymbols();
     List<Decl*>* GetMemberVars() { return memberVars; }
-    List<const char*>* GetMemberFunc() { return functions; }
+    List<Decl*>* GetMemberFunc() { return memberFuncs; }
+    char* GetLabel() { return NULL; }
     Location* Emit(CodeGenerator* codeGen);
     Location* GetLoc() { return loc; };
     Decl* SearchMembers(char *name);
