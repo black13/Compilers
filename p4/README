@@ -1,0 +1,19 @@
+CSE 131 Compiler
+Ian Foster idfoster@ucsd.edu
+Jon Larson j1larson@ucsd.edu
+
+Design Decisions
+
+  We started by implementing the symbol table we created from p3. Then we gave each 
+  node item an Emit function which would call the appropriate methods in the code generator
+  class to create the correct TAC instructions. Each Emit function would also call it's 
+  children's Emit functions until all code has been generated. FnDecl's keep track of the 
+  amount of variables created by their Emit functions so that they can instruct the TAC
+  generator how much stack space to allocate.
+
+Error Handling
+
+  If any errors are discovered in the code that are not part of the p3 error cases the correct
+  ReportError function will be called. For example if you do not define a main function then 
+  dcc will print the NoMainFound() error message.
+
